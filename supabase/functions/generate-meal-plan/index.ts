@@ -69,12 +69,13 @@ serve(async (req) => {
     const mealSchema = {
       type: "object",
       properties: {
-        name: { type: "string" },
-        description: { type: "string" },
+        name: { type: "string", description: "Nome da refeição em português brasileiro" },
+        description: { type: "string", description: "Descrição curta dos ingredientes em português brasileiro" },
         calories: { type: "number" },
         protein: { type: "number" },
         carbs: { type: "number" },
         fat: { type: "number" },
+        ingredients: { type: "array", items: { type: "string" }, description: "Lista de ingredientes com quantidades em português" },
       },
       required: ["name", "description", "calories", "protein", "carbs", "fat"],
     };
