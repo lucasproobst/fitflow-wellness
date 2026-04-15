@@ -1,11 +1,11 @@
 import { useState } from "react";
-import { GlassCard } from "@/components/GlassCard";
 import { CalorieRing } from "@/components/CalorieRing";
 import { MacroBar } from "@/components/MacroBar";
 import { WaterTracker } from "@/components/WaterTracker";
 import { useDailyLog, useUpsertDailyLog, useAddWater, DailyLogMeal } from "@/lib/use-tracking";
 import { Search, Plus } from "lucide-react";
 import { toast } from "sonner";
+import { motion } from "framer-motion";
 
 const commonFoods: DailyLogMeal[] = [
   { name: "Peito de Frango (100g)", calories: 165, protein: 31, carbs: 0, fat: 3.6 },
@@ -62,75 +62,103 @@ export default function FoodDiary() {
 
   return (
     <div className="px-4 lg:px-8 py-6 max-w-4xl mx-auto">
-      <h1 className="text-2xl font-semibold tracking-tight text-foreground mb-6">Diário Alimentar</h1>
+      <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }}>
+        <h1 className="text-2xl font-bold tracking-tight text-white mb-6">Diário Alimentar</h1>
+      </motion.div>
 
-      <div className="flex justify-center mb-6">
+      <motion.div
+        initial={{ opacity: 0, scale: 0.95 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ duration: 0.35, delay: 0.05 }}
+        className="flex justify-center mb-6"
+      >
         <CalorieRing consumed={totalCals} target={2000} size={180} />
-      </div>
+      </motion.div>
 
-      <GlassCard className="mb-4 space-y-3">
+      <motion.div
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.1 }}
+        className="rounded-2xl bg-[#16181f] border border-white/[0.06] p-5 mb-4 space-y-3"
+      >
         <MacroBar label="Proteína" current={totalProtein} target={150} />
         <MacroBar label="Carboidratos" current={totalCarbs} target={200} />
         <MacroBar label="Gordura" current={totalFat} target={60} />
-      </GlassCard>
+      </motion.div>
 
-      <GlassCard className="mb-4">
-        <h3 className="label-style text-[10px] mb-3">HIDRATAÇÃO</h3>
+      <motion.div
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.15 }}
+        className="rounded-2xl bg-[#16181f] border border-white/[0.06] p-5 mb-4"
+      >
+        <h3 className="text-[10px] font-bold uppercase tracking-[0.15em] text-white/20 mb-3">HIDRATAÇÃO</h3>
         <WaterTracker glasses={waterGlasses} onAdd={() => addWater.mutate()} />
-      </GlassCard>
+      </motion.div>
 
-      {/* Adição rápida */}
-      <div className="relative mb-4">
-        <Search size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-foreground/30" />
+      {/* Busca rápida */}
+      <motion.div
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.2 }}
+        className="relative mb-4"
+      >
+        <Search size={14} className="absolute left-4 top-1/2 -translate-y-1/2 text-white/20" />
         <input
           type="text"
           value={search}
           onChange={e => setSearch(e.target.value)}
           placeholder="Buscar alimentos para adicionar..."
-          className="w-full h-12 pl-11 pr-4 rounded-xl bg-white/5 border border-white/10 text-foreground text-sm focus:outline-none focus:border-fitflow-primary transition-colors placeholder:text-foreground/30"
+          className="w-full h-11 pl-10 pr-4 rounded-xl bg-[#16181f] border border-white/[0.06] text-white text-xs focus:outline-none focus:border-white/[0.15] transition-colors placeholder:text-white/20"
         />
         {search && (
-          <div className="absolute top-full left-0 right-0 mt-1 bg-card border border-white/10 rounded-2xl overflow-hidden z-10 max-h-60 overflow-y-auto">
+          <div className="absolute top-full left-0 right-0 mt-1 bg-[#16181f] border border-white/[0.08] rounded-xl overflow-hidden z-10 max-h-60 overflow-y-auto">
             {filtered.length === 0 ? (
-              <p className="p-4 text-sm text-foreground/40">Nenhum alimento encontrado</p>
+              <p className="p-4 text-xs text-white/30">Nenhum alimento encontrado</p>
             ) : (
               filtered.map((f, i) => (
                 <button
                   key={i}
                   onClick={() => addFood(f)}
-                  className="w-full flex items-center justify-between px-4 py-3 hover:bg-white/5 transition-colors"
+                  className="w-full flex items-center justify-between px-4 py-3 hover:bg-white/[0.03] transition-colors border-b border-white/[0.03] last:border-0"
                 >
-                  <span className="text-sm text-foreground">{f.name}</span>
+                  <span className="text-xs text-white/70">{f.name}</span>
                   <div className="flex items-center gap-2">
-                    <span className="text-xs text-fitflow-accent">{f.calories} cal</span>
-                    <Plus size={14} className="text-fitflow-primary" />
+                    <span className="text-[11px] font-bold text-white/50 tabular-nums">{f.calories} kcal</span>
+                    <Plus size={12} className="text-[#22c55e]" />
                   </div>
                 </button>
               ))
             )}
           </div>
         )}
-      </div>
+      </motion.div>
 
-      <h2 className="label-style text-[10px] mb-3">REFEIÇÕES DE HOJE</h2>
-      {meals.length === 0 ? (
-        <GlassCard className="py-8 text-center">
-          <p className="text-sm text-foreground/40">Nenhuma refeição registrada hoje</p>
-          <p className="text-xs text-foreground/30 mt-1">Busque acima ou use o scanner</p>
-        </GlassCard>
-      ) : (
-        <div className="space-y-2">
-          {meals.map((meal, i) => (
-            <GlassCard key={i} className="py-3 flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-foreground">{meal.name}</p>
-                <p className="text-xs text-foreground/40">P:{meal.protein}g · C:{meal.carbs}g · G:{meal.fat}g</p>
+      <motion.div
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.25 }}
+      >
+        <h2 className="text-[10px] font-bold uppercase tracking-[0.15em] text-white/20 mb-3">REFEIÇÕES DE HOJE</h2>
+        {meals.length === 0 ? (
+          <div className="rounded-2xl bg-[#16181f] border border-white/[0.04] py-10 text-center">
+            <p className="text-xs text-white/30">Nenhuma refeição registrada hoje</p>
+            <p className="text-[10px] text-white/15 mt-1">Busque acima ou use o scanner</p>
+          </div>
+        ) : (
+          <div className="space-y-2">
+            {meals.map((meal, i) => (
+              <div key={i} className="rounded-xl bg-[#16181f] border border-white/[0.04] px-4 py-3 flex items-center justify-between">
+                <div>
+                  <p className="text-xs font-bold text-white">{meal.name}</p>
+                  <p className="text-[10px] text-white/30 mt-0.5">P:{meal.protein}g · C:{meal.carbs}g · G:{meal.fat}g</p>
+                </div>
+                <span className="text-sm font-extrabold text-white tabular-nums">{meal.calories}</span>
               </div>
-              <span className="text-sm font-semibold text-fitflow-accent">{meal.calories}</span>
-            </GlassCard>
-          ))}
-        </div>
-      )}
+            ))}
+          </div>
+        )}
+      </motion.div>
     </div>
   );
 }

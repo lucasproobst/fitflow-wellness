@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { GlassCard } from "@/components/GlassCard";
 import { useUpdateProfile } from "@/lib/use-profile";
 import { useAuth } from "@/lib/auth-context";
 import { Target, Dumbbell, Scale, Heart, ChevronRight, ChevronLeft } from "lucide-react";
@@ -76,32 +75,34 @@ export default function Onboarding() {
   };
 
   return (
-    <div className="min-h-screen bg-background flex flex-col">
-      {/* Progresso */}
+    <div className="min-h-screen bg-[#0f1117] flex flex-col">
+      {/* Progress bar */}
       <div className="px-6 pt-8 pb-4">
         <div className="flex gap-2">
           {[0, 1, 2].map(i => (
-            <div key={i} className="flex-1 h-1 rounded-full overflow-hidden bg-white/5">
-              <div
-                className="h-full bg-fitflow-primary transition-all duration-500"
-                style={{ width: step >= i ? "100%" : "0%" }}
+            <div key={i} className="flex-1 h-1 rounded-full overflow-hidden bg-white/[0.04]">
+              <motion.div
+                className="h-full bg-[#22c55e] rounded-full"
+                initial={{ width: "0%" }}
+                animate={{ width: step >= i ? "100%" : "0%" }}
+                transition={{ duration: 0.5 }}
               />
             </div>
           ))}
         </div>
-        <h1 className="text-2xl font-semibold tracking-tight mt-6 text-foreground">
+        <h1 className="text-2xl font-bold tracking-tight mt-6 text-white">
           {step === 0 && "Qual é seu objetivo?"}
           {step === 1 && "Alguma restrição alimentar?"}
           {step === 2 && "Suas informações"}
         </h1>
-        <p className="text-sm text-foreground/50 mt-1">
+        <p className="text-xs text-white/30 mt-1">
           {step === 0 && "Escolha o que melhor descreve seu objetivo fitness"}
           {step === 1 && "Selecione alimentos que você NÃO come"}
           {step === 2 && "Nos ajude a personalizar seu plano"}
         </p>
       </div>
 
-      {/* Conteúdo */}
+      {/* Content */}
       <div className="flex-1 px-6 pb-32 overflow-y-auto">
         <AnimatePresence mode="wait">
           <motion.div
@@ -114,16 +115,18 @@ export default function Onboarding() {
             {step === 0 && (
               <div className="grid grid-cols-2 gap-3">
                 {goals.map(g => (
-                  <GlassCard
+                  <button
                     key={g.id}
                     onClick={() => setGoal(g.id)}
-                    className={`flex flex-col items-center justify-center py-8 gap-3 transition-all ${
-                      goal === g.id ? "!border-fitflow-primary bg-fitflow-primary/10" : ""
+                    className={`rounded-2xl bg-[#16181f] border p-6 flex flex-col items-center justify-center gap-3 transition-all active:scale-95 ${
+                      goal === g.id
+                        ? "border-[#22c55e]/40 bg-[#22c55e]/[0.06]"
+                        : "border-white/[0.06] hover:border-white/[0.1]"
                     }`}
                   >
-                    <g.icon size={28} className={goal === g.id ? "text-fitflow-primary" : "text-foreground/40"} />
-                    <span className="text-sm font-medium text-foreground/80">{g.label}</span>
-                  </GlassCard>
+                    <g.icon size={28} className={goal === g.id ? "text-[#22c55e]" : "text-white/25"} />
+                    <span className="text-xs font-bold text-white/70">{g.label}</span>
+                  </button>
                 ))}
               </div>
             )}
@@ -132,16 +135,16 @@ export default function Onboarding() {
               <div className="space-y-6">
                 {Object.entries(foodCategories).map(([cat, items]) => (
                   <div key={cat}>
-                    <h3 className="label-style text-[11px] mb-3">{cat}</h3>
+                    <h3 className="text-[10px] font-bold uppercase tracking-[0.15em] text-white/20 mb-3">{cat}</h3>
                     <div className="flex flex-wrap gap-2">
                       {items.map(item => (
                         <button
                           key={item}
                           onClick={() => toggleRestriction(item)}
-                          className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all active:scale-95 ${
+                          className={`px-3 py-1.5 rounded-full text-[11px] font-bold transition-all active:scale-95 ${
                             restrictions.includes(item)
-                              ? "bg-fitflow-primary text-white"
-                              : "border border-white/10 text-foreground/60 hover:bg-white/5"
+                              ? "bg-[#22c55e] text-white"
+                              : "border border-white/[0.08] text-white/40 hover:bg-white/[0.04]"
                           }`}
                         >
                           {item}
@@ -162,26 +165,26 @@ export default function Onboarding() {
                   { label: "Peso Alvo (kg)", value: targetWeight, set: setTargetWeight, type: "number" },
                 ].map(f => (
                   <div key={f.label}>
-                    <label className="label-style text-[10px] mb-1.5 block">{f.label}</label>
+                    <label className="text-[10px] font-bold uppercase tracking-[0.12em] text-white/20 mb-1.5 block">{f.label}</label>
                     <input
                       type={f.type}
                       value={f.value}
                       onChange={e => f.set(e.target.value)}
-                      className="w-full h-12 px-4 rounded-xl bg-white/5 border border-white/10 text-foreground text-sm focus:outline-none focus:border-fitflow-primary transition-colors"
+                      className="w-full h-12 px-4 rounded-xl bg-[#16181f] border border-white/[0.06] text-white text-sm focus:outline-none focus:border-white/[0.15] transition-colors"
                     />
                   </div>
                 ))}
                 <div>
-                  <label className="label-style text-[10px] mb-2 block">Nível de Atividade</label>
+                  <label className="text-[10px] font-bold uppercase tracking-[0.12em] text-white/20 mb-2 block">Nível de Atividade</label>
                   <div className="flex flex-wrap gap-2">
                     {activityLevels.map(a => (
                       <button
                         key={a.id}
                         onClick={() => setActivity(a.id)}
-                        className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all active:scale-95 ${
+                        className={`px-3 py-1.5 rounded-full text-[11px] font-bold transition-all active:scale-95 ${
                           activity === a.id
-                            ? "bg-fitflow-primary text-white"
-                            : "border border-white/10 text-foreground/60 hover:bg-white/5"
+                            ? "bg-[#22c55e] text-white"
+                            : "border border-white/[0.08] text-white/40 hover:bg-white/[0.04]"
                         }`}
                       >
                         {a.label}
@@ -195,24 +198,24 @@ export default function Onboarding() {
         </AnimatePresence>
       </div>
 
-      {/* Navegação inferior */}
-      <div className="fixed bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-background via-background to-transparent">
+      {/* Bottom nav */}
+      <div className="fixed bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-[#0f1117] via-[#0f1117] to-transparent">
         <div className="flex gap-3">
           {step > 0 && (
             <button
               onClick={() => setStep(s => s - 1)}
-              className="h-14 w-14 rounded-xl border border-white/10 flex items-center justify-center text-foreground/60 hover:bg-white/5 active:scale-95 transition-all"
+              className="h-12 w-12 rounded-xl bg-[#16181f] border border-white/[0.06] flex items-center justify-center text-white/40 hover:bg-white/[0.04] active:scale-95 transition-all"
             >
-              <ChevronLeft size={20} />
+              <ChevronLeft size={18} />
             </button>
           )}
           <button
             disabled={!canProceed()}
             onClick={() => (step < 2 ? setStep(s => s + 1) : handleFinish())}
-            className="flex-1 h-14 rounded-xl bg-fitflow-primary text-white font-semibold text-sm flex items-center justify-center gap-2 disabled:opacity-40 active:scale-95 transition-all"
+            className="flex-1 h-12 rounded-xl bg-[#22c55e] text-white font-bold text-xs flex items-center justify-center gap-2 disabled:opacity-30 active:scale-95 transition-all"
           >
             {step < 2 ? "Continuar" : updateProfile.isPending ? "Salvando..." : "Começar"}
-            {step < 2 && <ChevronRight size={16} />}
+            {step < 2 && <ChevronRight size={14} />}
           </button>
         </div>
       </div>

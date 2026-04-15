@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { GlassCard } from "@/components/GlassCard";
 import { ACHIEVEMENTS, useAchievements } from "@/lib/use-achievements";
 import { useAuth } from "@/lib/auth-context";
 import { useStreak } from "@/lib/use-tracking";
@@ -8,6 +7,7 @@ import { useProfile } from "@/lib/use-profile";
 import { supabase } from "@/integrations/supabase/client";
 import { Trophy, Lock, Share2 } from "lucide-react";
 import { AchievementShareCard } from "@/components/AchievementShareCard";
+import { motion } from "framer-motion";
 
 function useAchievementProgress() {
   const { user } = useAuth();
@@ -70,90 +70,112 @@ export default function Achievements() {
 
   return (
     <div className="px-4 lg:px-8 py-6 max-w-4xl mx-auto">
-      <div className="flex items-center justify-between mb-2">
-        <h1 className="text-2xl font-semibold tracking-tight text-foreground">Conquistas</h1>
-        <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-fitflow-primary/10">
-          <Trophy size={14} className="text-fitflow-primary" />
-          <span className="text-xs font-bold text-fitflow-primary">{unlockedCount} / {ACHIEVEMENTS.length}</span>
+      <motion.div
+        initial={{ opacity: 0, y: 8 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.3 }}
+        className="flex items-center justify-between mb-1"
+      >
+        <h1 className="text-2xl font-bold tracking-tight text-white">Conquistas</h1>
+        <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/[0.04] border border-white/[0.06]">
+          <Trophy size={12} className="text-[#22c55e]" />
+          <span className="text-[11px] font-bold text-white/50 tabular-nums">{unlockedCount}/{ACHIEVEMENTS.length}</span>
         </div>
-      </div>
-      <p className="text-sm text-foreground/50 mb-6">Acompanhe seus marcos e desbloqueie medalhas</p>
+      </motion.div>
+      <motion.p
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 0.05 }}
+        className="text-xs text-white/30 mb-6"
+      >
+        Acompanhe seus marcos e desbloqueie medalhas
+      </motion.p>
 
-      {/* Barra de resumo */}
-      <GlassCard className="mb-6">
+      {/* Summary bar */}
+      <motion.div
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.1 }}
+        className="rounded-2xl bg-[#16181f] border border-white/[0.06] p-5 mb-6"
+      >
         <div className="flex items-center gap-3 mb-3">
           <div className="text-2xl">🏅</div>
           <div>
-            <p className="text-sm font-semibold text-foreground">
+            <p className="text-sm font-bold text-white">
               {unlockedCount === 0
                 ? "Comece sua jornada"
                 : unlockedCount === ACHIEVEMENTS.length
                 ? "Todas as medalhas desbloqueadas! 🎉"
                 : `${ACHIEVEMENTS.length - unlockedCount} medalha${ACHIEVEMENTS.length - unlockedCount !== 1 ? "s" : ""} restante${ACHIEVEMENTS.length - unlockedCount !== 1 ? "s" : ""}`}
             </p>
-            <p className="text-xs text-foreground/40">
+            <p className="text-[11px] text-white/30 mt-0.5">
               {unlockedCount > 0
                 ? `Você desbloqueou ${Math.round((unlockedCount / ACHIEVEMENTS.length) * 100)}% de todas as conquistas`
                 : "Registre refeições, treinos e peso para ganhar medalhas"}
             </p>
           </div>
         </div>
-        <div className="h-2 bg-white/5 rounded-full overflow-hidden">
+        <div className="h-1.5 bg-white/[0.04] rounded-full overflow-hidden">
           <div
-            className="h-full rounded-full bg-gradient-to-r from-fitflow-primary to-fitflow-accent transition-all duration-700"
+            className="h-full rounded-full bg-[#22c55e] transition-all duration-700"
             style={{ width: `${(unlockedCount / ACHIEVEMENTS.length) * 100}%` }}
           />
         </div>
-      </GlassCard>
+      </motion.div>
 
-      {/* Grade de medalhas */}
-      <div className="space-y-3">
-        {ACHIEVEMENTS.map(a => {
+      {/* Achievement grid */}
+      <div className="space-y-2">
+        {ACHIEVEMENTS.map((a, idx) => {
           const isUnlocked = unlocked?.has(a.key);
           const unlockedAt = unlocked?.get(a.key);
           const progress = getProgress(a.key, stats);
           const pct = progress ? Math.min((progress.current / progress.target) * 100, 100) : 0;
 
           return (
-            <GlassCard
+            <motion.div
               key={a.key}
-              className={`transition-all ${isUnlocked ? "border-fitflow-primary/20" : "opacity-70"}`}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.05 + idx * 0.03 }}
+              className={`rounded-2xl bg-[#16181f] border p-4 transition-all ${
+                isUnlocked ? "border-[#22c55e]/10" : "border-white/[0.04] opacity-60"
+              }`}
             >
-              <div className="flex items-start gap-4">
-                <div className={`w-14 h-14 rounded-xl flex items-center justify-center shrink-0 text-2xl ${
-                  isUnlocked ? "bg-fitflow-primary/10" : "bg-white/5 grayscale"
+              <div className="flex items-start gap-3.5">
+                <div className={`w-12 h-12 rounded-xl flex items-center justify-center shrink-0 text-xl ${
+                  isUnlocked ? "bg-[#22c55e]/[0.08]" : "bg-white/[0.03] grayscale"
                 }`}>
-                  {isUnlocked ? a.icon : <Lock size={20} className="text-foreground/20" />}
+                  {isUnlocked ? a.icon : <Lock size={18} className="text-white/15" />}
                 </div>
 
                 <div className="flex-1 min-w-0">
-                  <div className="flex items-center justify-between gap-2 mb-1">
-                    <p className="text-sm font-semibold text-foreground">{a.title}</p>
+                  <div className="flex items-center justify-between gap-2 mb-0.5">
+                    <p className="text-xs font-bold text-white">{a.title}</p>
                     {isUnlocked && (
                       <button
                         onClick={() => setShareAchievement({ key: a.key, unlockedAt: unlockedAt! })}
-                        className="p-1.5 rounded-lg bg-fitflow-primary/10 text-fitflow-primary hover:bg-fitflow-primary/20 transition-colors shrink-0"
+                        className="p-1.5 rounded-lg bg-white/[0.04] text-white/30 hover:bg-white/[0.08] hover:text-white/50 transition-colors shrink-0"
                       >
-                        <Share2 size={14} />
+                        <Share2 size={12} />
                       </button>
                     )}
                   </div>
-                  <p className="text-xs text-foreground/50 mb-2">{a.description}</p>
+                  <p className="text-[11px] text-white/30 mb-2">{a.description}</p>
 
                   {progress && (
                     <div>
                       <div className="flex items-center justify-between mb-1">
-                        <span className="text-[10px] text-foreground/30">
-                          {progress.current} / {progress.target}
+                        <span className="text-[10px] text-white/20 tabular-nums">
+                          {progress.current}/{progress.target}
                         </span>
-                        <span className="text-[10px] text-foreground/30">
+                        <span className="text-[10px] text-white/20 tabular-nums">
                           {Math.round(pct)}%
                         </span>
                       </div>
-                      <div className="h-1.5 bg-white/5 rounded-full overflow-hidden">
+                      <div className="h-1 bg-white/[0.04] rounded-full overflow-hidden">
                         <div
                           className={`h-full rounded-full transition-all duration-500 ${
-                            isUnlocked ? "bg-fitflow-primary" : "bg-foreground/15"
+                            isUnlocked ? "bg-[#22c55e]" : "bg-white/10"
                           }`}
                           style={{ width: `${pct}%` }}
                         />
@@ -162,13 +184,13 @@ export default function Achievements() {
                   )}
 
                   {isUnlocked && unlockedAt && (
-                    <p className="text-[10px] text-foreground/20 mt-1.5">
+                    <p className="text-[10px] text-white/15 mt-1.5">
                       Conquistado em {new Date(unlockedAt).toLocaleDateString("pt-BR", { month: "short", day: "numeric", year: "numeric" })}
                     </p>
                   )}
                 </div>
               </div>
-            </GlassCard>
+            </motion.div>
           );
         })}
       </div>

@@ -1,10 +1,9 @@
 import { useState, useRef } from "react";
-import { GlassCard } from "@/components/GlassCard";
-import { MacroBar } from "@/components/MacroBar";
 import { Camera, Plus, AlertTriangle, RotateCcw } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth-context";
+import { motion, AnimatePresence } from "framer-motion";
 
 interface ScanResult {
   name: string;
@@ -110,97 +109,131 @@ export default function Scanner() {
 
   return (
     <div className="px-4 lg:px-8 py-6 max-w-4xl mx-auto">
-      <h1 className="text-2xl font-semibold tracking-tight text-foreground mb-2">Scanner de Alimentos</h1>
-      <p className="text-sm text-foreground/50 mb-6">Tire uma foto para obter informações nutricionais</p>
+      <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }}>
+        <h1 className="text-2xl font-bold tracking-tight text-white mb-1">Scanner de Alimentos</h1>
+        <p className="text-xs text-white/30 mb-6">Tire uma foto para obter informações nutricionais</p>
+      </motion.div>
 
       {/* Visor */}
-      <div
+      <motion.div
+        initial={{ opacity: 0, scale: 0.96 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ duration: 0.35, delay: 0.05 }}
         onClick={() => fileRef.current?.click()}
-        className="relative aspect-square max-w-sm mx-auto rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center cursor-pointer overflow-hidden mb-6"
+        className="relative aspect-square max-w-sm mx-auto rounded-2xl bg-[#16181f] border border-white/[0.06] flex items-center justify-center cursor-pointer overflow-hidden mb-6 hover:border-white/[0.1] transition-colors"
       >
         {image ? (
           <img src={image} alt="Alimento" className="w-full h-full object-cover" />
         ) : (
-          <div className="flex flex-col items-center gap-3 text-foreground/30">
+          <div className="flex flex-col items-center gap-3 text-white/20">
             <Camera size={40} />
-            <span className="text-sm font-medium">Toque para escanear</span>
+            <span className="text-xs font-medium tracking-wide">Toque para escanear</span>
           </div>
         )}
-        <div className="absolute top-4 left-4 w-8 h-8 border-l-2 border-t-2 border-fitflow-primary rounded-tl" />
-        <div className="absolute top-4 right-4 w-8 h-8 border-r-2 border-t-2 border-fitflow-primary rounded-tr" />
-        <div className="absolute bottom-4 left-4 w-8 h-8 border-l-2 border-b-2 border-fitflow-primary rounded-bl" />
-        <div className="absolute bottom-4 right-4 w-8 h-8 border-r-2 border-b-2 border-fitflow-primary rounded-br" />
+        {/* Corner brackets */}
+        <div className="absolute top-4 left-4 w-8 h-8 border-l-2 border-t-2 border-[#22c55e]/60 rounded-tl-sm" />
+        <div className="absolute top-4 right-4 w-8 h-8 border-r-2 border-t-2 border-[#22c55e]/60 rounded-tr-sm" />
+        <div className="absolute bottom-4 left-4 w-8 h-8 border-l-2 border-b-2 border-[#22c55e]/60 rounded-bl-sm" />
+        <div className="absolute bottom-4 right-4 w-8 h-8 border-r-2 border-b-2 border-[#22c55e]/60 rounded-br-sm" />
         {scanning && (
-          <div className="absolute inset-0 bg-background/60 flex items-center justify-center">
-            <div className="w-8 h-8 border-2 border-fitflow-primary border-t-transparent rounded-full animate-spin" />
+          <div className="absolute inset-0 bg-[#0f1117]/70 flex items-center justify-center backdrop-blur-sm">
+            <div className="w-10 h-10 border-2 border-[#22c55e] border-t-transparent rounded-full animate-spin" />
           </div>
         )}
         <input ref={fileRef} type="file" accept="image/*" onChange={handleFile} className="hidden" />
-      </div>
+      </motion.div>
 
       {/* Alimento não encontrado */}
-      {notFound && !scanning && (
-        <GlassCard className="mb-4 border-orange-500/20">
-          <div className="flex flex-col items-center text-center py-2">
-            <div className="w-12 h-12 rounded-2xl bg-orange-500/10 flex items-center justify-center mb-3">
-              <AlertTriangle size={24} className="text-orange-400" />
+      <AnimatePresence>
+        {notFound && !scanning && (
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            className="mb-4 rounded-2xl bg-[#16181f] border border-orange-500/10 p-5"
+          >
+            <div className="flex flex-col items-center text-center">
+              <div className="w-12 h-12 rounded-xl bg-orange-500/[0.08] flex items-center justify-center mb-3">
+                <AlertTriangle size={22} className="text-orange-400/80" />
+              </div>
+              <p className="text-sm font-bold text-white mb-1">Alimento não identificado</p>
+              <p className="text-xs text-white/30 mb-4 max-w-[260px] leading-relaxed">
+                Não conseguimos reconhecer o alimento na foto. Tente tirar outra foto com melhor iluminação e ângulo.
+              </p>
+              <button
+                onClick={() => { resetScanner(); fileRef.current?.click(); }}
+                className="h-10 px-5 rounded-full bg-white/[0.06] border border-white/[0.08] text-white text-xs font-bold flex items-center gap-2 active:scale-95 transition-all hover:bg-white/[0.1]"
+              >
+                <RotateCcw size={14} />
+                Escanear Novamente
+              </button>
             </div>
-            <p className="text-sm font-semibold text-foreground mb-1">Alimento não identificado</p>
-            <p className="text-xs text-foreground/50 mb-4 max-w-[260px]">
-              Não conseguimos reconhecer o alimento na foto. Tente tirar outra foto com melhor iluminação e ângulo.
-            </p>
-            <button
-              onClick={() => {
-                resetScanner();
-                fileRef.current?.click();
-              }}
-              className="h-11 px-6 rounded-xl bg-fitflow-primary text-white font-semibold text-sm flex items-center gap-2 active:scale-95 transition-all"
-            >
-              <RotateCcw size={16} />
-              Escanear Novamente
-            </button>
-          </div>
-        </GlassCard>
-      )}
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Resultado */}
-      {result && (
-        <GlassCard className="mb-4">
-          <div className="flex items-center justify-between mb-3">
-            <div>
-              <p className="text-sm font-semibold text-foreground">{result.name}</p>
-              <p className="text-xs text-foreground/40">{result.serving}</p>
-            </div>
-            <span className="text-lg font-semibold text-fitflow-accent">{result.calories} cal</span>
-          </div>
-          <div className="space-y-2 mb-4">
-            <MacroBar label="Proteína" current={result.protein} target={result.protein} />
-            <MacroBar label="Carboidratos" current={result.carbs} target={Math.max(result.carbs, 1)} />
-            <MacroBar label="Gordura" current={result.fat} target={result.fat} />
-          </div>
-          <button
-            onClick={addToDiary}
-            className="w-full h-12 rounded-xl bg-fitflow-primary text-white font-semibold text-sm flex items-center justify-center gap-2 active:scale-95 transition-all"
+      <AnimatePresence>
+        {result && (
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            className="mb-4 rounded-2xl bg-[#16181f] border border-white/[0.06] p-5"
           >
-            <Plus size={16} />
-            Adicionar ao Diário
-          </button>
-        </GlassCard>
-      )}
+            <div className="flex items-center justify-between mb-4">
+              <div>
+                <p className="text-sm font-bold text-white">{result.name}</p>
+                <p className="text-[11px] text-white/30 mt-0.5">{result.serving}</p>
+              </div>
+              <div className="text-right">
+                <span className="text-xl font-extrabold text-white tabular-nums">{result.calories}</span>
+                <p className="text-[10px] text-[#6b7280] -mt-0.5">kcal</p>
+              </div>
+            </div>
+
+            <div className="space-y-3 mb-5">
+              {[
+                { label: "PROTEÍNA", value: result.protein, color: "#3b82f6" },
+                { label: "CARBOIDRATOS", value: result.carbs, color: "#22c55e" },
+                { label: "GORDURA", value: result.fat, color: "#22c55e" },
+              ].map(m => (
+                <div key={m.label}>
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="text-[10px] font-bold uppercase tracking-[0.12em] text-white/30">{m.label}</span>
+                    <span className="text-[11px] font-semibold text-white/50 tabular-nums">{m.value}g</span>
+                  </div>
+                  <div className="h-1 bg-white/[0.04] rounded-full overflow-hidden">
+                    <div className="h-full rounded-full transition-all duration-500" style={{ width: `${Math.min((m.value / 50) * 100, 100)}%`, background: m.color }} />
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <button
+              onClick={addToDiary}
+              className="w-full h-11 rounded-full bg-[#22c55e] text-white text-xs font-bold flex items-center justify-center gap-2 active:scale-95 transition-all"
+            >
+              <Plus size={14} />
+              Adicionar ao Diário
+            </button>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Histórico */}
       {history.length > 0 && (
-        <div>
-          <h2 className="label-style text-[10px] mb-3">ESCANEAMENTOS RECENTES</h2>
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.1 }}>
+          <h2 className="text-[10px] font-bold uppercase tracking-[0.15em] text-white/20 mb-3">ESCANEAMENTOS RECENTES</h2>
           <div className="space-y-2">
             {history.map((item, i) => (
-              <GlassCard key={i} className="py-3 flex items-center justify-between">
-                <p className="text-sm text-foreground/60">{item.name}</p>
-                <span className="text-xs text-fitflow-accent">{item.calories} cal</span>
-              </GlassCard>
+              <div key={i} className="rounded-xl bg-[#16181f] border border-white/[0.04] px-4 py-3 flex items-center justify-between">
+                <p className="text-xs text-white/50">{item.name}</p>
+                <span className="text-xs font-bold text-white/70 tabular-nums">{item.calories} kcal</span>
+              </div>
             ))}
           </div>
-        </div>
+        </motion.div>
       )}
     </div>
   );
