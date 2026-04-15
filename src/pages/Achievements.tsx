@@ -1,10 +1,13 @@
+import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { GlassCard } from "@/components/GlassCard";
 import { ACHIEVEMENTS, useAchievements } from "@/lib/use-achievements";
 import { useAuth } from "@/lib/auth-context";
 import { useStreak } from "@/lib/use-tracking";
+import { useProfile } from "@/lib/use-profile";
 import { supabase } from "@/integrations/supabase/client";
-import { Trophy, Lock } from "lucide-react";
+import { Trophy, Lock, Share2 } from "lucide-react";
+import { AchievementShareCard } from "@/components/AchievementShareCard";
 
 function useAchievementProgress() {
   const { user } = useAuth();
@@ -61,6 +64,8 @@ function getProgress(key: string, stats: ReturnType<typeof useAchievementProgres
 export default function Achievements() {
   const { data: unlocked } = useAchievements();
   const { data: stats, isLoading } = useAchievementProgress();
+  const { data: profile } = useProfile();
+  const [shareAchievement, setShareAchievement] = useState<{ key: string; unlockedAt: string } | null>(null);
   const unlockedCount = unlocked?.size ?? 0;
 
   return (
@@ -125,9 +130,12 @@ export default function Achievements() {
                   <div className="flex items-center justify-between gap-2 mb-1">
                     <p className="text-sm font-semibold text-foreground">{a.title}</p>
                     {isUnlocked && (
-                      <span className="text-[10px] text-fitflow-primary font-medium shrink-0">
-                        ✓ Desbloqueado
-                      </span>
+                      <button
+                        onClick={() => setShareAchievement({ key: a.key, unlockedAt: unlockedAt! })}
+                        className="p-1.5 rounded-lg bg-fitflow-primary/10 text-fitflow-primary hover:bg-fitflow-primary/20 transition-colors shrink-0"
+                      >
+                        <Share2 size={14} />
+                      </button>
                     )}
                   </div>
                   <p className="text-xs text-foreground/50 mb-2">{a.description}</p>
@@ -164,6 +172,20 @@ export default function Achievements() {
           );
         })}
       </div>
+
+      {shareAchievement && (() => {
+        const def = ACHIEVEMENTS.find(a => a.key === shareAchievement.key);
+        if (!def) return null;
+        return (
+          <AchievementShareCard
+            achievement={def}
+            unlockedAt={shareAchievement.unlockedAt}
+            userName={profile?.display_name ?? undefined}
+            open
+            onClose={() => setShareAchievement(null)}
+          />
+        );
+      })()}
     </div>
   );
 }
