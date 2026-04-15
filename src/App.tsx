@@ -17,6 +17,7 @@ import FoodDiary from "@/pages/FoodDiary";
 import SleepTracker from "@/pages/SleepTracker";
 import Profile from "@/pages/Profile";
 import NotFound from "@/pages/NotFound";
+import Install from "@/pages/Install";
 
 const queryClient = new QueryClient();
 
@@ -66,6 +67,7 @@ function AppRoutes() {
   return (
     <Routes>
       <Route path="/auth" element={user ? <Navigate to="/" replace /> : <Auth />} />
+      <Route path="/install" element={<Install />} />
       <Route path="/onboarding" element={user ? <Onboarding /> : <Navigate to="/auth" replace />} />
       <Route path="/*" element={<ProtectedRoutes />} />
     </Routes>
