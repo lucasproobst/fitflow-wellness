@@ -134,28 +134,47 @@ export function useCheckAchievements() {
         unlock.mutate(key, {
           onSuccess: () => {
             if (def) {
-              // Fire confetti burst
+              // Initial center burst
               confetti({
-                particleCount: 80,
-                spread: 70,
-                origin: { y: 0.7 },
+                particleCount: 100,
+                spread: 80,
+                origin: { y: 0.65 },
                 colors: ["#0D9E75", "#A8E063", "#FFD700", "#FF6B6B", "#4FC3F7"],
+                gravity: 0.8,
               });
-              // Second burst slightly delayed for extra celebration
+
+              // Side bursts
+              setTimeout(() => {
+                confetti({ particleCount: 50, spread: 120, origin: { y: 0.6, x: 0.2 }, colors: ["#0D9E75", "#A8E063", "#FFD700"], gravity: 0.7 });
+                confetti({ particleCount: 50, spread: 120, origin: { y: 0.6, x: 0.8 }, colors: ["#0D9E75", "#A8E063", "#FFD700"], gravity: 0.7 });
+              }, 250);
+
+              // Top rain burst targeting toast area
               setTimeout(() => {
                 confetti({
-                  particleCount: 40,
-                  spread: 100,
-                  origin: { y: 0.6, x: 0.3 },
-                  colors: ["#0D9E75", "#A8E063", "#FFD700"],
+                  particleCount: 60,
+                  spread: 160,
+                  startVelocity: 20,
+                  origin: { y: 0, x: 0.5 },
+                  colors: ["#0D9E75", "#A8E063", "#FFD700", "#FF6B6B"],
+                  gravity: 1.2,
+                  ticks: 200,
                 });
+              }, 500);
+
+              // Final sparkle burst
+              setTimeout(() => {
                 confetti({
-                  particleCount: 40,
-                  spread: 100,
-                  origin: { y: 0.6, x: 0.7 },
-                  colors: ["#0D9E75", "#A8E063", "#FFD700"],
+                  particleCount: 30,
+                  spread: 360,
+                  startVelocity: 15,
+                  origin: { y: 0.5, x: 0.5 },
+                  colors: ["#FFD700", "#A8E063"],
+                  gravity: 0.5,
+                  scalar: 0.8,
+                  ticks: 150,
                 });
-              }, 300);
+              }, 800);
 
               toast(
                 `${def.icon} ${def.title} Desbloqueado!`,
