@@ -193,6 +193,16 @@ export default function DietPlan() {
 
   const handleViewRecipes = async () => {
     if (!currentDay?.meals) return;
+
+    // Check cache first
+    const cached = recipesCache.current[selectedDay];
+    if (cached && cached.length > 0) {
+      setRecipes(cached);
+      setExpandedRecipe(0);
+      setRecipesOpen(true);
+      return;
+    }
+
     setRecipesOpen(true);
     setLoadingRecipes(true);
     setRecipes([]);
@@ -213,7 +223,9 @@ export default function DietPlan() {
       });
       if (error) throw error;
       if (data?.error) throw new Error(data.error);
-      setRecipes(data.recipes || []);
+      const result = data.recipes || [];
+      recipesCache.current[selectedDay] = result;
+      setRecipes(result);
       setExpandedRecipe(0);
     } catch (err: any) {
       toast.error(err.message || "Falha ao gerar receitas");
