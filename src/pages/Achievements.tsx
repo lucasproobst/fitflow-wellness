@@ -130,9 +130,12 @@ export default function Achievements() {
                   <div className="flex items-center justify-between gap-2 mb-1">
                     <p className="text-sm font-semibold text-foreground">{a.title}</p>
                     {isUnlocked && (
-                      <span className="text-[10px] text-fitflow-primary font-medium shrink-0">
-                        ✓ Desbloqueado
-                      </span>
+                      <button
+                        onClick={() => setShareAchievement({ key: a.key, unlockedAt: unlockedAt! })}
+                        className="p-1.5 rounded-lg bg-fitflow-primary/10 text-fitflow-primary hover:bg-fitflow-primary/20 transition-colors shrink-0"
+                      >
+                        <Share2 size={14} />
+                      </button>
                     )}
                   </div>
                   <p className="text-xs text-foreground/50 mb-2">{a.description}</p>
