@@ -1,6 +1,6 @@
 import { ReactNode } from "react";
 import { NavLink, useLocation } from "react-router-dom";
-import { Home, Utensils, Dumbbell, Camera, TrendingUp, User, Moon, Sun, Plus } from "lucide-react";
+import { Home, Utensils, Dumbbell, Camera, TrendingUp, User, Moon, Sun, Plus, Trophy } from "lucide-react";
 import { useTheme } from "@/lib/theme-context";
 import { useAuth } from "@/lib/auth-context";
 import { motion } from "framer-motion";
@@ -65,6 +65,17 @@ export default function AppLayout({ children }: { children: ReactNode }) {
           >
             <Moon size={20} />
             Sleep
+          </NavLink>
+          <NavLink
+            to="/achievements"
+            className={({ isActive }) =>
+              `flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all ${
+                isActive ? "bg-fitflow-primary/10 text-fitflow-primary" : "text-foreground/50 hover:text-foreground/80 hover:bg-white/5"
+              }`
+            }
+          >
+            <Trophy size={20} />
+            Achievements
           </NavLink>
         </nav>
         <div className="mt-auto space-y-2">
