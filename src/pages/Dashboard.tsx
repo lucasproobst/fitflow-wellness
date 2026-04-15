@@ -43,13 +43,13 @@ export default function Dashboard() {
     <div className="px-4 lg:px-8 py-6 max-w-4xl mx-auto">
       {/* Top bar */}
       <div className="flex items-center justify-between mb-8">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-full bg-gradient-to-br from-fitflow-primary to-fitflow-accent flex items-center justify-center text-white text-sm font-semibold">
+        <div className="flex items-center gap-3 min-w-0">
+          <div className="w-10 h-10 rounded-full bg-gradient-to-br from-fitflow-primary to-fitflow-accent flex items-center justify-center text-white text-sm font-semibold shrink-0">
             {initials}
           </div>
-          <div>
+          <div className="min-w-0">
             <p className="text-sm font-semibold text-foreground">Welcome back</p>
-            <p className="text-xs text-foreground/50">{user?.email}</p>
+            <p className="text-xs text-foreground/50 truncate">{user?.email}</p>
           </div>
         </div>
         <div className="flex items-center gap-2">
