@@ -21,7 +21,7 @@ interface BeforeInstallPromptEvent extends Event {
 export default function Dashboard() {
   const { user } = useAuth();
   const { data: profile } = useProfile();
-  const { theme, toggle } = useTheme();
+  useTheme(); // keep hook call order
   const { data: dailyLog } = useDailyLog();
   const addWater = useAddWater();
   const { data: streak } = useStreak();
