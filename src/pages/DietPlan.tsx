@@ -197,8 +197,8 @@ export default function DietPlan() {
                 </div>
                 <p className="text-sm font-semibold text-foreground mb-1">{meal.name}</p>
                 <p className="text-xs text-foreground/50 mb-3">{meal.description}</p>
-                <div className="flex items-center justify-between">
-                  <div className="flex gap-4">
+                <div className="flex items-center justify-between gap-2">
+                  <div className="flex gap-3 sm:gap-4 shrink-0">
                     {[
                       { l: "P", v: meal.protein },
                       { l: "C", v: meal.carbs },
