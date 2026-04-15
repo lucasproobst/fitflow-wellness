@@ -74,6 +74,7 @@ export default function DietPlan() {
   const [activeFilter, setActiveFilter] = useState("TODOS");
   const [swappingMeal, setSwappingMeal] = useState<string | null>(null);
   const [favorites, setFavorites] = useState<Set<string>>(new Set());
+  const [favoritesLoaded, setFavoritesLoaded] = useState(false);
   const [recipesOpen, setRecipesOpen] = useState(false);
   const [recipes, setRecipes] = useState<Recipe[]>([]);
   const [loadingRecipes, setLoadingRecipes] = useState(false);
