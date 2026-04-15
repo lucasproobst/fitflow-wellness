@@ -1,8 +1,10 @@
 import { useState, useRef } from "react";
 import { GlassCard } from "@/components/GlassCard";
 import { MacroBar } from "@/components/MacroBar";
-import { Camera, Upload, Plus } from "lucide-react";
+import { Camera, Plus } from "lucide-react";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/lib/auth-context";
 
 interface ScanResult {
   name: string;
@@ -17,39 +19,79 @@ export default function Scanner() {
   const [image, setImage] = useState<string | null>(null);
   const [scanning, setScanning] = useState(false);
   const [result, setResult] = useState<ScanResult | null>(null);
+  const [history, setHistory] = useState<ScanResult[]>([]);
   const fileRef = useRef<HTMLInputElement>(null);
+  const { user } = useAuth();
 
   const handleFile = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error("Image must be under 5MB");
+      return;
+    }
     const reader = new FileReader();
     reader.onload = () => {
-      setImage(reader.result as string);
-      scanFood();
+      const base64 = reader.result as string;
+      setImage(base64);
+      scanFood(base64);
     };
     reader.readAsDataURL(file);
   };
 
-  const scanFood = () => {
+  const scanFood = async (base64: string) => {
     setScanning(true);
     setResult(null);
-    setTimeout(() => {
-      setResult({
-        name: "Grilled Chicken Breast",
-        serving: "1 piece (150g)",
-        calories: 248,
-        protein: 46,
-        carbs: 0,
-        fat: 5,
+    try {
+      const { data, error } = await supabase.functions.invoke("scan-food", {
+        body: { image_base64: base64 },
       });
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+      setResult(data as ScanResult);
+    } catch (err: any) {
+      toast.error(err.message || "Failed to analyze food");
+    } finally {
       setScanning(false);
-    }, 2000);
+    }
   };
 
-  const addToDiary = () => {
-    toast.success("Added to diary!");
-    setResult(null);
-    setImage(null);
+  const addToDiary = async () => {
+    if (!result || !user) return;
+    try {
+      const today = new Date().toISOString().split("T")[0];
+      const { data: existing } = await supabase
+        .from("daily_log")
+        .select("*")
+        .eq("user_id", user.id)
+        .eq("date", today)
+        .maybeSingle();
+
+      const currentMeals = (existing?.meals as any[]) || [];
+      const newMeals = [...currentMeals, result];
+      const newCalories = newMeals.reduce((s: number, m: any) => s + (m.calories || 0), 0);
+
+      if (existing) {
+        await supabase
+          .from("daily_log")
+          .update({ meals: newMeals as any, calories_total: newCalories })
+          .eq("id", existing.id);
+      } else {
+        await supabase.from("daily_log").insert({
+          user_id: user.id,
+          date: today,
+          meals: newMeals as any,
+          calories_total: newCalories,
+        });
+      }
+
+      setHistory(prev => [result, ...prev].slice(0, 10));
+      toast.success(`${result.name} added to diary!`);
+      setResult(null);
+      setImage(null);
+    } catch {
+      toast.error("Failed to save to diary");
+    }
   };
 
   return (
@@ -70,7 +112,6 @@ export default function Scanner() {
             <span className="text-sm font-medium">Tap to scan food</span>
           </div>
         )}
-        {/* Corner brackets */}
         <div className="absolute top-4 left-4 w-8 h-8 border-l-2 border-t-2 border-fitflow-primary rounded-tl" />
         <div className="absolute top-4 right-4 w-8 h-8 border-r-2 border-t-2 border-fitflow-primary rounded-tr" />
         <div className="absolute bottom-4 left-4 w-8 h-8 border-l-2 border-b-2 border-fitflow-primary rounded-bl" />
@@ -108,17 +149,20 @@ export default function Scanner() {
         </GlassCard>
       )}
 
-      {/* History placeholder */}
-      <div>
-        <h2 className="label-style text-[10px] mb-3">RECENT SCANS</h2>
-        <div className="space-y-2">
-          {["Banana · 105 cal", "Rice Bowl · 380 cal", "Protein Shake · 220 cal"].map((item, i) => (
-            <GlassCard key={i} className="py-3">
-              <p className="text-sm text-foreground/60">{item}</p>
-            </GlassCard>
-          ))}
+      {/* History */}
+      {history.length > 0 && (
+        <div>
+          <h2 className="label-style text-[10px] mb-3">RECENT SCANS</h2>
+          <div className="space-y-2">
+            {history.map((item, i) => (
+              <GlassCard key={i} className="py-3 flex items-center justify-between">
+                <p className="text-sm text-foreground/60">{item.name}</p>
+                <span className="text-xs text-fitflow-accent">{item.calories} cal</span>
+              </GlassCard>
+            ))}
+          </div>
         </div>
-      </div>
+      )}
     </div>
   );
 }
