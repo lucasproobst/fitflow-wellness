@@ -11,7 +11,7 @@ export function AchievementBadges() {
   return (
     <div>
       <div className="flex items-center justify-between mb-3">
-        <h2 className="label-style text-[10px]">ACHIEVEMENTS</h2>
+        <h2 className="label-style text-[10px]">CONQUISTAS</h2>
         <span className="text-[10px] font-semibold text-foreground/40">
           {unlockedCount} / {ACHIEVEMENTS.length}
         </span>

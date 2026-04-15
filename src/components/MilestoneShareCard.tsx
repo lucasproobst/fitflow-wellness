@@ -30,7 +30,7 @@ export function MilestoneShareCard({ data, open, onClose }: Props) {
       const res = await fetch(dataUrl);
       return await res.blob();
     } catch {
-      toast.error("Failed to generate image");
+      toast.error("Falha ao gerar imagem");
       return null;
     } finally {
       setGenerating(false);
@@ -43,33 +43,32 @@ export function MilestoneShareCard({ data, open, onClose }: Props) {
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = "fitflow-milestone.png";
+    a.download = "fitflow-marco.png";
     a.click();
     URL.revokeObjectURL(url);
-    toast.success("Image saved!");
+    toast.success("Imagem salva!");
   };
 
   const handleShare = async () => {
     const blob = await generateImage();
     if (!blob) return;
-    const file = new File([blob], "fitflow-milestone.png", { type: "image/png" });
+    const file = new File([blob], "fitflow-marco.png", { type: "image/png" });
 
     if (navigator.share && navigator.canShare?.({ files: [file] })) {
       try {
         await navigator.share({
-          title: "My FitFlow Progress",
-          text: `I've lost ${data.weightLost.toFixed(1)} kg and completed ${data.workoutsCompleted} workouts! 💪`,
+          title: "Meu Progresso no FitFlow",
+          text: `Eu perdi ${data.weightLost.toFixed(1)} kg e completei ${data.workoutsCompleted} treinos! 💪`,
           files: [file],
         });
       } catch (err: any) {
-        if (err.name !== "AbortError") toast.error("Share cancelled");
+        if (err.name !== "AbortError") toast.error("Compartilhamento cancelado");
       }
     } else {
-      // Fallback: copy text to clipboard
       await navigator.clipboard.writeText(
-        `🔥 FitFlow Milestone!\n📉 ${data.weightLost.toFixed(1)} kg lost\n💪 ${data.workoutsCompleted} workouts\n🔥 ${data.streakDays}-day streak\n😴 ${data.avgSleep.toFixed(1)}h avg sleep`
+        `🔥 Marco FitFlow!\n📉 ${data.weightLost.toFixed(1)} kg perdidos\n💪 ${data.workoutsCompleted} treinos\n🔥 Sequência de ${data.streakDays} dias\n😴 ${data.avgSleep.toFixed(1)}h média de sono`
       );
-      toast.success("Milestone text copied to clipboard!");
+      toast.success("Texto do marco copiado!");
     }
   };
 
@@ -78,7 +77,6 @@ export function MilestoneShareCard({ data, open, onClose }: Props) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4" onClick={onClose}>
       <div className="w-full max-w-sm" onClick={e => e.stopPropagation()}>
-        {/* The card that gets captured */}
         <div
           ref={cardRef}
           className="rounded-2xl overflow-hidden"
@@ -87,32 +85,28 @@ export function MilestoneShareCard({ data, open, onClose }: Props) {
             padding: "32px 24px",
           }}
         >
-          {/* Header */}
           <div className="text-center mb-6">
             <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/10 mb-3">
               <Flame size={12} className="text-[#A8E063]" />
-              <span className="text-[10px] uppercase tracking-widest font-bold text-white/70">FitFlow Milestone</span>
+              <span className="text-[10px] uppercase tracking-widest font-bold text-white/70">Marco FitFlow</span>
             </div>
             {data.userName && (
-              <p className="text-white/50 text-xs mt-1">{data.userName}'s Journey</p>
+              <p className="text-white/50 text-xs mt-1">Jornada de {data.userName}</p>
             )}
           </div>
 
-          {/* Stats grid */}
           <div className="grid grid-cols-2 gap-3 mb-6">
-            <StatTile icon={<TrendingDown size={18} />} value={`${data.weightLost.toFixed(1)} kg`} label="Weight Lost" color="#0D9E75" />
-            <StatTile icon={<Flame size={18} />} value={`${data.streakDays} days`} label="Streak" color="#A8E063" />
-            <StatTile icon={<Dumbbell size={18} />} value={`${data.workoutsCompleted}`} label="Workouts" color="#0D9E75" />
-            <StatTile icon={<Moon size={18} />} value={`${data.avgSleep.toFixed(1)}h`} label="Avg Sleep" color="#A8E063" />
+            <StatTile icon={<TrendingDown size={18} />} value={`${data.weightLost.toFixed(1)} kg`} label="Peso Perdido" color="#0D9E75" />
+            <StatTile icon={<Flame size={18} />} value={`${data.streakDays} dias`} label="Sequência" color="#A8E063" />
+            <StatTile icon={<Dumbbell size={18} />} value={`${data.workoutsCompleted}`} label="Treinos" color="#0D9E75" />
+            <StatTile icon={<Moon size={18} />} value={`${data.avgSleep.toFixed(1)}h`} label="Média Sono" color="#A8E063" />
           </div>
 
-          {/* Footer */}
           <div className="text-center">
-            <p className="text-white/20 text-[10px] tracking-wider">FITFLOW • YOUR WELLNESS JOURNEY</p>
+            <p className="text-white/20 text-[10px] tracking-wider">FITFLOW • SUA JORNADA DE BEM-ESTAR</p>
           </div>
         </div>
 
-        {/* Actions */}
         <div className="flex gap-3 mt-4">
           <button
             onClick={handleShare}
@@ -120,7 +114,7 @@ export function MilestoneShareCard({ data, open, onClose }: Props) {
             className="flex-1 h-12 rounded-xl bg-fitflow-primary text-white text-sm font-semibold flex items-center justify-center gap-2 active:scale-95 transition-all disabled:opacity-50"
           >
             <Share2 size={16} />
-            Share
+            Compartilhar
           </button>
           <button
             onClick={handleDownload}
@@ -128,7 +122,7 @@ export function MilestoneShareCard({ data, open, onClose }: Props) {
             className="flex-1 h-12 rounded-xl bg-white/10 text-foreground text-sm font-semibold flex items-center justify-center gap-2 active:scale-95 transition-all disabled:opacity-50"
           >
             <Download size={16} />
-            Save
+            Salvar
           </button>
           <button
             onClick={onClose}

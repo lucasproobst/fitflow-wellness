@@ -38,13 +38,13 @@ export default function Install() {
           <div className="w-16 h-16 rounded-2xl bg-fitflow-primary/10 flex items-center justify-center mx-auto mb-4">
             <Check size={32} className="text-fitflow-primary" />
           </div>
-          <h1 className="text-2xl font-semibold text-foreground mb-2">You're all set!</h1>
-          <p className="text-sm text-foreground/50 mb-6">FitFlow is installed on your device.</p>
+          <h1 className="text-2xl font-semibold text-foreground mb-2">Tudo pronto!</h1>
+          <p className="text-sm text-foreground/50 mb-6">O FitFlow está instalado no seu dispositivo.</p>
           <Link
             to="/"
             className="inline-flex px-6 py-3 rounded-xl bg-fitflow-primary text-white text-sm font-semibold active:scale-95 transition-all"
           >
-            Go to Dashboard
+            Ir para o Início
           </Link>
         </div>
       </div>
@@ -56,9 +56,9 @@ export default function Install() {
       <div className="w-full max-w-sm">
         <div className="text-center mb-8">
           <img src="/icon-192.png" alt="FitFlow" className="w-20 h-20 rounded-2xl mx-auto mb-4" width={80} height={80} />
-          <h1 className="text-2xl font-semibold text-foreground mb-2">Install FitFlow</h1>
+          <h1 className="text-2xl font-semibold text-foreground mb-2">Instalar FitFlow</h1>
           <p className="text-sm text-foreground/50">
-            Add FitFlow to your home screen for the best experience with push notifications.
+            Adicione o FitFlow à sua tela inicial para a melhor experiência com notificações push.
           </p>
         </div>
 
@@ -68,18 +68,18 @@ export default function Install() {
             className="w-full h-14 rounded-xl bg-fitflow-primary text-white font-semibold text-sm flex items-center justify-center gap-2 active:scale-95 transition-all mb-4"
           >
             <Download size={18} />
-            Install Now
+            Instalar Agora
           </button>
         ) : (
           <GlassCard className="mb-4">
             <div className="flex items-start gap-3">
               <Smartphone size={20} className="text-fitflow-primary shrink-0 mt-0.5" />
               <div>
-                <p className="text-sm font-semibold text-foreground mb-2">How to install</p>
+                <p className="text-sm font-semibold text-foreground mb-2">Como instalar</p>
                 <div className="space-y-2 text-xs text-foreground/50">
-                  <p><strong className="text-foreground/70">iPhone:</strong> Tap the Share button → "Add to Home Screen"</p>
-                  <p><strong className="text-foreground/70">Android:</strong> Tap the browser menu (⋮) → "Install app" or "Add to Home Screen"</p>
-                  <p><strong className="text-foreground/70">Desktop:</strong> Look for the install icon in the address bar</p>
+                  <p><strong className="text-foreground/70">iPhone:</strong> Toque em Compartilhar → "Adicionar à Tela de Início"</p>
+                  <p><strong className="text-foreground/70">Android:</strong> Toque no menu do navegador (⋮) → "Instalar app" ou "Adicionar à tela inicial"</p>
+                  <p><strong className="text-foreground/70">Desktop:</strong> Procure o ícone de instalação na barra de endereço</p>
                 </div>
               </div>
             </div>
@@ -90,7 +90,7 @@ export default function Install() {
           to="/"
           className="block text-center text-sm text-foreground/40 hover:text-foreground/60 transition-colors"
         >
-          Skip for now
+          Pular por agora
         </Link>
       </div>
     </div>

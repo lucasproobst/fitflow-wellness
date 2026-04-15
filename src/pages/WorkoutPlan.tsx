@@ -6,7 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth-context";
 import { toast } from "sonner";
 
-const shortDays = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+const shortDays = ["Seg", "Ter", "Qua", "Qui", "Sex", "Sáb", "Dom"];
 
 interface Exercise {
   name: string;
@@ -66,9 +66,9 @@ export default function WorkoutPlan() {
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["workout-plan"] });
-      toast.success("Workout plan generated!");
+      toast.success("Plano de treino gerado!");
     },
-    onError: (err: any) => toast.error(err.message || "Failed to generate plan"),
+    onError: (err: any) => toast.error(err.message || "Falha ao gerar plano"),
   });
 
   const toggleSet = (key: string) => {
@@ -93,7 +93,7 @@ export default function WorkoutPlan() {
       date: new Date().toISOString().split("T")[0],
       exercises_completed: completed as any,
     });
-    toast.success("Workout complete! 💪");
+    toast.success("Treino concluído! 💪");
     setIsActive(false);
     setCompletedSets(new Set());
   };
@@ -104,9 +104,9 @@ export default function WorkoutPlan() {
     <div className="px-4 lg:px-8 py-6 max-w-4xl mx-auto">
       <div className="flex items-start justify-between gap-3 mb-6">
         <div className="min-w-0">
-          <h1 className="text-2xl font-semibold tracking-tight text-foreground">Workout</h1>
+          <h1 className="text-2xl font-semibold tracking-tight text-foreground">Treino</h1>
           <p className="text-sm text-foreground/50 truncate">
-            {currentDay ? `${currentDay.focus} · ${currentDay.exercises.length} exercises` : "Your weekly plan"}
+            {currentDay ? `${currentDay.focus} · ${currentDay.exercises.length} exercícios` : "Seu plano semanal"}
           </p>
         </div>
         <button
@@ -115,12 +115,12 @@ export default function WorkoutPlan() {
           className="flex items-center gap-2 px-4 py-2 rounded-full bg-fitflow-primary text-white text-xs font-semibold active:scale-95 transition-all disabled:opacity-50 shrink-0"
         >
           <RefreshCw size={14} className={generate.isPending ? "animate-spin" : ""} />
-          <span className="hidden sm:inline">{generate.isPending ? "Generating..." : planData ? "Regenerate" : "Generate Plan"}</span>
-          <span className="sm:hidden">{generate.isPending ? "..." : planData ? "New" : "Generate"}</span>
+          <span className="hidden sm:inline">{generate.isPending ? "Gerando..." : planData ? "Regenerar" : "Gerar Plano"}</span>
+          <span className="sm:hidden">{generate.isPending ? "..." : planData ? "Novo" : "Gerar"}</span>
         </button>
       </div>
 
-      {/* Day selector */}
+      {/* Seletor de dia */}
       <div className="flex gap-2 mb-6 overflow-x-auto pb-2 no-scrollbar">
         {shortDays.map((d, i) => (
           <button
@@ -135,7 +135,7 @@ export default function WorkoutPlan() {
         ))}
       </div>
 
-      {/* Loading */}
+      {/* Carregando */}
       {(isLoading || generate.isPending) && !planData && (
         <div className="space-y-3">
           {[1, 2, 3, 4].map(i => (
@@ -151,26 +151,26 @@ export default function WorkoutPlan() {
         </div>
       )}
 
-      {/* Empty state */}
+      {/* Estado vazio */}
       {!isLoading && !generate.isPending && !planData && (
         <GlassCard className="py-12 text-center">
-          <p className="text-foreground/40 text-sm mb-4">No workout plan yet</p>
+          <p className="text-foreground/40 text-sm mb-4">Nenhum plano de treino ainda</p>
           <button
             onClick={() => generate.mutate()}
             className="px-6 py-3 rounded-xl bg-fitflow-primary text-white text-sm font-semibold active:scale-95 transition-all"
           >
-            Generate Your Plan
+            Gerar Seu Plano
           </button>
         </GlassCard>
       )}
 
-      {/* Exercise list */}
+      {/* Lista de exercícios */}
       {currentDay && (
         <>
           <div className="space-y-3 mb-6">
             {currentDay.exercises.length === 0 ? (
               <GlassCard className="py-8 text-center">
-                <p className="text-foreground/40 text-sm">Rest day — recover and recharge 🧘</p>
+                <p className="text-foreground/40 text-sm">Dia de descanso — recupere e recarregue 🧘</p>
               </GlassCard>
             ) : (
               currentDay.exercises.map((ex, idx) => (
@@ -198,7 +198,7 @@ export default function WorkoutPlan() {
                           className="flex items-center gap-1 text-fitflow-primary text-[10px] font-medium"
                         >
                           <PlayCircle size={12} />
-                          Watch
+                          Assistir
                         </a>
                       </div>
                       {isActive && (
@@ -231,7 +231,7 @@ export default function WorkoutPlan() {
               onClick={() => isActive ? finishWorkout() : setIsActive(true)}
               className="w-full h-14 rounded-xl bg-fitflow-primary text-white font-semibold text-sm active:scale-95 transition-all"
             >
-              {isActive ? "Finish Workout" : "Start Workout"}
+              {isActive ? "Finalizar Treino" : "Iniciar Treino"}
             </button>
           )}
         </>

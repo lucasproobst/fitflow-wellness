@@ -8,27 +8,27 @@ import { Target, Dumbbell, Scale, Heart, ChevronRight, ChevronLeft } from "lucid
 import { toast } from "sonner";
 
 const goals = [
-  { id: "lose_weight", label: "Lose Weight", icon: Scale },
-  { id: "gain_muscle", label: "Gain Muscle", icon: Dumbbell },
-  { id: "maintain", label: "Maintain", icon: Target },
-  { id: "improve_health", label: "Improve Health", icon: Heart },
+  { id: "lose_weight", label: "Perder Peso", icon: Scale },
+  { id: "gain_muscle", label: "Ganhar Músculo", icon: Dumbbell },
+  { id: "maintain", label: "Manter", icon: Target },
+  { id: "improve_health", label: "Melhorar Saúde", icon: Heart },
 ];
 
 const foodCategories: Record<string, string[]> = {
-  Vegetables: ["Broccoli", "Spinach", "Lettuce", "Tomato", "Carrot", "Cucumber", "Onion", "Bell Pepper"],
-  Proteins: ["Chicken", "Beef", "Pork", "Fish", "Eggs", "Tofu", "Tuna", "Turkey"],
-  Grains: ["Rice", "Bread", "Pasta", "Oats", "Quinoa", "Corn"],
-  Fruits: ["Banana", "Apple", "Orange", "Berries", "Mango", "Grapes"],
-  Dairy: ["Milk", "Yogurt", "Cheese", "Butter"],
-  Legumes: ["Beans", "Lentils", "Chickpeas", "Peanuts"],
+  Vegetais: ["Brócolis", "Espinafre", "Alface", "Tomate", "Cenoura", "Pepino", "Cebola", "Pimentão"],
+  Proteínas: ["Frango", "Carne Bovina", "Porco", "Peixe", "Ovos", "Tofu", "Atum", "Peru"],
+  Grãos: ["Arroz", "Pão", "Macarrão", "Aveia", "Quinoa", "Milho"],
+  Frutas: ["Banana", "Maçã", "Laranja", "Frutas Vermelhas", "Manga", "Uva"],
+  Laticínios: ["Leite", "Iogurte", "Queijo", "Manteiga"],
+  Leguminosas: ["Feijão", "Lentilha", "Grão-de-bico", "Amendoim"],
 };
 
 const activityLevels = [
-  { id: "sedentary", label: "Sedentary" },
-  { id: "light", label: "Light" },
-  { id: "moderate", label: "Moderate" },
-  { id: "active", label: "Active" },
-  { id: "very_active", label: "Very Active" },
+  { id: "sedentary", label: "Sedentário" },
+  { id: "light", label: "Leve" },
+  { id: "moderate", label: "Moderado" },
+  { id: "active", label: "Ativo" },
+  { id: "very_active", label: "Muito Ativo" },
 ];
 
 export default function Onboarding() {
@@ -71,13 +71,13 @@ export default function Onboarding() {
       } as any);
       navigate("/");
     } catch {
-      toast.error("Failed to save profile");
+      toast.error("Falha ao salvar perfil");
     }
   };
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
-      {/* Progress */}
+      {/* Progresso */}
       <div className="px-6 pt-8 pb-4">
         <div className="flex gap-2">
           {[0, 1, 2].map(i => (
@@ -90,18 +90,18 @@ export default function Onboarding() {
           ))}
         </div>
         <h1 className="text-2xl font-semibold tracking-tight mt-6 text-foreground">
-          {step === 0 && "What's your goal?"}
-          {step === 1 && "Any food restrictions?"}
-          {step === 2 && "Your stats"}
+          {step === 0 && "Qual é seu objetivo?"}
+          {step === 1 && "Alguma restrição alimentar?"}
+          {step === 2 && "Suas informações"}
         </h1>
         <p className="text-sm text-foreground/50 mt-1">
-          {step === 0 && "Choose what best describes your fitness goal"}
-          {step === 1 && "Select foods you do NOT eat"}
-          {step === 2 && "Help us personalize your plan"}
+          {step === 0 && "Escolha o que melhor descreve seu objetivo fitness"}
+          {step === 1 && "Selecione alimentos que você NÃO come"}
+          {step === 2 && "Nos ajude a personalizar seu plano"}
         </p>
       </div>
 
-      {/* Content */}
+      {/* Conteúdo */}
       <div className="flex-1 px-6 pb-32 overflow-y-auto">
         <AnimatePresence mode="wait">
           <motion.div
@@ -156,10 +156,10 @@ export default function Onboarding() {
             {step === 2 && (
               <div className="space-y-4">
                 {[
-                  { label: "Height (cm)", value: height, set: setHeight, type: "number" },
-                  { label: "Weight (kg)", value: weight, set: setWeight, type: "number" },
-                  { label: "Age", value: age, set: setAge, type: "number" },
-                  { label: "Target Weight (kg)", value: targetWeight, set: setTargetWeight, type: "number" },
+                  { label: "Altura (cm)", value: height, set: setHeight, type: "number" },
+                  { label: "Peso (kg)", value: weight, set: setWeight, type: "number" },
+                  { label: "Idade", value: age, set: setAge, type: "number" },
+                  { label: "Peso Alvo (kg)", value: targetWeight, set: setTargetWeight, type: "number" },
                 ].map(f => (
                   <div key={f.label}>
                     <label className="label-style text-[10px] mb-1.5 block">{f.label}</label>
@@ -172,7 +172,7 @@ export default function Onboarding() {
                   </div>
                 ))}
                 <div>
-                  <label className="label-style text-[10px] mb-2 block">Activity Level</label>
+                  <label className="label-style text-[10px] mb-2 block">Nível de Atividade</label>
                   <div className="flex flex-wrap gap-2">
                     {activityLevels.map(a => (
                       <button
@@ -195,7 +195,7 @@ export default function Onboarding() {
         </AnimatePresence>
       </div>
 
-      {/* Bottom nav */}
+      {/* Navegação inferior */}
       <div className="fixed bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-background via-background to-transparent">
         <div className="flex gap-3">
           {step > 0 && (
@@ -211,7 +211,7 @@ export default function Onboarding() {
             onClick={() => (step < 2 ? setStep(s => s + 1) : handleFinish())}
             className="flex-1 h-14 rounded-xl bg-fitflow-primary text-white font-semibold text-sm flex items-center justify-center gap-2 disabled:opacity-40 active:scale-95 transition-all"
           >
-            {step < 2 ? "Continue" : updateProfile.isPending ? "Saving..." : "Get Started"}
+            {step < 2 ? "Continuar" : updateProfile.isPending ? "Salvando..." : "Começar"}
             {step < 2 && <ChevronRight size={16} />}
           </button>
         </div>

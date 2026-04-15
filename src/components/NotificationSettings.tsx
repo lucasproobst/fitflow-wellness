@@ -25,15 +25,15 @@ export function NotificationSettings() {
     setPermState(Notification.permission);
     if (granted) {
       setPrefs(p => ({ ...p, enabled: true }));
-      toast.success("Notifications enabled!");
+      toast.success("Notificações ativadas!");
     } else {
-      toast.error("Notification permission denied. Please enable in browser settings.");
+      toast.error("Permissão de notificação negada. Ative nas configurações do navegador.");
     }
   };
 
   const handleDisable = () => {
     setPrefs(p => ({ ...p, enabled: false }));
-    toast("Notifications turned off");
+    toast("Notificações desativadas");
   };
 
   if (!canNotify()) {
@@ -42,8 +42,8 @@ export function NotificationSettings() {
         <div className="flex items-center gap-3">
           <BellOff size={20} className="text-foreground/30" />
           <div>
-            <p className="text-sm font-semibold text-foreground">Notifications unavailable</p>
-            <p className="text-xs text-foreground/40">Your browser doesn't support notifications</p>
+            <p className="text-sm font-semibold text-foreground">Notificações indisponíveis</p>
+            <p className="text-xs text-foreground/40">Seu navegador não suporta notificações</p>
           </div>
         </div>
       </GlassCard>
@@ -56,9 +56,9 @@ export function NotificationSettings() {
         <div className="flex items-center gap-3">
           <Bell size={20} className="text-fitflow-primary" />
           <div>
-            <p className="text-sm font-semibold text-foreground">Reminders</p>
+            <p className="text-sm font-semibold text-foreground">Lembretes</p>
             <p className="text-xs text-foreground/40">
-              {prefs.enabled ? "Notifications active" : "Get reminded to log meals & work out"}
+              {prefs.enabled ? "Notificações ativas" : "Receba lembretes para registrar refeições e treinar"}
             </p>
           </div>
         </div>
@@ -67,14 +67,14 @@ export function NotificationSettings() {
             onClick={handleDisable}
             className="px-3 py-1.5 rounded-full border border-white/10 text-xs font-medium text-foreground/50 active:scale-95 transition-all"
           >
-            Turn off
+            Desativar
           </button>
         ) : (
           <button
             onClick={handleEnable}
             className="px-3 py-1.5 rounded-full bg-fitflow-primary text-white text-xs font-semibold active:scale-95 transition-all"
           >
-            Enable
+            Ativar
           </button>
         )}
       </div>
@@ -87,8 +87,8 @@ export function NotificationSettings() {
           >
             <div className="flex items-center gap-3">
               <Utensils size={16} className="text-foreground/40" />
-              <span className="text-sm text-foreground">Meal reminders</span>
-              <span className="text-[10px] text-foreground/30">8am, 12:30pm, 6:30pm</span>
+              <span className="text-sm text-foreground">Lembretes de refeição</span>
+              <span className="text-[10px] text-foreground/30">8h, 12h30, 18h30</span>
             </div>
             <div className={`w-5 h-5 rounded-md flex items-center justify-center ${
               prefs.mealReminders ? "bg-fitflow-primary" : "border border-white/10"
@@ -102,8 +102,8 @@ export function NotificationSettings() {
           >
             <div className="flex items-center gap-3">
               <Dumbbell size={16} className="text-foreground/40" />
-              <span className="text-sm text-foreground">Workout reminder</span>
-              <span className="text-[10px] text-foreground/30">5pm daily</span>
+              <span className="text-sm text-foreground">Lembrete de treino</span>
+              <span className="text-[10px] text-foreground/30">17h diariamente</span>
             </div>
             <div className={`w-5 h-5 rounded-md flex items-center justify-center ${
               prefs.workoutReminders ? "bg-fitflow-primary" : "border border-white/10"

@@ -6,7 +6,6 @@ import { useStreak } from "@/lib/use-tracking";
 import { supabase } from "@/integrations/supabase/client";
 import { Trophy, Lock } from "lucide-react";
 
-/** Fetch real progress numbers for each achievement category */
 function useAchievementProgress() {
   const { user } = useAuth();
   const { data: streakCount = 0 } = useStreak();
@@ -38,7 +37,6 @@ function useAchievementProgress() {
   });
 }
 
-/** Returns current / target for a given achievement key */
 function getProgress(key: string, stats: ReturnType<typeof useAchievementProgress>["data"]): { current: number; target: number } | null {
   if (!stats) return null;
   switch (key) {
@@ -68,30 +66,30 @@ export default function Achievements() {
   return (
     <div className="px-4 lg:px-8 py-6 max-w-4xl mx-auto">
       <div className="flex items-center justify-between mb-2">
-        <h1 className="text-2xl font-semibold tracking-tight text-foreground">Achievements</h1>
+        <h1 className="text-2xl font-semibold tracking-tight text-foreground">Conquistas</h1>
         <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-fitflow-primary/10">
           <Trophy size={14} className="text-fitflow-primary" />
           <span className="text-xs font-bold text-fitflow-primary">{unlockedCount} / {ACHIEVEMENTS.length}</span>
         </div>
       </div>
-      <p className="text-sm text-foreground/50 mb-6">Track your milestones and unlock badges</p>
+      <p className="text-sm text-foreground/50 mb-6">Acompanhe seus marcos e desbloqueie medalhas</p>
 
-      {/* Summary bar */}
+      {/* Barra de resumo */}
       <GlassCard className="mb-6">
         <div className="flex items-center gap-3 mb-3">
           <div className="text-2xl">🏅</div>
           <div>
             <p className="text-sm font-semibold text-foreground">
               {unlockedCount === 0
-                ? "Start your journey"
+                ? "Comece sua jornada"
                 : unlockedCount === ACHIEVEMENTS.length
-                ? "All badges unlocked! 🎉"
-                : `${ACHIEVEMENTS.length - unlockedCount} badge${ACHIEVEMENTS.length - unlockedCount !== 1 ? "s" : ""} remaining`}
+                ? "Todas as medalhas desbloqueadas! 🎉"
+                : `${ACHIEVEMENTS.length - unlockedCount} medalha${ACHIEVEMENTS.length - unlockedCount !== 1 ? "s" : ""} restante${ACHIEVEMENTS.length - unlockedCount !== 1 ? "s" : ""}`}
             </p>
             <p className="text-xs text-foreground/40">
               {unlockedCount > 0
-                ? `You've unlocked ${Math.round((unlockedCount / ACHIEVEMENTS.length) * 100)}% of all achievements`
-                : "Log meals, workouts, and weight to earn badges"}
+                ? `Você desbloqueou ${Math.round((unlockedCount / ACHIEVEMENTS.length) * 100)}% de todas as conquistas`
+                : "Registre refeições, treinos e peso para ganhar medalhas"}
             </p>
           </div>
         </div>
@@ -103,7 +101,7 @@ export default function Achievements() {
         </div>
       </GlassCard>
 
-      {/* Badge grid */}
+      {/* Grade de medalhas */}
       <div className="space-y-3">
         {ACHIEVEMENTS.map(a => {
           const isUnlocked = unlocked?.has(a.key);
@@ -117,26 +115,23 @@ export default function Achievements() {
               className={`transition-all ${isUnlocked ? "border-fitflow-primary/20" : "opacity-70"}`}
             >
               <div className="flex items-start gap-4">
-                {/* Icon */}
                 <div className={`w-14 h-14 rounded-xl flex items-center justify-center shrink-0 text-2xl ${
                   isUnlocked ? "bg-fitflow-primary/10" : "bg-white/5 grayscale"
                 }`}>
                   {isUnlocked ? a.icon : <Lock size={20} className="text-foreground/20" />}
                 </div>
 
-                {/* Content */}
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center justify-between gap-2 mb-1">
                     <p className="text-sm font-semibold text-foreground">{a.title}</p>
                     {isUnlocked && (
                       <span className="text-[10px] text-fitflow-primary font-medium shrink-0">
-                        ✓ Unlocked
+                        ✓ Desbloqueado
                       </span>
                     )}
                   </div>
                   <p className="text-xs text-foreground/50 mb-2">{a.description}</p>
 
-                  {/* Progress bar */}
                   {progress && (
                     <div>
                       <div className="flex items-center justify-between mb-1">
@@ -150,9 +145,7 @@ export default function Achievements() {
                       <div className="h-1.5 bg-white/5 rounded-full overflow-hidden">
                         <div
                           className={`h-full rounded-full transition-all duration-500 ${
-                            isUnlocked
-                              ? "bg-fitflow-primary"
-                              : "bg-foreground/15"
+                            isUnlocked ? "bg-fitflow-primary" : "bg-foreground/15"
                           }`}
                           style={{ width: `${pct}%` }}
                         />
@@ -160,10 +153,9 @@ export default function Achievements() {
                     </div>
                   )}
 
-                  {/* Unlock date */}
                   {isUnlocked && unlockedAt && (
                     <p className="text-[10px] text-foreground/20 mt-1.5">
-                      Earned {new Date(unlockedAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
+                      Conquistado em {new Date(unlockedAt).toLocaleDateString("pt-BR", { month: "short", day: "numeric", year: "numeric" })}
                     </p>
                   )}
                 </div>

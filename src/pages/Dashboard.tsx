@@ -28,7 +28,6 @@ export default function Dashboard() {
 
   const [showWeekly, setShowWeekly] = useState(false);
 
-  // Show weekly summary banner once per session if there's data
   useEffect(() => {
     if (weeklySummary && weeklySummary.daysLogged > 0) {
       const lastDismissed = sessionStorage.getItem("weekly-summary-dismissed");
@@ -46,14 +45,14 @@ export default function Dashboard() {
 
   return (
     <div className="px-4 lg:px-8 py-6 max-w-4xl mx-auto">
-      {/* Top bar */}
+      {/* Barra superior */}
       <div className="flex items-center justify-between mb-8">
         <div className="flex items-center gap-3 min-w-0">
           <div className="w-10 h-10 rounded-full bg-gradient-to-br from-fitflow-primary to-fitflow-accent flex items-center justify-center text-white text-sm font-semibold shrink-0">
             {initials}
           </div>
           <div className="min-w-0">
-            <p className="text-sm font-semibold text-foreground">Welcome back</p>
+            <p className="text-sm font-semibold text-foreground">Bem-vindo de volta</p>
             <p className="text-xs text-foreground/50 truncate">{user?.email}</p>
           </div>
         </div>
@@ -71,7 +70,7 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* Weekly Summary Notification */}
+      {/* Resumo semanal */}
       {showWeekly && weeklySummary && (
         <GlassCard className="mb-4 relative border-fitflow-primary/20">
           <button
@@ -82,7 +81,7 @@ export default function Dashboard() {
           </button>
           <div className="flex items-center gap-2 mb-3">
             <BarChart3 size={14} className="text-fitflow-primary" />
-            <h3 className="text-xs font-bold uppercase tracking-wider text-fitflow-primary">This Week</h3>
+            <h3 className="text-xs font-bold uppercase tracking-wider text-fitflow-primary">Esta Semana</h3>
           </div>
           <div className="grid grid-cols-3 gap-3">
             <div className="text-center">
@@ -90,14 +89,14 @@ export default function Dashboard() {
                 <Utensils size={12} className="text-foreground/40" />
               </div>
               <p className="text-lg font-bold text-foreground">{weeklySummary.avgCaloriesPerDay.toLocaleString()}</p>
-              <p className="text-[10px] text-foreground/40 uppercase tracking-wider">Avg cal/day</p>
+              <p className="text-[10px] text-foreground/40 uppercase tracking-wider">Méd cal/dia</p>
             </div>
             <div className="text-center">
               <div className="flex items-center justify-center gap-1 mb-1">
                 <Dumbbell size={12} className="text-foreground/40" />
               </div>
               <p className="text-lg font-bold text-foreground">{weeklySummary.workoutsCompleted}</p>
-              <p className="text-[10px] text-foreground/40 uppercase tracking-wider">Workouts</p>
+              <p className="text-[10px] text-foreground/40 uppercase tracking-wider">Treinos</p>
             </div>
             <div className="text-center">
               <div className="flex items-center justify-center gap-1 mb-1">
@@ -110,30 +109,30 @@ export default function Dashboard() {
                   ? `${weeklySummary.weightChange > 0 ? "+" : ""}${weeklySummary.weightChange.toFixed(1)}`
                   : "—"}
               </p>
-              <p className="text-[10px] text-foreground/40 uppercase tracking-wider">kg change</p>
+              <p className="text-[10px] text-foreground/40 uppercase tracking-wider">Variação kg</p>
             </div>
           </div>
           <p className="text-[10px] text-foreground/30 mt-3 text-center">
-            {weeklySummary.daysLogged} day{weeklySummary.daysLogged !== 1 ? "s" : ""} logged • {weeklySummary.totalCalories.toLocaleString()} total calories
+            {weeklySummary.daysLogged} dia{weeklySummary.daysLogged !== 1 ? "s" : ""} registrado{weeklySummary.daysLogged !== 1 ? "s" : ""} • {weeklySummary.totalCalories.toLocaleString()} calorias totais
           </p>
         </GlassCard>
       )}
 
-      {/* Calorie ring */}
+      {/* Anel de calorias */}
       <div className="flex justify-center mb-8">
         <CalorieRing consumed={consumed} target={calorieTarget} />
       </div>
 
       {/* Macros */}
       <GlassCard className="mb-4 space-y-3">
-        <MacroBar label="Protein" current={totalProtein} target={150} />
-        <MacroBar label="Carbs" current={totalCarbs} target={200} />
-        <MacroBar label="Fat" current={totalFat} target={60} />
+        <MacroBar label="Proteína" current={totalProtein} target={150} />
+        <MacroBar label="Carboidratos" current={totalCarbs} target={200} />
+        <MacroBar label="Gordura" current={totalFat} target={60} />
       </GlassCard>
 
       <div className="grid gap-4 lg:grid-cols-2">
         <GlassCard>
-          <h3 className="label-style text-[10px] mb-3">HYDRATION</h3>
+          <h3 className="label-style text-[10px] mb-3">HIDRATAÇÃO</h3>
           <WaterTracker
             glasses={waterGlasses}
             onAdd={() => addWater.mutate()}
@@ -148,8 +147,8 @@ export default function Dashboard() {
                   <Dumbbell size={18} className="text-fitflow-primary" />
                 </div>
                 <div>
-                  <p className="text-sm font-semibold text-foreground">Today's Workout</p>
-                  <p className="text-xs text-foreground/40">Upper Body · 6 exercises</p>
+                  <p className="text-sm font-semibold text-foreground">Treino de Hoje</p>
+                  <p className="text-xs text-foreground/40">Superior · 6 exercícios</p>
                 </div>
               </div>
               <ChevronRight size={16} className="text-foreground/30" />
@@ -162,9 +161,9 @@ export default function Dashboard() {
         <div className="flex items-center gap-3">
           <Flame size={24} className="text-orange-400" />
           <div>
-            <p className="text-lg font-semibold text-foreground">{streakCount} Day Streak</p>
+            <p className="text-lg font-semibold text-foreground">Sequência de {streakCount} Dia{streakCount !== 1 ? "s" : ""}</p>
             <p className="text-xs text-foreground/40">
-              {streakCount > 0 ? "Keep it up! You're on fire" : "Log meals & workouts to start your streak"}
+              {streakCount > 0 ? "Continue assim! Você está arrasando" : "Registre refeições e treinos para começar sua sequência"}
             </p>
           </div>
         </div>
