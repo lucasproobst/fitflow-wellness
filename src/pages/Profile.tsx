@@ -21,11 +21,11 @@ export default function Profile() {
       <h1 className="text-2xl font-semibold tracking-tight text-foreground mb-6">Profile</h1>
 
       <div className="flex items-center gap-4 mb-8">
-        <div className="w-16 h-16 rounded-full bg-gradient-to-br from-fitflow-primary to-fitflow-accent flex items-center justify-center text-white text-xl font-semibold">
+        <div className="w-16 h-16 rounded-full bg-gradient-to-br from-fitflow-primary to-fitflow-accent flex items-center justify-center text-white text-xl font-semibold shrink-0">
           {user?.email?.slice(0, 2).toUpperCase()}
         </div>
-        <div>
-          <p className="text-lg font-semibold text-foreground">{user?.email}</p>
+        <div className="min-w-0">
+          <p className="text-lg font-semibold text-foreground truncate">{user?.email}</p>
           <p className="text-sm text-foreground/40">Member</p>
         </div>
       </div>

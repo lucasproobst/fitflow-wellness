@@ -1,6 +1,6 @@
 import { ReactNode } from "react";
 import { NavLink, useLocation } from "react-router-dom";
-import { Home, Utensils, Dumbbell, Camera, TrendingUp, User, Settings, Moon, Sun, Plus } from "lucide-react";
+import { Home, Utensils, Dumbbell, Camera, TrendingUp, User, Moon, Sun, Plus } from "lucide-react";
 import { useTheme } from "@/lib/theme-context";
 import { useAuth } from "@/lib/auth-context";
 import { motion } from "framer-motion";
@@ -17,7 +17,6 @@ export default function AppLayout({ children }: { children: ReactNode }) {
   const { theme, toggle } = useTheme();
   const { user } = useAuth();
   const location = useLocation();
-  const initials = user?.email?.slice(0, 2).toUpperCase() || "FF";
 
   return (
     <div className="min-h-screen bg-background flex">
@@ -80,40 +79,42 @@ export default function AppLayout({ children }: { children: ReactNode }) {
       </aside>
 
       {/* Main area */}
-      <div className="flex-1 flex flex-col min-h-screen">
+      <div className="flex-1 flex flex-col min-h-screen w-0">
         <motion.main
           key={location.pathname}
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.15 }}
-          className="flex-1 pb-24 lg:pb-6"
+          className="flex-1 pb-28 lg:pb-6"
         >
           {children}
         </motion.main>
 
         {/* Mobile bottom tab bar */}
-        <nav className="lg:hidden fixed bottom-0 left-0 right-0 bg-background/90 backdrop-blur-lg border-t border-white/5 flex justify-around items-center h-16 safe-area-pb z-50">
-          {tabs.map(t => {
-            const active = t.to === "/" ? location.pathname === "/" : location.pathname.startsWith(t.to);
-            return (
-              <NavLink
-                key={t.to}
-                to={t.to}
-                className="flex flex-col items-center gap-0.5 min-w-[44px] min-h-[44px] justify-center"
-              >
-                <t.icon size={20} className={active ? "text-fitflow-primary" : "text-foreground/40"} />
-                <span className={`text-[10px] font-medium ${active ? "text-fitflow-primary" : "text-foreground/40"}`}>
-                  {t.label}
-                </span>
-              </NavLink>
-            );
-          })}
+        <nav className="lg:hidden fixed bottom-0 left-0 right-0 bg-background/90 backdrop-blur-lg border-t border-white/5 safe-bottom z-50">
+          <div className="flex justify-around items-center h-16">
+            {tabs.map(t => {
+              const active = t.to === "/" ? location.pathname === "/" : location.pathname.startsWith(t.to);
+              return (
+                <NavLink
+                  key={t.to}
+                  to={t.to}
+                  className="flex flex-col items-center gap-0.5 min-w-[44px] min-h-[44px] justify-center"
+                >
+                  <t.icon size={20} className={active ? "text-fitflow-primary" : "text-foreground/40"} />
+                  <span className={`text-[10px] font-medium ${active ? "text-fitflow-primary" : "text-foreground/40"}`}>
+                    {t.label}
+                  </span>
+                </NavLink>
+              );
+            })}
+          </div>
         </nav>
 
         {/* FAB */}
         <NavLink
           to="/diary"
-          className="lg:hidden fixed bottom-20 right-4 w-14 h-14 rounded-full bg-fitflow-primary flex items-center justify-center shadow-lg shadow-fitflow-primary/25 active:scale-95 transition-transform z-50"
+          className="lg:hidden fixed bottom-[calc(4.5rem+env(safe-area-inset-bottom,0px))] right-4 w-14 h-14 rounded-full bg-fitflow-primary flex items-center justify-center shadow-lg shadow-fitflow-primary/25 active:scale-95 transition-transform z-50"
         >
           <Plus size={24} className="text-white" />
         </NavLink>
