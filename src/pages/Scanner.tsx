@@ -138,6 +138,31 @@ export default function Scanner() {
         <input ref={fileRef} type="file" accept="image/*" onChange={handleFile} className="hidden" />
       </div>
 
+      {/* Alimento não encontrado */}
+      {notFound && !scanning && (
+        <GlassCard className="mb-4 border-orange-500/20">
+          <div className="flex flex-col items-center text-center py-2">
+            <div className="w-12 h-12 rounded-2xl bg-orange-500/10 flex items-center justify-center mb-3">
+              <AlertTriangle size={24} className="text-orange-400" />
+            </div>
+            <p className="text-sm font-semibold text-foreground mb-1">Alimento não identificado</p>
+            <p className="text-xs text-foreground/50 mb-4 max-w-[260px]">
+              Não conseguimos reconhecer o alimento na foto. Tente tirar outra foto com melhor iluminação e ângulo.
+            </p>
+            <button
+              onClick={() => {
+                resetScanner();
+                fileRef.current?.click();
+              }}
+              className="h-11 px-6 rounded-xl bg-fitflow-primary text-white font-semibold text-sm flex items-center gap-2 active:scale-95 transition-all"
+            >
+              <RotateCcw size={16} />
+              Escanear Novamente
+            </button>
+          </div>
+        </GlassCard>
+      )}
+
       {/* Resultado */}
       {result && (
         <GlassCard className="mb-4">
