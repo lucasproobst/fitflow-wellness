@@ -82,15 +82,19 @@ serve(async (req) => {
     if (swapDay && swapMealType && existingPlan) {
       // --- Swap single meal ---
       const currentMeal = existingPlan.days?.find((d: any) => d.day === swapDay)?.meals?.[swapMealType];
-      const swapPrompt = `You are a certified nutritionist. Replace ONLY the ${swapMealType} meal for ${swapDay}.
-All meal names and descriptions MUST be in Brazilian Portuguese.
-Rules:
-- Target ~${calorieTarget / 4} calories for this meal
-- Goal: ${goal.replace("_", " ")}
-- NEVER include these foods: ${restrictions.length > 0 ? restrictions.join(", ") : "none"}
-- Must be DIFFERENT from: "${currentMeal?.name || "unknown"}"
-- Realistic macros
-- Use the provided tool to return the single replacement meal`;
+      const mealTypePt: Record<string, string> = {
+        breakfast: "café da manhã", lunch: "almoço", dinner: "jantar", snack: "lanche", preworkout: "pré-treino",
+      };
+      const swapPrompt = `Você é um nutricionista certificado brasileiro. Substitua APENAS a refeição de ${mealTypePt[swapMealType] || swapMealType} para ${swapDay}.
+TUDO deve estar em português brasileiro — nome, descrição, ingredientes.
+Regras:
+- Meta de ~${Math.round(calorieTarget / 4)} calorias para esta refeição
+- Objetivo: ${goal.replace("_", " ")}
+- NUNCA inclua: ${restrictions.length > 0 ? restrictions.join(", ") : "nenhum"}
+- Deve ser DIFERENTE de: "${currentMeal?.name || "desconhecido"}"
+- Macros realistas
+- Use ingredientes comuns no Brasil
+- Use a ferramenta fornecida para retornar a refeição substituta`;
 
       const swapResp = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
         method: "POST",
@@ -102,7 +106,7 @@ Rules:
           model: "google/gemini-2.5-flash",
           messages: [
             { role: "system", content: swapPrompt },
-            { role: "user", content: `Generate a replacement ${swapMealType} meal for ${swapDay}.` },
+            { role: "user", content: `Gere uma refeição substituta de ${mealTypePt[swapMealType] || swapMealType} para ${swapDay}. Tudo em português brasileiro.` },
           ],
           tools: [{
             type: "function",
@@ -162,17 +166,30 @@ Rules:
     }
 
     // --- Full plan generation ---
-    const systemPrompt = `You are a certified nutritionist. Create a complete 7-day meal plan.
-All meal names and descriptions MUST be in Brazilian Portuguese.
-Rules:
-- Target ${calorieTarget} calories per day
-- Goal: ${goal.replace("_", " ")}
-- Activity level: ${activityLevel.replace("_", " ")}
-- Current weight: ${weight}kg, target: ${targetWeight}kg
-- NEVER include these foods (restrictions): ${restrictions.length > 0 ? restrictions.join(", ") : "none"}
-- Each meal must have realistic macros that add up correctly
-- Provide variety across the week
-- Use the provided tool to return the structured plan`;
+    const goalPt: Record<string, string> = {
+      lose_weight: "perder peso",
+      gain_muscle: "ganhar massa muscular",
+      maintain: "manter peso",
+    };
+    const activityPt: Record<string, string> = {
+      sedentary: "sedentário",
+      light: "leve",
+      moderate: "moderado",
+      active: "muito ativo",
+    };
+
+    const systemPrompt = `Você é um nutricionista certificado brasileiro. Crie um plano alimentar completo de 7 dias.
+TODAS as informações DEVEM estar em português brasileiro — nomes das refeições, descrições, ingredientes.
+Regras:
+- Meta de ${calorieTarget} calorias por dia
+- Objetivo: ${goalPt[goal] || goal}
+- Nível de atividade: ${activityPt[activityLevel] || activityLevel}
+- Peso atual: ${weight}kg, meta: ${targetWeight}kg
+- NUNCA inclua estes alimentos (restrições): ${restrictions.length > 0 ? restrictions.join(", ") : "nenhuma"}
+- Cada refeição deve ter macros realistas que somam corretamente
+- Forneça variedade ao longo da semana
+- Use ingredientes comuns no Brasil
+- Use a ferramenta fornecida para retornar o plano estruturado`;
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
@@ -184,7 +201,7 @@ Rules:
         model: "google/gemini-2.5-flash",
         messages: [
           { role: "system", content: systemPrompt },
-          { role: "user", content: "Generate my personalized 7-day meal plan for this week." },
+          { role: "user", content: "Gere meu plano alimentar personalizado de 7 dias para esta semana. Tudo em português brasileiro." },
         ],
         tools: [
           {
