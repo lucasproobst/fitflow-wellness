@@ -69,9 +69,9 @@ export function useUpsertDailyLog() {
         .maybeSingle();
 
       if (existing) {
-        const merged: Record<string, unknown> = {};
+        const merged: any = {};
         if (updates.meals !== undefined) {
-          merged.meals = updates.meals as unknown as any;
+          merged.meals = updates.meals;
           merged.calories_total = updates.meals.reduce((s, m) => s + m.calories, 0);
         }
         if (updates.water_glasses !== undefined) merged.water_glasses = updates.water_glasses;
