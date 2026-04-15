@@ -5,19 +5,25 @@ import { WaterTracker } from "@/components/WaterTracker";
 import { useProfile } from "@/lib/use-profile";
 import { useAuth } from "@/lib/auth-context";
 import { useTheme } from "@/lib/theme-context";
+import { useDailyLog, useAddWater } from "@/lib/use-tracking";
 import { Flame, Sun, Moon, Dumbbell, ChevronRight } from "lucide-react";
 import { Link } from "react-router-dom";
-import { useState } from "react";
 
 export default function Dashboard() {
   const { user } = useAuth();
   const { data: profile } = useProfile();
   const { theme, toggle } = useTheme();
-  const [waterGlasses, setWaterGlasses] = useState(3);
+  const { data: dailyLog } = useDailyLog();
+  const addWater = useAddWater();
   const initials = user?.email?.slice(0, 2).toUpperCase() || "FF";
 
   const calorieTarget = profile?.goal === "lose_weight" ? 1800 : profile?.goal === "gain_muscle" ? 2600 : 2200;
-  const consumed = 1240;
+  const consumed = dailyLog?.calories_total || 0;
+  const meals = dailyLog?.meals || [];
+  const waterGlasses = dailyLog?.water_glasses || 0;
+  const totalProtein = meals.reduce((s, m) => s + (m.protein || 0), 0);
+  const totalCarbs = meals.reduce((s, m) => s + (m.carbs || 0), 0);
+  const totalFat = meals.reduce((s, m) => s + (m.fat || 0), 0);
 
   return (
     <div className="px-4 lg:px-8 py-6 max-w-4xl mx-auto">
@@ -53,16 +59,18 @@ export default function Dashboard() {
 
       {/* Macros */}
       <GlassCard className="mb-4 space-y-3">
-        <MacroBar label="Protein" current={68} target={150} />
-        <MacroBar label="Carbs" current={120} target={200} />
-        <MacroBar label="Fat" current={35} target={60} />
+        <MacroBar label="Protein" current={totalProtein} target={150} />
+        <MacroBar label="Carbs" current={totalCarbs} target={200} />
+        <MacroBar label="Fat" current={totalFat} target={60} />
       </GlassCard>
 
-      {/* Water + Workout in grid on desktop */}
       <div className="grid gap-4 lg:grid-cols-2">
         <GlassCard>
           <h3 className="label-style text-[10px] mb-3">HYDRATION</h3>
-          <WaterTracker glasses={waterGlasses} onAdd={() => setWaterGlasses(g => g + 1)} />
+          <WaterTracker
+            glasses={waterGlasses}
+            onAdd={() => addWater.mutate()}
+          />
         </GlassCard>
 
         <Link to="/workout">
@@ -83,7 +91,6 @@ export default function Dashboard() {
         </Link>
       </div>
 
-      {/* Streak */}
       <GlassCard className="mt-4">
         <div className="flex items-center gap-3">
           <Flame size={24} className="text-orange-400" />

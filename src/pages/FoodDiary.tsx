@@ -3,9 +3,11 @@ import { GlassCard } from "@/components/GlassCard";
 import { CalorieRing } from "@/components/CalorieRing";
 import { MacroBar } from "@/components/MacroBar";
 import { WaterTracker } from "@/components/WaterTracker";
-import { Search, Plus, X } from "lucide-react";
+import { useDailyLog, useUpsertDailyLog, useAddWater, DailyLogMeal } from "@/lib/use-tracking";
+import { Search, Plus } from "lucide-react";
+import { toast } from "sonner";
 
-const commonFoods = [
+const commonFoods: DailyLogMeal[] = [
   { name: "Chicken Breast (100g)", calories: 165, protein: 31, carbs: 0, fat: 3.6 },
   { name: "Brown Rice (1 cup)", calories: 216, protein: 5, carbs: 45, fat: 1.8 },
   { name: "Banana", calories: 105, protein: 1.3, carbs: 27, fat: 0.4 },
@@ -18,27 +20,43 @@ const commonFoods = [
   { name: "Almonds (28g)", calories: 164, protein: 6, carbs: 6, fat: 14 },
   { name: "Sweet Potato (medium)", calories: 103, protein: 2.3, carbs: 24, fat: 0.1 },
   { name: "Broccoli (1 cup)", calories: 55, protein: 3.7, carbs: 11, fat: 0.6 },
+  { name: "Tuna (100g)", calories: 130, protein: 29, carbs: 0, fat: 0.6 },
+  { name: "Whole Wheat Bread (1 slice)", calories: 81, protein: 4, carbs: 14, fat: 1.1 },
+  { name: "Cottage Cheese (1 cup)", calories: 206, protein: 28, carbs: 6, fat: 9 },
+  { name: "Quinoa (1 cup cooked)", calories: 222, protein: 8, carbs: 39, fat: 3.5 },
+  { name: "Peanut Butter (2 tbsp)", calories: 188, protein: 7, carbs: 7, fat: 16 },
+  { name: "Milk 2% (1 cup)", calories: 122, protein: 8, carbs: 12, fat: 5 },
+  { name: "Turkey Breast (100g)", calories: 135, protein: 30, carbs: 0, fat: 1 },
+  { name: "Blueberries (1 cup)", calories: 85, protein: 1.1, carbs: 21, fat: 0.5 },
+  { name: "Spinach (1 cup raw)", calories: 7, protein: 0.9, carbs: 1.1, fat: 0.1 },
+  { name: "Orange", calories: 62, protein: 1.2, carbs: 15, fat: 0.2 },
+  { name: "Tofu (100g)", calories: 76, protein: 8, carbs: 1.9, fat: 4.8 },
+  { name: "Pasta (1 cup cooked)", calories: 220, protein: 8, carbs: 43, fat: 1.3 },
+  { name: "White Rice (1 cup)", calories: 206, protein: 4.3, carbs: 45, fat: 0.4 },
 ];
 
 export default function FoodDiary() {
   const [search, setSearch] = useState("");
-  const [waterGlasses, setWaterGlasses] = useState(4);
-  const [loggedMeals, setLoggedMeals] = useState([
-    { name: "Oatmeal with Berries", calories: 280, protein: 12, carbs: 45, fat: 6 },
-    { name: "Grilled Chicken Salad", calories: 420, protein: 35, carbs: 18, fat: 22 },
-  ]);
+  const { data: dailyLog } = useDailyLog();
+  const upsert = useUpsertDailyLog();
+  const addWater = useAddWater();
 
-  const totalCals = loggedMeals.reduce((s, m) => s + m.calories, 0);
-  const totalProtein = loggedMeals.reduce((s, m) => s + m.protein, 0);
-  const totalCarbs = loggedMeals.reduce((s, m) => s + m.carbs, 0);
-  const totalFat = loggedMeals.reduce((s, m) => s + m.fat, 0);
+  const meals = dailyLog?.meals || [];
+  const waterGlasses = dailyLog?.water_glasses || 0;
+  const totalCals = meals.reduce((s, m) => s + m.calories, 0);
+  const totalProtein = meals.reduce((s, m) => s + (m.protein || 0), 0);
+  const totalCarbs = meals.reduce((s, m) => s + (m.carbs || 0), 0);
+  const totalFat = meals.reduce((s, m) => s + (m.fat || 0), 0);
 
   const filtered = search
     ? commonFoods.filter(f => f.name.toLowerCase().includes(search.toLowerCase()))
     : [];
 
-  const addFood = (food: typeof commonFoods[0]) => {
-    setLoggedMeals(prev => [...prev, food]);
+  const addFood = (food: DailyLogMeal) => {
+    const newMeals = [...meals, food];
+    upsert.mutate({ meals: newMeals }, {
+      onSuccess: () => toast.success(`${food.name} added`),
+    });
     setSearch("");
   };
 
@@ -58,7 +76,7 @@ export default function FoodDiary() {
 
       <GlassCard className="mb-4">
         <h3 className="label-style text-[10px] mb-3">HYDRATION</h3>
-        <WaterTracker glasses={waterGlasses} onAdd={() => setWaterGlasses(g => g + 1)} />
+        <WaterTracker glasses={waterGlasses} onAdd={() => addWater.mutate()} />
       </GlassCard>
 
       {/* Quick add */}
@@ -94,19 +112,25 @@ export default function FoodDiary() {
         )}
       </div>
 
-      {/* Logged meals */}
       <h2 className="label-style text-[10px] mb-3">TODAY'S MEALS</h2>
-      <div className="space-y-2">
-        {loggedMeals.map((meal, i) => (
-          <GlassCard key={i} className="py-3 flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-foreground">{meal.name}</p>
-              <p className="text-xs text-foreground/40">P:{meal.protein}g · C:{meal.carbs}g · F:{meal.fat}g</p>
-            </div>
-            <span className="text-sm font-semibold text-fitflow-accent">{meal.calories}</span>
-          </GlassCard>
-        ))}
-      </div>
+      {meals.length === 0 ? (
+        <GlassCard className="py-8 text-center">
+          <p className="text-sm text-foreground/40">No meals logged today</p>
+          <p className="text-xs text-foreground/30 mt-1">Search above or use the scanner</p>
+        </GlassCard>
+      ) : (
+        <div className="space-y-2">
+          {meals.map((meal, i) => (
+            <GlassCard key={i} className="py-3 flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-foreground">{meal.name}</p>
+                <p className="text-xs text-foreground/40">P:{meal.protein}g · C:{meal.carbs}g · F:{meal.fat}g</p>
+              </div>
+              <span className="text-sm font-semibold text-fitflow-accent">{meal.calories}</span>
+            </GlassCard>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
