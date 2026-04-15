@@ -102,6 +102,19 @@ export default function AppLayout({ children }: { children: ReactNode }) {
 
       {/* Área principal */}
       <div className="flex-1 flex flex-col min-h-screen w-0">
+        {/* Mobile header */}
+        <header className="lg:hidden flex items-center justify-between px-4 h-12 border-b border-white/5 sticky top-0 bg-background/90 backdrop-blur-lg z-40">
+          <h1 className="text-base font-semibold tracking-tight text-foreground">
+            Fit<span className="text-fitflow-primary">Flow</span>
+          </h1>
+          <NavLink
+            to="/profile"
+            className="w-9 h-9 rounded-full bg-gradient-to-br from-fitflow-primary to-fitflow-accent flex items-center justify-center active:scale-90 transition-transform"
+          >
+            <User size={16} className="text-white" />
+          </NavLink>
+        </header>
+
         <motion.main
           key={location.pathname}
           initial={{ opacity: 0 }}
