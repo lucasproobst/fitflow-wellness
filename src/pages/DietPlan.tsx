@@ -11,7 +11,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 
 const dayNames = ["Segunda", "Terça", "Quarta", "Quinta", "Sexta", "Sábado", "Domingo"];
 const shortDays = ["Seg", "Ter", "Qua", "Qui", "Sex", "Sáb", "Dom"];
-const mealTypes = ["breakfast", "lunch", "dinner", "snack", "preworkout"] as const;
+const mealTypes = ["breakfast", "lunch", "snack", "dinner", "preworkout"] as const;
 const mealTypeLabels: Record<string, string> = {
   breakfast: "CAFÉ DA MANHÃ",
   lunch: "ALMOÇO",
