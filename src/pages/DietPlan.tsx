@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect, useCallback } from "react";
+import { useState, useMemo, useEffect, useCallback, useRef } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { RefreshCw, Shuffle, Heart, ChevronRight, X, Clock, ChefHat, Lightbulb } from "lucide-react";
 import { RecipeShareCard } from "@/components/RecipeShareCard";
@@ -80,6 +80,7 @@ export default function DietPlan() {
   const [recipes, setRecipes] = useState<Recipe[]>([]);
   const [loadingRecipes, setLoadingRecipes] = useState(false);
   const [expandedRecipe, setExpandedRecipe] = useState<number | null>(null);
+  const recipesCache = useRef<Record<number, Recipe[]>>({});
   const { user } = useAuth();
   const qc = useQueryClient();
 
@@ -107,6 +108,7 @@ export default function DietPlan() {
       return data as MealPlanData;
     },
     onSuccess: () => {
+      recipesCache.current = {};
       qc.invalidateQueries({ queryKey: ["meal-plan"] });
       toast.success("Plano alimentar gerado!");
     },
@@ -192,6 +194,16 @@ export default function DietPlan() {
 
   const handleViewRecipes = async () => {
     if (!currentDay?.meals) return;
+
+    // Check cache first
+    const cached = recipesCache.current[selectedDay];
+    if (cached && cached.length > 0) {
+      setRecipes(cached);
+      setExpandedRecipe(0);
+      setRecipesOpen(true);
+      return;
+    }
+
     setRecipesOpen(true);
     setLoadingRecipes(true);
     setRecipes([]);
@@ -212,7 +224,9 @@ export default function DietPlan() {
       });
       if (error) throw error;
       if (data?.error) throw new Error(data.error);
-      setRecipes(data.recipes || []);
+      const result = data.recipes || [];
+      recipesCache.current[selectedDay] = result;
+      setRecipes(result);
       setExpandedRecipe(0);
     } catch (err: any) {
       toast.error(err.message || "Falha ao gerar receitas");
