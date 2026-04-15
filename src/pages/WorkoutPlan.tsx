@@ -302,6 +302,46 @@ export default function WorkoutPlan() {
           )}
         </>
       )}
+      {/* Video Modal */}
+      <AnimatePresence>
+        {videoExercise && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4"
+            onClick={() => setVideoExercise(null)}
+          >
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              transition={{ type: "spring", damping: 25, stiffness: 300 }}
+              className="relative w-full max-w-2xl rounded-2xl overflow-hidden bg-[#16181f] border border-white/[0.06]"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="flex items-center justify-between px-4 py-3 border-b border-white/[0.06]">
+                <p className="text-sm font-semibold text-white truncate">{videoExercise}</p>
+                <button
+                  onClick={() => setVideoExercise(null)}
+                  className="p-1.5 rounded-lg hover:bg-white/[0.06] text-white/40 hover:text-white/70 transition-colors"
+                >
+                  <X size={16} />
+                </button>
+              </div>
+              <div className="aspect-video w-full">
+                <iframe
+                  src={`https://www.youtube.com/embed?listType=search&list=${encodeURIComponent(videoExercise + " exercício forma correta")}`}
+                  className="w-full h-full"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowFullScreen
+                  title={videoExercise}
+                />
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
