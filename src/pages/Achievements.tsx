@@ -1,10 +1,13 @@
+import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { GlassCard } from "@/components/GlassCard";
 import { ACHIEVEMENTS, useAchievements } from "@/lib/use-achievements";
 import { useAuth } from "@/lib/auth-context";
 import { useStreak } from "@/lib/use-tracking";
+import { useProfile } from "@/lib/use-profile";
 import { supabase } from "@/integrations/supabase/client";
-import { Trophy, Lock } from "lucide-react";
+import { Trophy, Lock, Share2 } from "lucide-react";
+import { AchievementShareCard } from "@/components/AchievementShareCard";
 
 function useAchievementProgress() {
   const { user } = useAuth();
