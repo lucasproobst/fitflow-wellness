@@ -108,6 +108,7 @@ export default function DietPlan() {
       return data as MealPlanData;
     },
     onSuccess: () => {
+      recipesCache.current = {};
       qc.invalidateQueries({ queryKey: ["meal-plan"] });
       toast.success("Plano alimentar gerado!");
     },
