@@ -51,31 +51,39 @@ serve(async (req) => {
     const activity = profile.activity_level || "moderate";
 
     const goalDescriptions: Record<string, string> = {
-      lose_weight: "fat loss with higher rep ranges, HIIT-style circuits, and active recovery",
-      gain_muscle: "hypertrophy with progressive overload, compound lifts, 3-4 sets of 8-12 reps",
-      maintain: "balanced fitness maintenance with moderate volume",
-      improve_health: "general health with a mix of strength, cardio, and flexibility",
+      lose_weight: "perda de gordura com séries mais altas, circuitos HIIT e recuperação ativa",
+      gain_muscle: "hipertrofia com sobrecarga progressiva, exercícios compostos, 3-4 séries de 8-12 repetições",
+      maintain: "manutenção equilibrada com volume moderado",
+      improve_health: "saúde geral com mistura de força, cardio e flexibilidade",
     };
 
     const activityAdjust: Record<string, string> = {
-      sedentary: "3 workout days, lower intensity, more recovery days",
-      light: "4 workout days, moderate intensity",
-      moderate: "5 workout days, good intensity mix",
-      active: "5-6 workout days, higher volume",
-      very_active: "6 workout days, high volume and intensity",
+      sedentary: "3 dias de treino, intensidade menor, mais dias de descanso",
+      light: "4 dias de treino, intensidade moderada",
+      moderate: "5 dias de treino, boa mistura de intensidade",
+      active: "5-6 dias de treino, volume mais alto",
+      very_active: "6 dias de treino, alto volume e intensidade",
     };
 
-    const systemPrompt = `You are an elite personal trainer. Create a complete 7-day workout plan.
-All exercise names, focus areas, muscle groups, and difficulty levels MUST be in Brazilian Portuguese.
-Rules:
-- Goal: ${goal.replace("_", " ")} — ${goalDescriptions[goal] || goalDescriptions.maintain}
-- Activity level: ${activity.replace("_", " ")} — ${activityAdjust[activity] || activityAdjust.moderate}
-- Include rest days appropriate for the activity level
-- Each exercise needs: name, sets, reps (or seconds for timed exercises), target muscle group, difficulty level
-- Muscle groups in Portuguese: Peito, Costas, Ombros, Braços, Pernas, Core, Corpo Inteiro, Cardio
-- Difficulty in Portuguese: Iniciante, Intermediário, Avançado
-- Rest days should have "Descanso" or "Recuperação Ativa" as the focus
-- Use the provided tool to return the structured plan`;
+    const goalPt: Record<string, string> = {
+      lose_weight: "perder peso",
+      gain_muscle: "ganhar massa muscular",
+      maintain: "manter forma física",
+      improve_health: "melhorar saúde",
+    };
+
+    const systemPrompt = `Você é um personal trainer de elite brasileiro. Crie um plano de treino completo de 7 dias.
+TUDO deve estar em português brasileiro — nomes dos exercícios, foco do dia, grupos musculares, nível de dificuldade.
+Regras:
+- Objetivo: ${goalPt[goal] || goal} — ${goalDescriptions[goal] || goalDescriptions.maintain}
+- Nível de atividade: ${activity} — ${activityAdjust[activity] || activityAdjust.moderate}
+- Inclua dias de descanso apropriados para o nível de atividade
+- Cada exercício precisa de: nome (em português), séries, repetições (ou segundos para exercícios cronometrados), grupo muscular alvo, nível de dificuldade
+- Grupos musculares em português: Peito, Costas, Ombros, Bíceps, Tríceps, Pernas, Glúteos, Core, Corpo Inteiro, Cardio
+- Dificuldade em português: Iniciante, Intermediário, Avançado
+- Dias de descanso devem ter "Descanso" ou "Recuperação Ativa" como foco
+- Use nomes de exercícios em português (ex: Supino Reto, Agachamento, Remada Curvada, Desenvolvimento, Rosca Direta, etc.)
+- Use a ferramenta fornecida para retornar o plano estruturado`;
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
@@ -87,7 +95,7 @@ Rules:
         model: "google/gemini-3-flash-preview",
         messages: [
           { role: "system", content: systemPrompt },
-          { role: "user", content: "Generate my personalized 7-day workout plan." },
+          { role: "user", content: "Gere meu plano de treino personalizado de 7 dias. Tudo em português brasileiro." },
         ],
         tools: [
           {
@@ -103,18 +111,18 @@ Rules:
                     items: {
                       type: "object",
                       properties: {
-                        day: { type: "string", enum: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"] },
-                        focus: { type: "string", description: "e.g. Upper Body, Legs, Rest Day, HIIT" },
+                        day: { type: "string", enum: ["Segunda", "Terça", "Quarta", "Quinta", "Sexta", "Sábado", "Domingo"] },
+                        focus: { type: "string", description: "Ex: Superior, Inferior, Descanso, HIIT, Corpo Inteiro — em português" },
                         exercises: {
                           type: "array",
                           items: {
                             type: "object",
                             properties: {
-                              name: { type: "string" },
+                              name: { type: "string", description: "Nome do exercício em português" },
                               sets: { type: "number" },
-                              reps: { type: "number", description: "Reps or seconds for timed exercises" },
-                              muscle_group: { type: "string" },
-                              difficulty: { type: "string", enum: ["Beginner", "Intermediate", "Advanced"] },
+                              reps: { type: "number", description: "Repetições ou segundos para exercícios cronometrados" },
+                              muscle_group: { type: "string", description: "Grupo muscular em português" },
+                              difficulty: { type: "string", enum: ["Iniciante", "Intermediário", "Avançado"] },
                             },
                             required: ["name", "sets", "reps", "muscle_group", "difficulty"],
                           },
