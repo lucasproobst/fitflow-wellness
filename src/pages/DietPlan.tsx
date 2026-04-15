@@ -84,21 +84,24 @@ export default function DietPlan() {
   const { user } = useAuth();
   const qc = useQueryClient();
 
-  const { data: planData, isLoading } = useQuery({
+  const { data: planRow, isLoading } = useQuery({
     queryKey: ["meal-plan", user?.id],
     enabled: !!user,
     queryFn: async () => {
       const weekStart = getWeekStart();
       const { data, error } = await supabase
         .from("meal_plans")
-        .select("plan_data")
+        .select("id, plan_data")
         .eq("user_id", user!.id)
         .eq("week_start", weekStart)
         .maybeSingle();
       if (error) throw error;
-      return (data?.plan_data as unknown) as MealPlanData | null;
+      return data;
     },
   });
+
+  const planData = planRow ? (planRow.plan_data as unknown as MealPlanData) : null;
+  const mealPlanId = planRow?.id;
 
   const generate = useMutation({
     mutationFn: async () => {
