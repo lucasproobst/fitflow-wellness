@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { PlayCircle, Check, RefreshCw } from "lucide-react";
+import { PlayCircle, Check, RefreshCw, X } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth-context";
 import { toast } from "sonner";
@@ -38,6 +38,7 @@ export default function WorkoutPlan() {
   const [selectedDay, setSelectedDay] = useState(0);
   const [completedSets, setCompletedSets] = useState<Set<string>>(new Set());
   const [isActive, setIsActive] = useState(false);
+  const [videoExercise, setVideoExercise] = useState<string | null>(null);
   const { user } = useAuth();
   const qc = useQueryClient();
 
@@ -246,15 +247,13 @@ export default function WorkoutPlan() {
 
                           <div className="flex items-center gap-3 mt-2">
                             <span className="text-[10px] uppercase font-bold text-white/30 tracking-wider">{ex.muscle_group}</span>
-                            <a
-                              href={`https://www.youtube.com/results?search_query=${encodeURIComponent(ex.name + " exercício forma correta")}`}
-                              target="_blank"
-                              rel="noopener noreferrer"
+                            <button
+                              onClick={() => setVideoExercise(ex.name)}
                               className="flex items-center gap-1 text-white/25 hover:text-white/50 text-[10px] font-medium transition-colors"
                             >
                               <PlayCircle size={11} />
                               Assistir
-                            </a>
+                            </button>
                           </div>
 
                           {/* Set tracker */}
@@ -303,6 +302,46 @@ export default function WorkoutPlan() {
           )}
         </>
       )}
+      {/* Video Modal */}
+      <AnimatePresence>
+        {videoExercise && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4"
+            onClick={() => setVideoExercise(null)}
+          >
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              transition={{ type: "spring", damping: 25, stiffness: 300 }}
+              className="relative w-full max-w-2xl rounded-2xl overflow-hidden bg-[#16181f] border border-white/[0.06]"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="flex items-center justify-between px-4 py-3 border-b border-white/[0.06]">
+                <p className="text-sm font-semibold text-white truncate">{videoExercise}</p>
+                <button
+                  onClick={() => setVideoExercise(null)}
+                  className="p-1.5 rounded-lg hover:bg-white/[0.06] text-white/40 hover:text-white/70 transition-colors"
+                >
+                  <X size={16} />
+                </button>
+              </div>
+              <div className="aspect-video w-full">
+                <iframe
+                  src={`https://www.youtube.com/embed?listType=search&list=${encodeURIComponent(videoExercise + " exercício forma correta")}`}
+                  className="w-full h-full"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowFullScreen
+                  title={videoExercise}
+                />
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
