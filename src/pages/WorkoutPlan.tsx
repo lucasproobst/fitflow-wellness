@@ -1,6 +1,6 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { PlayCircle, Check, RefreshCw, X } from "lucide-react";
+import { PlayCircle, Check, RefreshCw, X, Lock, CheckCircle2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth-context";
 import { toast } from "sonner";
@@ -34,6 +34,19 @@ function getWeekStart() {
   return monday.toISOString().split("T")[0];
 }
 
+/** Returns array of date strings (YYYY-MM-DD) for Mon–Sun of current week */
+function getWeekDates(): string[] {
+  const today = new Date();
+  const dow = today.getDay();
+  const monday = new Date(today);
+  monday.setDate(today.getDate() - ((dow + 6) % 7));
+  return Array.from({ length: 7 }, (_, i) => {
+    const d = new Date(monday);
+    d.setDate(monday.getDate() + i);
+    return d.toISOString().split("T")[0];
+  });
+}
+
 export default function WorkoutPlan() {
   const [selectedDay, setSelectedDay] = useState(0);
   const [completedSets, setCompletedSets] = useState<Set<string>>(new Set());
@@ -41,6 +54,45 @@ export default function WorkoutPlan() {
   const [videoExercise, setVideoExercise] = useState<string | null>(null);
   const { user } = useAuth();
   const qc = useQueryClient();
+
+  const weekDates = useMemo(() => getWeekDates(), []);
+
+  // Fetch workout sessions for this week
+  const { data: weekSessions } = useQuery({
+    queryKey: ["workout-sessions-week", user?.id],
+    enabled: !!user,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("workout_sessions")
+        .select("date")
+        .eq("user_id", user!.id)
+        .gte("date", weekDates[0])
+        .lte("date", weekDates[6]);
+      if (error) throw error;
+      return data?.map((s) => s.date) ?? [];
+    },
+  });
+
+  // Set of completed day indices (0=Mon ... 6=Sun)
+  const completedDays = useMemo(() => {
+    const set = new Set<number>();
+    if (!weekSessions) return set;
+    weekSessions.forEach((dateStr) => {
+      const idx = weekDates.indexOf(dateStr);
+      if (idx !== -1) set.add(idx);
+    });
+    return set;
+  }, [weekSessions, weekDates]);
+
+  // Check if Mon–Sat all done → week complete, unlock all
+  const weekComplete = useMemo(() => {
+    for (let i = 0; i < 6; i++) {
+      if (!completedDays.has(i)) return false;
+    }
+    return true;
+  }, [completedDays]);
+
+  const isDayCompleted = (dayIdx: number) => !weekComplete && completedDays.has(dayIdx);
 
   const { data: planData, isLoading } = useQuery({
     queryKey: ["workout-plan", user?.id],
@@ -73,7 +125,7 @@ export default function WorkoutPlan() {
   });
 
   const toggleSet = (key: string) => {
-    setCompletedSets(prev => {
+    setCompletedSets((prev) => {
       const next = new Set(prev);
       next.has(key) ? next.delete(key) : next.add(key);
       return next;
@@ -91,21 +143,24 @@ export default function WorkoutPlan() {
     }));
     await supabase.from("workout_sessions").insert({
       user_id: user.id,
-      date: new Date().toISOString().split("T")[0],
+      date: weekDates[selectedDay],
       exercises_completed: completed as any,
     });
     toast.success("Treino concluído! 💪");
     setIsActive(false);
     setCompletedSets(new Set());
+    qc.invalidateQueries({ queryKey: ["workout-sessions-week"] });
   };
 
   const currentDay = planData?.days?.[selectedDay];
+  const dayLocked = isDayCompleted(selectedDay);
 
   const totalExercises = currentDay?.exercises?.length ?? 0;
-  const completedCount = currentDay?.exercises?.reduce((acc, _, idx) => {
-    const allDone = Array.from({ length: _.sets }).every((__, s) => completedSets.has(`${idx}-${s}`));
-    return acc + (allDone ? 1 : 0);
-  }, 0) ?? 0;
+  const completedCount =
+    currentDay?.exercises?.reduce((acc, _, idx) => {
+      const allDone = Array.from({ length: _.sets }).every((__, s) => completedSets.has(`${idx}-${s}`));
+      return acc + (allDone ? 1 : 0);
+    }, 0) ?? 0;
 
   return (
     <div className="px-4 lg:px-8 py-6 max-w-4xl mx-auto">
@@ -128,27 +183,61 @@ export default function WorkoutPlan() {
         </button>
       </div>
 
+      {/* Week progress */}
+      {planData && (
+        <div className="mb-4 flex items-center gap-2">
+          <span className="text-[10px] uppercase font-bold text-white/25 tracking-wider">Semana</span>
+          <div className="flex-1 h-1 rounded-full bg-white/[0.06] overflow-hidden">
+            <motion.div
+              className="h-full bg-[#22c55e] rounded-full"
+              animate={{ width: `${(completedDays.size / 6) * 100}%` }}
+              transition={{ duration: 0.4 }}
+            />
+          </div>
+          <span className="text-[10px] text-white/30 font-medium tabular-nums">{Math.min(completedDays.size, 6)}/6</span>
+          {weekComplete && (
+            <motion.span
+              initial={{ scale: 0 }}
+              animate={{ scale: 1 }}
+              className="text-[10px] text-[#22c55e] font-bold"
+            >
+              ✓ Completa!
+            </motion.span>
+          )}
+        </div>
+      )}
+
       {/* Day selector */}
       <div className="flex gap-2 mb-6 overflow-x-auto pb-2 no-scrollbar">
-        {shortDays.map((d, i) => (
-          <button
-            key={d}
-            onClick={() => { setSelectedDay(i); setIsActive(false); setCompletedSets(new Set()); }}
-            className={`px-4 py-2 rounded-full text-xs font-semibold whitespace-nowrap transition-all active:scale-95 ${
-              selectedDay === i
-                ? "bg-[#22c55e] text-white"
-                : "border border-white/[0.06] text-white/40 hover:bg-white/[0.03]"
-            }`}
-          >
-            {d}
-          </button>
-        ))}
+        {shortDays.map((d, i) => {
+          const done = isDayCompleted(i);
+          return (
+            <button
+              key={d}
+              onClick={() => { setSelectedDay(i); setIsActive(false); setCompletedSets(new Set()); }}
+              className={`relative px-4 py-2 rounded-full text-xs font-semibold whitespace-nowrap transition-all active:scale-95 ${
+                selectedDay === i
+                  ? done
+                    ? "bg-[#22c55e]/20 text-[#22c55e] border border-[#22c55e]/30"
+                    : "bg-[#22c55e] text-white"
+                  : done
+                    ? "border border-[#22c55e]/20 text-[#22c55e]/60"
+                    : "border border-white/[0.06] text-white/40 hover:bg-white/[0.03]"
+              }`}
+            >
+              <span className="flex items-center gap-1.5">
+                {done && <CheckCircle2 size={12} />}
+                {d}
+              </span>
+            </button>
+          );
+        })}
       </div>
 
       {/* Loading skeleton */}
       {(isLoading || generate.isPending) && !planData && (
         <div className="space-y-3">
-          {[1, 2, 3, 4].map(i => (
+          {[1, 2, 3, 4].map((i) => (
             <div key={i} className="rounded-2xl bg-[#16181f] border border-white/[0.06] p-4 flex gap-3">
               <div className="w-14 h-14 rounded-xl bg-white/[0.04] animate-pulse" />
               <div className="flex-1 space-y-2">
@@ -177,8 +266,23 @@ export default function WorkoutPlan() {
       {/* Exercises */}
       {currentDay && (
         <>
+          {/* Day completed banner */}
+          {dayLocked && (
+            <motion.div
+              initial={{ opacity: 0, y: -8 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="mb-4 rounded-xl bg-[#22c55e]/[0.08] border border-[#22c55e]/20 px-4 py-3 flex items-center gap-3"
+            >
+              <CheckCircle2 size={18} className="text-[#22c55e] shrink-0" />
+              <div>
+                <p className="text-sm font-semibold text-[#22c55e]">Treino concluído!</p>
+                <p className="text-xs text-white/30 mt-0.5">Você já treinou neste dia. Descanse e volte amanhã 💪</p>
+              </div>
+            </motion.div>
+          )}
+
           {/* Progress indicator when active */}
-          {isActive && totalExercises > 0 && (
+          {isActive && !dayLocked && totalExercises > 0 && (
             <div className="mb-4 flex items-center gap-3">
               <div className="flex-1 h-1 rounded-full bg-white/[0.06] overflow-hidden">
                 <motion.div
@@ -188,7 +292,9 @@ export default function WorkoutPlan() {
                   transition={{ duration: 0.4 }}
                 />
               </div>
-              <span className="text-xs text-white/40 font-medium tabular-nums">{completedCount}/{totalExercises}</span>
+              <span className="text-xs text-white/40 font-medium tabular-nums">
+                {completedCount}/{totalExercises}
+              </span>
             </div>
           )}
 
@@ -199,7 +305,7 @@ export default function WorkoutPlan() {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -8 }}
               transition={{ duration: 0.2 }}
-              className="space-y-3 mb-6"
+              className={`space-y-3 mb-6 ${dayLocked ? "opacity-50 pointer-events-none select-none" : ""}`}
             >
               {currentDay.exercises.length === 0 ? (
                 <div className="rounded-2xl bg-[#16181f] border border-white/[0.06] py-10 text-center">
@@ -217,17 +323,24 @@ export default function WorkoutPlan() {
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ duration: 0.25, delay: idx * 0.04 }}
                       className={`rounded-2xl border transition-all duration-300 ${
-                        allDone && isActive
-                          ? "bg-[#22c55e]/[0.06] border-[#22c55e]/20"
-                          : "bg-[#16181f] border-white/[0.06]"
+                        dayLocked
+                          ? "bg-[#22c55e]/[0.04] border-[#22c55e]/10"
+                          : allDone && isActive
+                            ? "bg-[#22c55e]/[0.06] border-[#22c55e]/20"
+                            : "bg-[#16181f] border-white/[0.06]"
                       } p-4`}
                     >
                       <div className="flex gap-3">
-                        {/* Number */}
-                        <div className={`w-14 h-14 rounded-xl flex items-center justify-center shrink-0 transition-colors ${
-                          allDone && isActive ? "bg-[#22c55e]/10" : "bg-white/[0.03]"
-                        }`}>
-                          {allDone && isActive ? (
+                        <div
+                          className={`w-14 h-14 rounded-xl flex items-center justify-center shrink-0 transition-colors ${
+                            dayLocked
+                              ? "bg-[#22c55e]/10"
+                              : allDone && isActive
+                                ? "bg-[#22c55e]/10"
+                                : "bg-white/[0.03]"
+                          }`}
+                        >
+                          {dayLocked || (allDone && isActive) ? (
                             <Check size={20} className="text-[#22c55e]" />
                           ) : (
                             <span className="text-lg font-bold text-white/[0.08]">{idx + 1}</span>
@@ -238,26 +351,28 @@ export default function WorkoutPlan() {
                           <div className="flex items-start justify-between gap-2">
                             <div>
                               <p className="text-sm font-semibold text-white">{ex.name}</p>
-                              <p className="text-xs text-white/35 mt-0.5">{ex.sets} × {ex.reps} reps</p>
+                              <p className="text-xs text-white/35 mt-0.5">
+                                {ex.sets} × {ex.reps} reps
+                              </p>
                             </div>
-                            <span className="text-[10px] uppercase font-bold text-white/25 tracking-wider">
-                              {ex.difficulty}
-                            </span>
+                            <span className="text-[10px] uppercase font-bold text-white/25 tracking-wider">{ex.difficulty}</span>
                           </div>
 
                           <div className="flex items-center gap-3 mt-2">
                             <span className="text-[10px] uppercase font-bold text-white/30 tracking-wider">{ex.muscle_group}</span>
-                            <button
-                              onClick={() => setVideoExercise(ex.name)}
-                              className="flex items-center gap-1 text-white/25 hover:text-white/50 text-[10px] font-medium transition-colors"
-                            >
-                              <PlayCircle size={11} />
-                              Assistir
-                            </button>
+                            {!dayLocked && (
+                              <button
+                                onClick={() => setVideoExercise(ex.name)}
+                                className="flex items-center gap-1 text-white/25 hover:text-white/50 text-[10px] font-medium transition-colors pointer-events-auto"
+                              >
+                                <PlayCircle size={11} />
+                                Assistir
+                              </button>
+                            )}
                           </div>
 
                           {/* Set tracker */}
-                          {isActive && (
+                          {isActive && !dayLocked && (
                             <div className="flex gap-2 mt-3">
                               {Array.from({ length: ex.sets }).map((_, s) => {
                                 const key = `${idx}-${s}`;
@@ -289,19 +404,25 @@ export default function WorkoutPlan() {
 
           {/* Bottom CTA */}
           {currentDay.exercises.length > 0 && (
-            <button
-              onClick={() => isActive ? finishWorkout() : setIsActive(true)}
-              className={`w-full h-14 rounded-xl font-semibold text-sm active:scale-[0.98] transition-all ${
-                isActive
-                  ? "bg-white text-[#0f1117]"
-                  : "bg-[#22c55e] text-white"
-              }`}
-            >
-              {isActive ? "Finalizar Treino" : "Iniciar Treino"}
-            </button>
+            dayLocked ? (
+              <div className="w-full h-14 rounded-xl bg-white/[0.04] border border-white/[0.06] flex items-center justify-center gap-2 text-white/25 text-sm font-semibold">
+                <Lock size={16} />
+                Treino do dia concluído
+              </div>
+            ) : (
+              <button
+                onClick={() => (isActive ? finishWorkout() : setIsActive(true))}
+                className={`w-full h-14 rounded-xl font-semibold text-sm active:scale-[0.98] transition-all ${
+                  isActive ? "bg-white text-[#0f1117]" : "bg-[#22c55e] text-white"
+                }`}
+              >
+                {isActive ? "Finalizar Treino" : "Iniciar Treino"}
+              </button>
+            )
           )}
         </>
       )}
+
       {/* Video Modal */}
       <AnimatePresence>
         {videoExercise && (
