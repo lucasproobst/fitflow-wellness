@@ -1,21 +1,27 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { GlassCard } from "@/components/GlassCard";
 import { LineChart, Line, XAxis, YAxis, ResponsiveContainer, Tooltip } from "recharts";
 import { Moon, AlertTriangle } from "lucide-react";
-
-const sleepData = [
-  { date: "Mon", hours: 7.5, weight: 82.0 },
-  { date: "Tue", hours: 6.0, weight: 82.1 },
-  { date: "Wed", hours: 5.5, weight: 82.3 },
-  { date: "Thu", hours: 8.0, weight: 82.0 },
-  { date: "Fri", hours: 7.0, weight: 81.8 },
-  { date: "Sat", hours: 8.5, weight: 81.5 },
-  { date: "Sun", hours: 7.0, weight: 81.3 },
-];
+import { useSleepLogs, useLogSleep } from "@/lib/use-tracking";
+import { toast } from "sonner";
 
 export default function SleepTracker() {
   const [hours, setHours] = useState(7);
+  const { data: sleepLogs } = useSleepLogs();
+  const logSleep = useLogSleep();
   const lowSleep = hours < 6;
+
+  const chartData = (sleepLogs || []).map(l => ({
+    date: new Date(l.date).toLocaleDateString("en-US", { weekday: "short" }),
+    hours: l.hours_slept,
+  }));
+
+  const handleLog = () => {
+    logSleep.mutate(hours, {
+      onSuccess: () => toast.success(`${hours}h sleep logged`),
+      onError: () => toast.error("Failed to log sleep"),
+    });
+  };
 
   return (
     <div className="px-4 lg:px-8 py-6 max-w-4xl mx-auto">
@@ -42,10 +48,16 @@ export default function SleepTracker() {
             <span className="text-lg font-semibold text-foreground">{hours}h</span>
             <span>12h</span>
           </div>
+          <button
+            onClick={handleLog}
+            disabled={logSleep.isPending}
+            className="w-full h-11 rounded-xl bg-fitflow-primary text-white text-sm font-semibold active:scale-95 transition-all disabled:opacity-50"
+          >
+            {logSleep.isPending ? "Saving..." : "Log Sleep"}
+          </button>
         </div>
       </GlassCard>
 
-      {/* Low sleep warning */}
       {lowSleep && (
         <GlassCard className="mb-4 !border-yellow-500/20 !bg-yellow-500/5">
           <div className="flex items-start gap-3">
@@ -60,21 +72,20 @@ export default function SleepTracker() {
         </GlassCard>
       )}
 
-      {/* Chart */}
       <GlassCard>
-        <h2 className="label-style text-[10px] mb-4">SLEEP VS WEIGHT</h2>
-        <ResponsiveContainer width="100%" height={200}>
-          <LineChart data={sleepData}>
-            <XAxis dataKey="date" tick={{ fontSize: 10, fill: "rgba(255,255,255,0.3)" }} axisLine={false} tickLine={false} />
-            <YAxis yAxisId="hours" tick={{ fontSize: 10, fill: "rgba(255,255,255,0.3)" }} axisLine={false} tickLine={false} width={30} />
-            <YAxis yAxisId="weight" orientation="right" domain={["auto", "auto"]} tick={{ fontSize: 10, fill: "rgba(255,255,255,0.3)" }} axisLine={false} tickLine={false} width={30} />
-            <Tooltip
-              contentStyle={{ background: "rgba(15,17,23,0.9)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 12, fontSize: 12 }}
-            />
-            <Line yAxisId="hours" type="monotone" dataKey="hours" stroke="#A8E063" strokeWidth={2} dot={{ fill: "#A8E063", r: 3 }} name="Sleep (h)" />
-            <Line yAxisId="weight" type="monotone" dataKey="weight" stroke="#0D9E75" strokeWidth={2} dot={{ fill: "#0D9E75", r: 3 }} name="Weight (kg)" />
-          </LineChart>
-        </ResponsiveContainer>
+        <h2 className="label-style text-[10px] mb-4">SLEEP HISTORY</h2>
+        {chartData.length > 0 ? (
+          <ResponsiveContainer width="100%" height={200}>
+            <LineChart data={chartData}>
+              <XAxis dataKey="date" tick={{ fontSize: 10, fill: "rgba(255,255,255,0.3)" }} axisLine={false} tickLine={false} />
+              <YAxis domain={[0, 12]} tick={{ fontSize: 10, fill: "rgba(255,255,255,0.3)" }} axisLine={false} tickLine={false} width={30} />
+              <Tooltip contentStyle={{ background: "rgba(15,17,23,0.9)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 12, fontSize: 12 }} />
+              <Line type="monotone" dataKey="hours" stroke="#A8E063" strokeWidth={2} dot={{ fill: "#A8E063", r: 3 }} name="Sleep (h)" />
+            </LineChart>
+          </ResponsiveContainer>
+        ) : (
+          <p className="text-center text-sm text-foreground/30 py-8">Start logging sleep to see your history</p>
+        )}
       </GlassCard>
     </div>
   );
