@@ -5,6 +5,7 @@ import { useAuth } from "@/lib/auth-context";
 export interface UserProfile {
   id: string;
   user_id: string;
+  display_name: string | null;
   goal: string | null;
   food_restrictions: string[];
   height_cm: number | null;
