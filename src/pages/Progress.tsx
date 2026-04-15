@@ -48,7 +48,6 @@ function useUploadPhoto() {
       const ext = file.name.split(".").pop() || "jpg";
       const path = `${user!.id}/${type}/${Date.now()}.${ext}`;
 
-      // Delete old photos in this folder first
       const { data: existing } = await supabase.storage
         .from("progress-photos")
         .list(`${user!.id}/${type}`);
@@ -65,9 +64,9 @@ function useUploadPhoto() {
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["progress-photos"] });
-      toast.success("Photo uploaded!");
+      toast.success("Foto enviada!");
     },
-    onError: (err: any) => toast.error(err.message || "Upload failed"),
+    onError: (err: any) => toast.error(err.message || "Falha no envio"),
   });
 }
 
@@ -84,7 +83,6 @@ export default function Progress() {
   const uploadPhoto = useUploadPhoto();
   const { data: streakCount = 0 } = useStreak();
 
-  // Compute workout count from last 90 days
   const { data: workoutCount = 0 } = useQuery({
     queryKey: ["workout-count", user?.id],
     enabled: !!user,
@@ -100,7 +98,6 @@ export default function Progress() {
     },
   });
 
-  // Avg sleep from last 30 days
   const { data: avgSleep = 0 } = useQuery({
     queryKey: ["avg-sleep", user?.id],
     enabled: !!user,
@@ -126,7 +123,7 @@ export default function Progress() {
   const afterRef = useRef<HTMLInputElement>(null);
 
   const chartData = (weightLogs || []).map(l => ({
-    date: new Date(l.date).toLocaleDateString("en-US", { month: "short", day: "numeric" }),
+    date: new Date(l.date).toLocaleDateString("pt-BR", { month: "short", day: "numeric" }),
     weight: l.weight_kg,
   }));
 
@@ -137,9 +134,9 @@ export default function Progress() {
 
   const handleLogWeight = () => {
     const w = parseFloat(newWeight);
-    if (!w || w < 20 || w > 300) { toast.error("Enter a valid weight"); return; }
+    if (!w || w < 20 || w > 300) { toast.error("Insira um peso válido"); return; }
     logWeight.mutate(w, {
-      onSuccess: () => { toast.success("Weight logged"); setNewWeight(""); },
+      onSuccess: () => { toast.success("Peso registrado"); setNewWeight(""); },
     });
   };
 
@@ -148,31 +145,31 @@ export default function Progress() {
     if (waist) m.waist_cm = parseFloat(waist);
     if (chest) m.chest_cm = parseFloat(chest);
     if (arms) m.arms_cm = parseFloat(arms);
-    if (Object.keys(m).length === 0) { toast.error("Enter at least one measurement"); return; }
+    if (Object.keys(m).length === 0) { toast.error("Insira pelo menos uma medida"); return; }
     logMeasurements.mutate(m, {
-      onSuccess: () => { toast.success("Measurements saved"); setWaist(""); setChest(""); setArms(""); },
+      onSuccess: () => { toast.success("Medidas salvas"); setWaist(""); setChest(""); setArms(""); },
     });
   };
 
   const handleFileChange = (type: PhotoType) => (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    if (!file.type.startsWith("image/")) { toast.error("Please select an image"); return; }
-    if (file.size > 5 * 1024 * 1024) { toast.error("Max 5MB"); return; }
+    if (!file.type.startsWith("image/")) { toast.error("Selecione uma imagem"); return; }
+    if (file.size > 5 * 1024 * 1024) { toast.error("Máximo 5MB"); return; }
     uploadPhoto.mutate({ file, type });
   };
 
   return (
     <div className="px-4 lg:px-8 py-6 max-w-4xl mx-auto">
-      <h1 className="text-2xl font-semibold tracking-tight text-foreground mb-6">Progress</h1>
+      <h1 className="text-2xl font-semibold tracking-tight text-foreground mb-6">Progresso</h1>
 
-      {/* Share Milestone */}
+      {/* Compartilhar Marco */}
       <button
         onClick={() => setShareOpen(true)}
         className="w-full mb-4 h-12 rounded-xl bg-gradient-to-r from-fitflow-primary to-fitflow-accent text-white text-sm font-semibold flex items-center justify-center gap-2 active:scale-95 transition-all"
       >
         <Share2 size={16} />
-        Share Your Milestone
+        Compartilhar Seu Marco
       </button>
 
       <MilestoneShareCard
@@ -187,15 +184,15 @@ export default function Progress() {
         }}
       />
 
-      {/* Log weight */}
+      {/* Registrar peso */}
       <GlassCard className="mb-4">
-        <h2 className="label-style text-[10px] mb-3">LOG TODAY'S WEIGHT</h2>
+        <h2 className="label-style text-[10px] mb-3">REGISTRAR PESO DE HOJE</h2>
         <div className="flex gap-2">
           <input
             type="number"
             value={newWeight}
             onChange={e => setNewWeight(e.target.value)}
-            placeholder="e.g. 75.5"
+            placeholder="ex: 75,5"
             className="flex-1 h-11 px-4 rounded-xl bg-white/5 border border-white/10 text-foreground text-sm focus:outline-none focus:border-fitflow-primary transition-colors placeholder:text-foreground/20"
           />
           <button
@@ -203,16 +200,16 @@ export default function Progress() {
             disabled={logWeight.isPending}
             className="px-5 h-11 rounded-xl bg-fitflow-primary text-white text-sm font-semibold active:scale-95 transition-all disabled:opacity-50"
           >
-            {logWeight.isPending ? "..." : "Log"}
+            {logWeight.isPending ? "..." : "Salvar"}
           </button>
         </div>
       </GlassCard>
 
-      {/* Weight Chart */}
+      {/* Gráfico de Peso */}
       <GlassCard className="mb-4">
         <div className="flex items-center justify-between mb-4">
           <div>
-            <h2 className="text-sm font-semibold text-foreground">Weight</h2>
+            <h2 className="text-sm font-semibold text-foreground">Peso</h2>
             {diff !== 0 && (
               <div className="flex items-center gap-1.5 mt-1">
                 <TrendIcon size={14} className="text-fitflow-primary" />
@@ -246,18 +243,18 @@ export default function Progress() {
             </LineChart>
           </ResponsiveContainer>
         ) : (
-          <p className="text-center text-sm text-foreground/30 py-8">Log your weight to see progress</p>
+          <p className="text-center text-sm text-foreground/30 py-8">Registre seu peso para ver o progresso</p>
         )}
       </GlassCard>
 
-      {/* Measurements */}
+      {/* Medidas */}
       <GlassCard className="mb-4">
-        <h2 className="label-style text-[10px] mb-4">BODY MEASUREMENTS</h2>
+        <h2 className="label-style text-[10px] mb-4">MEDIDAS CORPORAIS</h2>
         <div className="grid grid-cols-3 gap-3 mb-3">
           {[
-            { label: "Waist", value: waist, set: setWaist },
-            { label: "Chest", value: chest, set: setChest },
-            { label: "Arms", value: arms, set: setArms },
+            { label: "Cintura", value: waist, set: setWaist },
+            { label: "Peito", value: chest, set: setChest },
+            { label: "Braços", value: arms, set: setArms },
           ].map(m => (
             <div key={m.label}>
               <label className="text-[10px] text-foreground/40 block mb-1">{m.label} (cm)</label>
@@ -276,16 +273,17 @@ export default function Progress() {
           disabled={logMeasurements.isPending}
           className="w-full h-10 rounded-xl bg-fitflow-primary/10 text-fitflow-primary text-sm font-semibold active:scale-95 transition-all disabled:opacity-50"
         >
-          Save Measurements
+          Salvar Medidas
         </button>
       </GlassCard>
 
-      {/* Before/After Photos */}
+      {/* Fotos Antes/Depois */}
       <GlassCard className="mb-4">
-        <h2 className="label-style text-[10px] mb-4">BEFORE & AFTER</h2>
+        <h2 className="label-style text-[10px] mb-4">ANTES & DEPOIS</h2>
         <div className="grid grid-cols-2 gap-3">
           {(["before", "after"] as PhotoType[]).map(type => {
             const url = photos?.[type];
+            const label = type === "before" ? "Antes" : "Depois";
             return (
               <div key={type} className="relative">
                 <input
@@ -300,12 +298,12 @@ export default function Progress() {
                     className="aspect-[3/4] rounded-xl overflow-hidden relative group cursor-pointer"
                     onClick={() => (type === "before" ? beforeRef : afterRef).current?.click()}
                   >
-                    <img src={url} alt={type} className="w-full h-full object-cover" />
+                    <img src={url} alt={label} className="w-full h-full object-cover" />
                     <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
                       <Camera size={24} className="text-white" />
                     </div>
                     <span className="absolute top-2 left-2 px-2 py-0.5 rounded-full bg-black/60 text-[10px] uppercase tracking-wider font-semibold text-white">
-                      {type}
+                      {label}
                     </span>
                   </div>
                 ) : (
@@ -316,8 +314,8 @@ export default function Progress() {
                     }`}
                   >
                     <Upload size={20} className="text-foreground/20" />
-                    <span className="text-xs text-foreground/30 capitalize">{type}</span>
-                    <span className="text-[10px] text-foreground/20">Tap to upload</span>
+                    <span className="text-xs text-foreground/30">{label}</span>
+                    <span className="text-[10px] text-foreground/20">Toque para enviar</span>
                   </div>
                 )}
               </div>

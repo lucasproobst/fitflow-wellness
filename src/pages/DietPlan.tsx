@@ -6,10 +6,11 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth-context";
 import { toast } from "sonner";
 
-const dayNames = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
-const shortDays = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+const dayNames = ["Segunda", "Terça", "Quarta", "Quinta", "Sexta", "Sábado", "Domingo"];
+const shortDays = ["Seg", "Ter", "Qua", "Qui", "Sex", "Sáb", "Dom"];
 const mealTypes = ["breakfast", "lunch", "dinner", "snack"] as const;
-const filters = ["All", "Vegetarian", "Low-carb", "High-protein"];
+const mealTypeLabels: Record<string, string> = { breakfast: "CAFÉ DA MANHÃ", lunch: "ALMOÇO", dinner: "JANTAR", snack: "LANCHE" };
+const filters = ["Todos", "Vegetariano", "Low-carb", "Alta proteína"];
 
 interface Meal {
   name: string;
@@ -39,7 +40,7 @@ function getWeekStart() {
 
 export default function DietPlan() {
   const [selectedDay, setSelectedDay] = useState(0);
-  const [activeFilter, setActiveFilter] = useState("All");
+  const [activeFilter, setActiveFilter] = useState("Todos");
   const [swappingMeal, setSwappingMeal] = useState<string | null>(null);
   const { user } = useAuth();
   const qc = useQueryClient();
@@ -69,10 +70,10 @@ export default function DietPlan() {
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["meal-plan"] });
-      toast.success("Meal plan generated!");
+      toast.success("Plano alimentar gerado!");
     },
     onError: (err: any) => {
-      toast.error(err.message || "Failed to generate plan");
+      toast.error(err.message || "Falha ao gerar plano");
     },
   });
 
@@ -88,11 +89,11 @@ export default function DietPlan() {
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["meal-plan"] });
-      toast.success("Meal swapped!");
+      toast.success("Refeição trocada!");
       setSwappingMeal(null);
     },
     onError: (err: any) => {
-      toast.error(err.message || "Failed to swap meal");
+      toast.error(err.message || "Falha ao trocar refeição");
       setSwappingMeal(null);
     },
   });
@@ -103,8 +104,8 @@ export default function DietPlan() {
     <div className="px-4 lg:px-8 py-6 max-w-4xl mx-auto">
       <div className="flex items-start justify-between gap-3 mb-6">
         <div className="min-w-0">
-          <h1 className="text-2xl font-semibold tracking-tight text-foreground">Meal Plan</h1>
-          <p className="text-sm text-foreground/50">Your personalized weekly plan</p>
+          <h1 className="text-2xl font-semibold tracking-tight text-foreground">Plano Alimentar</h1>
+          <p className="text-sm text-foreground/50">Seu plano semanal personalizado</p>
         </div>
         <button
           onClick={() => generate.mutate()}
@@ -112,12 +113,12 @@ export default function DietPlan() {
           className="flex items-center gap-2 px-4 py-2 rounded-full bg-fitflow-primary text-white text-xs font-semibold active:scale-95 transition-all disabled:opacity-50 shrink-0"
         >
           <RefreshCw size={14} className={generate.isPending ? "animate-spin" : ""} />
-          <span className="hidden sm:inline">{generate.isPending ? "Generating..." : planData ? "Regenerate" : "Generate Plan"}</span>
-          <span className="sm:hidden">{generate.isPending ? "..." : planData ? "New" : "Generate"}</span>
+          <span className="hidden sm:inline">{generate.isPending ? "Gerando..." : planData ? "Regenerar" : "Gerar Plano"}</span>
+          <span className="sm:hidden">{generate.isPending ? "..." : planData ? "Novo" : "Gerar"}</span>
         </button>
       </div>
 
-      {/* Day selector */}
+      {/* Seletor de dia */}
       <div className="flex gap-2 mb-4 overflow-x-auto pb-2 no-scrollbar">
         {shortDays.map((d, i) => (
           <button
@@ -134,7 +135,7 @@ export default function DietPlan() {
         ))}
       </div>
 
-      {/* Filters */}
+      {/* Filtros */}
       <div className="flex gap-2 mb-6 overflow-x-auto pb-2 no-scrollbar">
         {filters.map(f => (
           <button
@@ -151,7 +152,7 @@ export default function DietPlan() {
         ))}
       </div>
 
-      {/* Loading */}
+      {/* Carregando */}
       {(isLoading || generate.isPending) && !planData && (
         <div className="space-y-3">
           {[1, 2, 3, 4].map(i => (
@@ -169,20 +170,20 @@ export default function DietPlan() {
         </div>
       )}
 
-      {/* Empty state */}
+      {/* Estado vazio */}
       {!isLoading && !generate.isPending && !planData && (
         <GlassCard className="py-12 text-center">
-          <p className="text-foreground/40 text-sm mb-4">No meal plan yet</p>
+          <p className="text-foreground/40 text-sm mb-4">Nenhum plano alimentar ainda</p>
           <button
             onClick={() => generate.mutate()}
             className="px-6 py-3 rounded-xl bg-fitflow-primary text-white text-sm font-semibold active:scale-95 transition-all"
           >
-            Generate Your Plan
+            Gerar Seu Plano
           </button>
         </GlassCard>
       )}
 
-      {/* Meals */}
+      {/* Refeições */}
       {currentDay && (
         <div className="space-y-3">
           {mealTypes.map(type => {
@@ -192,7 +193,7 @@ export default function DietPlan() {
             return (
               <GlassCard key={type} className={isSwapping ? "opacity-60" : ""}>
                 <div className="flex items-center justify-between mb-2">
-                  <span className="label-style text-[10px]">{type.toUpperCase()}</span>
+                  <span className="label-style text-[10px]">{mealTypeLabels[type] || type.toUpperCase()}</span>
                   <span className="text-sm font-semibold text-fitflow-accent">{meal.calories} cal</span>
                 </div>
                 <p className="text-sm font-semibold text-foreground mb-1">{meal.name}</p>
@@ -202,7 +203,7 @@ export default function DietPlan() {
                     {[
                       { l: "P", v: meal.protein },
                       { l: "C", v: meal.carbs },
-                      { l: "F", v: meal.fat },
+                      { l: "G", v: meal.fat },
                     ].map(m => (
                       <div key={m.l} className="text-center">
                         <span className="text-[10px] text-foreground/30 uppercase">{m.l}</span>
@@ -216,7 +217,7 @@ export default function DietPlan() {
                     className="flex items-center gap-1 px-3 py-1 rounded-full border border-white/10 text-[10px] uppercase tracking-wider font-medium text-foreground/50 hover:bg-white/5 active:scale-95 transition-all disabled:opacity-50"
                   >
                     <Shuffle size={10} className={isSwapping ? "animate-spin" : ""} />
-                    {isSwapping ? "Swapping..." : "Swap"}
+                    {isSwapping ? "Trocando..." : "Trocar"}
                   </button>
                 </div>
               </GlassCard>

@@ -6,11 +6,11 @@ import { useAuth } from "@/lib/auth-context";
 import { motion } from "framer-motion";
 
 const tabs = [
-  { to: "/", icon: Home, label: "Home" },
-  { to: "/diet", icon: Utensils, label: "Diet" },
-  { to: "/workout", icon: Dumbbell, label: "Workout" },
+  { to: "/", icon: Home, label: "Início" },
+  { to: "/diet", icon: Utensils, label: "Dieta" },
+  { to: "/workout", icon: Dumbbell, label: "Treino" },
   { to: "/scanner", icon: Camera, label: "Scanner" },
-  { to: "/progress", icon: TrendingUp, label: "Progress" },
+  { to: "/progress", icon: TrendingUp, label: "Progresso" },
 ];
 
 export default function AppLayout({ children }: { children: ReactNode }) {
@@ -20,7 +20,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
 
   return (
     <div className="min-h-screen bg-background flex">
-      {/* Desktop sidebar */}
+      {/* Sidebar desktop */}
       <aside className="hidden lg:flex w-64 flex-col border-r border-white/5 p-4 sticky top-0 h-screen">
         <div className="mb-8">
           <h1 className="text-xl font-semibold tracking-tight text-foreground">
@@ -53,7 +53,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
             }
           >
             <User size={20} />
-            Profile
+            Perfil
           </NavLink>
           <NavLink
             to="/sleep"
@@ -64,7 +64,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
             }
           >
             <Moon size={20} />
-            Sleep
+            Sono
           </NavLink>
           <NavLink
             to="/achievements"
@@ -75,7 +75,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
             }
           >
             <Trophy size={20} />
-            Achievements
+            Conquistas
           </NavLink>
         </nav>
         <div className="mt-auto space-y-2">
@@ -84,12 +84,12 @@ export default function AppLayout({ children }: { children: ReactNode }) {
             className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-foreground/50 hover:text-foreground/80 hover:bg-white/5 w-full transition-all"
           >
             {theme === "dark" ? <Sun size={20} /> : <Moon size={20} />}
-            {theme === "dark" ? "Light Mode" : "Dark Mode"}
+            {theme === "dark" ? "Modo Claro" : "Modo Escuro"}
           </button>
         </div>
       </aside>
 
-      {/* Main area */}
+      {/* Área principal */}
       <div className="flex-1 flex flex-col min-h-screen w-0">
         <motion.main
           key={location.pathname}
@@ -101,7 +101,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
           {children}
         </motion.main>
 
-        {/* Mobile bottom tab bar */}
+        {/* Barra de navegação mobile */}
         <nav className="lg:hidden fixed bottom-0 left-0 right-0 bg-background/90 backdrop-blur-lg border-t border-white/5 safe-bottom z-50">
           <div className="flex justify-around items-center h-16">
             {tabs.map(t => {

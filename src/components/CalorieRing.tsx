@@ -29,7 +29,7 @@ export function CalorieRing({ consumed, target, size = 224 }: CalorieRingProps) 
       </svg>
       <div className="absolute inset-0 flex flex-col items-center justify-center">
         <span className="text-4xl font-semibold text-foreground">{remaining}</span>
-        <span className="label-style text-[10px] mt-1">REMAINING</span>
+        <span className="label-style text-[10px] mt-1">RESTANTE</span>
       </div>
     </div>
   );

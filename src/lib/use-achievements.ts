@@ -8,24 +8,24 @@ export interface AchievementDef {
   key: string;
   title: string;
   description: string;
-  icon: string; // emoji
+  icon: string;
 }
 
 export const ACHIEVEMENTS: AchievementDef[] = [
-  { key: "first_meal", title: "First Bite", description: "Log your first meal", icon: "🍽️" },
-  { key: "first_workout", title: "First Rep", description: "Complete your first workout", icon: "💪" },
-  { key: "first_weight", title: "On the Scale", description: "Log your first weight entry", icon: "⚖️" },
-  { key: "streak_3", title: "Hat Trick", description: "Reach a 3-day streak", icon: "🔥" },
-  { key: "streak_7", title: "Full Week", description: "Reach a 7-day streak", icon: "🏆" },
-  { key: "streak_14", title: "Two Weeks Strong", description: "Reach a 14-day streak", icon: "⭐" },
-  { key: "streak_30", title: "Monthly Master", description: "Reach a 30-day streak", icon: "👑" },
-  { key: "lost_1kg", title: "First Kilo Down", description: "Lose 1 kg from your starting weight", icon: "📉" },
-  { key: "lost_5kg", title: "Five Down", description: "Lose 5 kg from your starting weight", icon: "🎯" },
-  { key: "lost_10kg", title: "Major Milestone", description: "Lose 10 kg from your starting weight", icon: "🌟" },
-  { key: "water_8", title: "Hydrated", description: "Drink 8 glasses of water in a day", icon: "💧" },
-  { key: "meals_10", title: "Meal Prepper", description: "Log 10 meals total", icon: "📋" },
-  { key: "workouts_10", title: "Gym Regular", description: "Complete 10 workouts", icon: "🏋️" },
-  { key: "sleep_logged", title: "Sleep Tracker", description: "Log your first sleep entry", icon: "😴" },
+  { key: "first_meal", title: "Primeira Mordida", description: "Registre sua primeira refeição", icon: "🍽️" },
+  { key: "first_workout", title: "Primeira Rep", description: "Complete seu primeiro treino", icon: "💪" },
+  { key: "first_weight", title: "Na Balança", description: "Registre seu primeiro peso", icon: "⚖️" },
+  { key: "streak_3", title: "Hat Trick", description: "Alcance uma sequência de 3 dias", icon: "🔥" },
+  { key: "streak_7", title: "Semana Completa", description: "Alcance uma sequência de 7 dias", icon: "🏆" },
+  { key: "streak_14", title: "Duas Semanas Forte", description: "Alcance uma sequência de 14 dias", icon: "⭐" },
+  { key: "streak_30", title: "Mestre Mensal", description: "Alcance uma sequência de 30 dias", icon: "👑" },
+  { key: "lost_1kg", title: "Primeiro Quilo", description: "Perca 1 kg do peso inicial", icon: "📉" },
+  { key: "lost_5kg", title: "Cinco a Menos", description: "Perca 5 kg do peso inicial", icon: "🎯" },
+  { key: "lost_10kg", title: "Grande Marco", description: "Perca 10 kg do peso inicial", icon: "🌟" },
+  { key: "water_8", title: "Hidratado", description: "Beba 8 copos de água em um dia", icon: "💧" },
+  { key: "meals_10", title: "Planejador", description: "Registre 10 refeições no total", icon: "📋" },
+  { key: "workouts_10", title: "Frequentador", description: "Complete 10 treinos", icon: "🏋️" },
+  { key: "sleep_logged", title: "Rastreador de Sono", description: "Registre sua primeira noite de sono", icon: "😴" },
 ];
 
 export function useAchievements() {
@@ -52,17 +52,12 @@ export function useUnlockAchievement() {
       const { error } = await supabase
         .from("user_achievements")
         .insert({ user_id: user!.id, achievement_key: key });
-      // ignore unique violation (already unlocked)
       if (error && !error.message.includes("duplicate")) throw error;
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ["achievements"] }),
   });
 }
 
-/**
- * Hook that checks milestones against real data and unlocks badges automatically.
- * Call this on the Dashboard so it runs on each visit.
- */
 export function useCheckAchievements() {
   const { user } = useAuth();
   const { data: unlocked } = useAchievements();
@@ -75,7 +70,6 @@ export function useCheckAchievements() {
       const toUnlock: string[] = [];
       const has = (k: string) => unlocked.has(k);
 
-      // Fetch counts in parallel
       const [dailyRes, workoutRes, weightRes, sleepRes] = await Promise.all([
         supabase.from("daily_log").select("meals, water_glasses", { count: "exact" }).eq("user_id", user.id),
         supabase.from("workout_sessions").select("id", { count: "exact" }).eq("user_id", user.id),
@@ -83,7 +77,6 @@ export function useCheckAchievements() {
         supabase.from("sleep_logs").select("id", { count: "exact", head: true }).eq("user_id", user.id),
       ]);
 
-      // First meal
       const allMeals = (dailyRes.data || []).reduce((total, r) => {
         const meals = r.meals as unknown as any[];
         return total + (Array.isArray(meals) ? meals.length : 0);
@@ -91,16 +84,13 @@ export function useCheckAchievements() {
       if (!has("first_meal") && allMeals > 0) toUnlock.push("first_meal");
       if (!has("meals_10") && allMeals >= 10) toUnlock.push("meals_10");
 
-      // Water
       const maxWater = Math.max(0, ...(dailyRes.data || []).map(r => r.water_glasses ?? 0));
       if (!has("water_8") && maxWater >= 8) toUnlock.push("water_8");
 
-      // Workouts
       const workoutCount = workoutRes.count ?? 0;
       if (!has("first_workout") && workoutCount > 0) toUnlock.push("first_workout");
       if (!has("workouts_10") && workoutCount >= 10) toUnlock.push("workouts_10");
 
-      // Weight
       const weights = (weightRes.data || []).map(r => Number(r.weight_kg));
       if (!has("first_weight") && weights.length > 0) toUnlock.push("first_weight");
       if (weights.length >= 2) {
@@ -110,10 +100,8 @@ export function useCheckAchievements() {
         if (!has("lost_10kg") && lost >= 10) toUnlock.push("lost_10kg");
       }
 
-      // Sleep
       if (!has("sleep_logged") && (sleepRes.count ?? 0) > 0) toUnlock.push("sleep_logged");
 
-      // Streak (fetch from existing data)
       const since = new Date();
       since.setDate(since.getDate() - 90);
       const sinceStr = since.toISOString().split("T")[0];
@@ -133,21 +121,20 @@ export function useCheckAchievements() {
         d.setDate(d.getDate() - i);
         const ds = d.toISOString().split("T")[0];
         if (mealDays.has(ds) && workoutDays.has(ds)) streak++;
-        else if (i > 0) break; // allow today to be incomplete
+        else if (i > 0) break;
       }
       if (!has("streak_3") && streak >= 3) toUnlock.push("streak_3");
       if (!has("streak_7") && streak >= 7) toUnlock.push("streak_7");
       if (!has("streak_14") && streak >= 14) toUnlock.push("streak_14");
       if (!has("streak_30") && streak >= 30) toUnlock.push("streak_30");
 
-      // Unlock all new achievements
       for (const key of toUnlock) {
         const def = ACHIEVEMENTS.find(a => a.key === key);
         unlock.mutate(key, {
           onSuccess: () => {
             if (def) {
               toast(
-                `${def.icon} ${def.title} Unlocked!`,
+                `${def.icon} ${def.title} Desbloqueado!`,
                 {
                   description: def.description,
                   duration: 5000,

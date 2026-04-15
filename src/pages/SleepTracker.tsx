@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { GlassCard } from "@/components/GlassCard";
 import { LineChart, Line, XAxis, YAxis, ResponsiveContainer, Tooltip } from "recharts";
 import { Moon, AlertTriangle } from "lucide-react";
@@ -12,26 +12,26 @@ export default function SleepTracker() {
   const lowSleep = hours < 6;
 
   const chartData = (sleepLogs || []).map(l => ({
-    date: new Date(l.date).toLocaleDateString("en-US", { weekday: "short" }),
+    date: new Date(l.date).toLocaleDateString("pt-BR", { weekday: "short" }),
     hours: l.hours_slept,
   }));
 
   const handleLog = () => {
     logSleep.mutate(hours, {
-      onSuccess: () => toast.success(`${hours}h sleep logged`),
-      onError: () => toast.error("Failed to log sleep"),
+      onSuccess: () => toast.success(`${hours}h de sono registradas`),
+      onError: () => toast.error("Falha ao registrar sono"),
     });
   };
 
   return (
     <div className="px-4 lg:px-8 py-6 max-w-4xl mx-auto">
-      <h1 className="text-2xl font-semibold tracking-tight text-foreground mb-6">Sleep & Recovery</h1>
+      <h1 className="text-2xl font-semibold tracking-tight text-foreground mb-6">Sono & Recuperação</h1>
 
-      {/* Log slider */}
+      {/* Slider de registro */}
       <GlassCard className="mb-4">
         <div className="flex items-center gap-3 mb-4">
           <Moon size={20} className="text-foreground/50" />
-          <span className="text-sm font-semibold text-foreground">Log Tonight's Sleep</span>
+          <span className="text-sm font-semibold text-foreground">Registrar Sono de Hoje</span>
         </div>
         <div className="space-y-3">
           <input
@@ -53,7 +53,7 @@ export default function SleepTracker() {
             disabled={logSleep.isPending}
             className="w-full h-11 rounded-xl bg-fitflow-primary text-white text-sm font-semibold active:scale-95 transition-all disabled:opacity-50"
           >
-            {logSleep.isPending ? "Saving..." : "Log Sleep"}
+            {logSleep.isPending ? "Salvando..." : "Registrar Sono"}
           </button>
         </div>
       </GlassCard>
@@ -63,9 +63,9 @@ export default function SleepTracker() {
           <div className="flex items-start gap-3">
             <AlertTriangle size={20} className="text-yellow-400 shrink-0 mt-0.5" />
             <div>
-              <p className="text-sm font-semibold text-foreground">Recovery Tip</p>
+              <p className="text-sm font-semibold text-foreground">Dica de Recuperação</p>
               <p className="text-xs text-foreground/50 mt-1">
-                Less than 6 hours of sleep can affect recovery. Consider a lighter workout today — try yoga or a walk instead.
+                Menos de 6 horas de sono pode afetar a recuperação. Considere um treino mais leve hoje — tente yoga ou uma caminhada.
               </p>
             </div>
           </div>
@@ -73,18 +73,18 @@ export default function SleepTracker() {
       )}
 
       <GlassCard>
-        <h2 className="label-style text-[10px] mb-4">SLEEP HISTORY</h2>
+        <h2 className="label-style text-[10px] mb-4">HISTÓRICO DE SONO</h2>
         {chartData.length > 0 ? (
           <ResponsiveContainer width="100%" height={200}>
             <LineChart data={chartData}>
               <XAxis dataKey="date" tick={{ fontSize: 10, fill: "rgba(255,255,255,0.3)" }} axisLine={false} tickLine={false} />
               <YAxis domain={[0, 12]} tick={{ fontSize: 10, fill: "rgba(255,255,255,0.3)" }} axisLine={false} tickLine={false} width={30} />
               <Tooltip contentStyle={{ background: "rgba(15,17,23,0.9)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 12, fontSize: 12 }} />
-              <Line type="monotone" dataKey="hours" stroke="#A8E063" strokeWidth={2} dot={{ fill: "#A8E063", r: 3 }} name="Sleep (h)" />
+              <Line type="monotone" dataKey="hours" stroke="#A8E063" strokeWidth={2} dot={{ fill: "#A8E063", r: 3 }} name="Sono (h)" />
             </LineChart>
           </ResponsiveContainer>
         ) : (
-          <p className="text-center text-sm text-foreground/30 py-8">Start logging sleep to see your history</p>
+          <p className="text-center text-sm text-foreground/30 py-8">Comece a registrar o sono para ver seu histórico</p>
         )}
       </GlassCard>
     </div>

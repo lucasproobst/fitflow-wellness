@@ -27,7 +27,7 @@ export default function Scanner() {
     const file = e.target.files?.[0];
     if (!file) return;
     if (file.size > 5 * 1024 * 1024) {
-      toast.error("Image must be under 5MB");
+      toast.error("A imagem deve ter menos de 5MB");
       return;
     }
     const reader = new FileReader();
@@ -50,7 +50,7 @@ export default function Scanner() {
       if (data?.error) throw new Error(data.error);
       setResult(data as ScanResult);
     } catch (err: any) {
-      toast.error(err.message || "Failed to analyze food");
+      toast.error(err.message || "Falha ao analisar alimento");
     } finally {
       setScanning(false);
     }
@@ -86,30 +86,30 @@ export default function Scanner() {
       }
 
       setHistory(prev => [result, ...prev].slice(0, 10));
-      toast.success(`${result.name} added to diary!`);
+      toast.success(`${result.name} adicionado ao diário!`);
       setResult(null);
       setImage(null);
     } catch {
-      toast.error("Failed to save to diary");
+      toast.error("Falha ao salvar no diário");
     }
   };
 
   return (
     <div className="px-4 lg:px-8 py-6 max-w-4xl mx-auto">
-      <h1 className="text-2xl font-semibold tracking-tight text-foreground mb-2">Food Scanner</h1>
-      <p className="text-sm text-foreground/50 mb-6">Snap a photo to get nutrition info</p>
+      <h1 className="text-2xl font-semibold tracking-tight text-foreground mb-2">Scanner de Alimentos</h1>
+      <p className="text-sm text-foreground/50 mb-6">Tire uma foto para obter informações nutricionais</p>
 
-      {/* Viewfinder */}
+      {/* Visor */}
       <div
         onClick={() => fileRef.current?.click()}
         className="relative aspect-square max-w-sm mx-auto rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center cursor-pointer overflow-hidden mb-6"
       >
         {image ? (
-          <img src={image} alt="Food" className="w-full h-full object-cover" />
+          <img src={image} alt="Alimento" className="w-full h-full object-cover" />
         ) : (
           <div className="flex flex-col items-center gap-3 text-foreground/30">
             <Camera size={40} />
-            <span className="text-sm font-medium">Tap to scan food</span>
+            <span className="text-sm font-medium">Toque para escanear</span>
           </div>
         )}
         <div className="absolute top-4 left-4 w-8 h-8 border-l-2 border-t-2 border-fitflow-primary rounded-tl" />
@@ -124,7 +124,7 @@ export default function Scanner() {
         <input ref={fileRef} type="file" accept="image/*" onChange={handleFile} className="hidden" />
       </div>
 
-      {/* Result */}
+      {/* Resultado */}
       {result && (
         <GlassCard className="mb-4">
           <div className="flex items-center justify-between mb-3">
@@ -135,24 +135,24 @@ export default function Scanner() {
             <span className="text-lg font-semibold text-fitflow-accent">{result.calories} cal</span>
           </div>
           <div className="space-y-2 mb-4">
-            <MacroBar label="Protein" current={result.protein} target={result.protein} />
-            <MacroBar label="Carbs" current={result.carbs} target={Math.max(result.carbs, 1)} />
-            <MacroBar label="Fat" current={result.fat} target={result.fat} />
+            <MacroBar label="Proteína" current={result.protein} target={result.protein} />
+            <MacroBar label="Carboidratos" current={result.carbs} target={Math.max(result.carbs, 1)} />
+            <MacroBar label="Gordura" current={result.fat} target={result.fat} />
           </div>
           <button
             onClick={addToDiary}
             className="w-full h-12 rounded-xl bg-fitflow-primary text-white font-semibold text-sm flex items-center justify-center gap-2 active:scale-95 transition-all"
           >
             <Plus size={16} />
-            Add to Diary
+            Adicionar ao Diário
           </button>
         </GlassCard>
       )}
 
-      {/* History */}
+      {/* Histórico */}
       {history.length > 0 && (
         <div>
-          <h2 className="label-style text-[10px] mb-3">RECENT SCANS</h2>
+          <h2 className="label-style text-[10px] mb-3">ESCANEAMENTOS RECENTES</h2>
           <div className="space-y-2">
             {history.map((item, i) => (
               <GlassCard key={i} className="py-3 flex items-center justify-between">
