@@ -64,6 +64,8 @@ function getProgress(key: string, stats: ReturnType<typeof useAchievementProgres
 export default function Achievements() {
   const { data: unlocked } = useAchievements();
   const { data: stats, isLoading } = useAchievementProgress();
+  const { data: profile } = useProfile();
+  const [shareAchievement, setShareAchievement] = useState<{ key: string; unlockedAt: string } | null>(null);
   const unlockedCount = unlocked?.size ?? 0;
 
   return (
