@@ -1,10 +1,12 @@
 import { useState, useMemo } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { RefreshCw, Shuffle, Heart, ChevronRight } from "lucide-react";
+import { RefreshCw, Shuffle, Heart, ChevronRight, X, Clock, ChefHat, Lightbulb } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth-context";
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 const dayNames = ["Segunda", "Terça", "Quarta", "Quinta", "Sexta", "Sábado", "Domingo"];
 const shortDays = ["Seg", "Ter", "Qua", "Qui", "Sex", "Sáb", "Dom"];
@@ -27,6 +29,16 @@ interface Meal {
   carbs: number;
   fat: number;
   ingredients?: string[];
+}
+
+interface Recipe {
+  meal_name: string;
+  meal_type: string;
+  ingredients: string[];
+  instructions: string[];
+  prep_time: number;
+  cook_time: number;
+  tips: string;
 }
 
 interface DayPlan {
@@ -62,6 +74,10 @@ export default function DietPlan() {
   const [activeFilter, setActiveFilter] = useState("TODOS");
   const [swappingMeal, setSwappingMeal] = useState<string | null>(null);
   const [favorites, setFavorites] = useState<Set<string>>(new Set());
+  const [recipesOpen, setRecipesOpen] = useState(false);
+  const [recipes, setRecipes] = useState<Recipe[]>([]);
+  const [loadingRecipes, setLoadingRecipes] = useState(false);
+  const [expandedRecipe, setExpandedRecipe] = useState<number | null>(null);
   const { user } = useAuth();
   const qc = useQueryClient();
 
@@ -140,6 +156,38 @@ export default function DietPlan() {
       else next.add(key);
       return next;
     });
+  };
+
+  const handleViewRecipes = async () => {
+    if (!currentDay?.meals) return;
+    setRecipesOpen(true);
+    setLoadingRecipes(true);
+    setRecipes([]);
+    setExpandedRecipe(null);
+
+    const mealsPayload = Object.entries(currentDay.meals).map(([type, meal]) => ({
+      type: mealTypeLabels[type] || type,
+      name: meal.name,
+      calories: meal.calories,
+      protein: meal.protein,
+      carbs: meal.carbs,
+      fat: meal.fat,
+    }));
+
+    try {
+      const { data, error } = await supabase.functions.invoke("generate-recipes", {
+        body: { meals: mealsPayload },
+      });
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+      setRecipes(data.recipes || []);
+      setExpandedRecipe(0);
+    } catch (err: any) {
+      toast.error(err.message || "Falha ao gerar receitas");
+      setRecipesOpen(false);
+    } finally {
+      setLoadingRecipes(false);
+    }
   };
 
   const macroTotal = dayTotals.protein + dayTotals.carbs + dayTotals.fat;
@@ -283,17 +331,12 @@ export default function DietPlan() {
                   <div className="p-5">
                     <div className="flex items-start justify-between gap-4">
                       <div className="flex-1 min-w-0">
-                        {/* Meal type */}
                         <span className="text-[10px] font-bold uppercase tracking-[0.15em] text-[#6b7280]">
                           {mealTypeLabels[type] || type.toUpperCase()}
                         </span>
-
-                        {/* Meal name */}
                         <p className="text-[15px] font-bold text-white mt-1.5 leading-snug">
                           {meal.name}
                         </p>
-
-                        {/* Ingredients list */}
                         {ingredients.length > 0 && (
                           <ul className="mt-2.5 space-y-1">
                             {ingredients.map((ing, i) => (
@@ -304,16 +347,12 @@ export default function DietPlan() {
                             ))}
                           </ul>
                         )}
-
-                        {/* Macros — plain text */}
                         <div className="flex gap-4 mt-3">
                           <span className="text-[11px] font-semibold text-white/50">P {meal.protein}g</span>
                           <span className="text-[11px] font-semibold text-white/50">C {meal.carbs}g</span>
                           <span className="text-[11px] font-semibold text-white/50">G {meal.fat}g</span>
                         </div>
                       </div>
-
-                      {/* Calories + actions */}
                       <div className="flex flex-col items-end gap-2 shrink-0">
                         <div className="text-right">
                           <span className="text-xl font-extrabold text-white tabular-nums">
@@ -321,7 +360,6 @@ export default function DietPlan() {
                           </span>
                           <p className="text-[10px] font-medium text-[#6b7280] -mt-0.5">kcal</p>
                         </div>
-
                         <div className="flex items-center gap-1.5 mt-auto pt-2">
                           <button
                             onClick={() => toggleFavorite(favKey)}
@@ -361,13 +399,172 @@ export default function DietPlan() {
               <span className="text-xs font-semibold text-[#6b7280]">G {dayTotals.fat}g</span>
               <span className="text-xs font-extrabold text-white ml-1">{dayTotals.calories.toLocaleString("pt-BR")} kcal</span>
             </div>
-            <button className="flex items-center gap-1.5 px-4 py-2 rounded-full bg-[#22c55e] text-white text-xs font-bold active:scale-95 transition-all">
-              Ver receitas
-              <ChevronRight size={14} />
+            <button
+              onClick={handleViewRecipes}
+              disabled={loadingRecipes}
+              className="flex items-center gap-1.5 px-4 py-2 rounded-full bg-[#22c55e] text-white text-xs font-bold active:scale-95 transition-all disabled:opacity-60"
+            >
+              {loadingRecipes ? (
+                <>
+                  <RefreshCw size={14} className="animate-spin" />
+                  Gerando...
+                </>
+              ) : (
+                <>
+                  Ver receitas
+                  <ChevronRight size={14} />
+                </>
+              )}
             </button>
           </div>
         </div>
       )}
+
+      {/* Recipes Sheet */}
+      <Sheet open={recipesOpen} onOpenChange={setRecipesOpen}>
+        <SheetContent
+          side="bottom"
+          className="h-[85vh] rounded-t-3xl bg-[#0f1117] border-t border-white/[0.06] p-0"
+        >
+          <SheetHeader className="px-5 pt-5 pb-3 border-b border-white/[0.04]">
+            <div className="flex items-center justify-between">
+              <div>
+                <SheetTitle className="text-lg font-bold text-white">Receitas do Dia</SheetTitle>
+                <p className="text-xs text-[#6b7280] mt-0.5">{shortDays[selectedDay]} — {recipes.length} receitas</p>
+              </div>
+              <button
+                onClick={() => setRecipesOpen(false)}
+                className="w-8 h-8 rounded-full bg-white/[0.04] flex items-center justify-center hover:bg-white/[0.08] transition-colors"
+              >
+                <X size={14} className="text-[#6b7280]" />
+              </button>
+            </div>
+          </SheetHeader>
+
+          <ScrollArea className="h-[calc(85vh-80px)]">
+            <div className="p-5 space-y-4">
+              {loadingRecipes && (
+                <div className="py-16 flex flex-col items-center gap-3">
+                  <div className="w-10 h-10 rounded-full border-2 border-[#22c55e] border-t-transparent animate-spin" />
+                  <p className="text-sm text-[#6b7280]">Gerando receitas detalhadas...</p>
+                </div>
+              )}
+
+              {!loadingRecipes && recipes.length === 0 && (
+                <div className="py-16 text-center">
+                  <p className="text-sm text-[#6b7280]">Nenhuma receita disponível</p>
+                </div>
+              )}
+
+              {recipes.map((recipe, i) => {
+                const isExpanded = expandedRecipe === i;
+                return (
+                  <motion.div
+                    key={i}
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: i * 0.05 }}
+                    className="rounded-2xl bg-[#16181f] border border-white/[0.04] overflow-hidden"
+                  >
+                    {/* Recipe header — always visible */}
+                    <button
+                      onClick={() => setExpandedRecipe(isExpanded ? null : i)}
+                      className="w-full p-4 flex items-center justify-between text-left hover:bg-white/[0.02] transition-colors"
+                    >
+                      <div className="min-w-0">
+                        <span className="text-[10px] font-bold uppercase tracking-[0.15em] text-[#6b7280]">
+                          {recipe.meal_type}
+                        </span>
+                        <p className="text-sm font-bold text-white mt-0.5 truncate">{recipe.meal_name}</p>
+                        <div className="flex items-center gap-3 mt-1.5">
+                          <span className="flex items-center gap-1 text-[10px] text-[#6b7280]">
+                            <Clock size={10} />
+                            {recipe.prep_time + recipe.cook_time} min
+                          </span>
+                          <span className="text-[10px] text-[#6b7280]">
+                            {recipe.ingredients.length} ingredientes
+                          </span>
+                        </div>
+                      </div>
+                      <ChevronRight
+                        size={16}
+                        className={`text-[#6b7280] transition-transform duration-200 shrink-0 ${isExpanded ? "rotate-90" : ""}`}
+                      />
+                    </button>
+
+                    {/* Recipe details — expanded */}
+                    <AnimatePresence>
+                      {isExpanded && (
+                        <motion.div
+                          initial={{ height: 0, opacity: 0 }}
+                          animate={{ height: "auto", opacity: 1 }}
+                          exit={{ height: 0, opacity: 0 }}
+                          transition={{ duration: 0.25 }}
+                          className="overflow-hidden"
+                        >
+                          <div className="px-4 pb-5 space-y-5 border-t border-white/[0.04] pt-4">
+                            {/* Time badges */}
+                            <div className="flex gap-3">
+                              <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/[0.04]">
+                                <Clock size={12} className="text-[#6b7280]" />
+                                <span className="text-[11px] font-medium text-white/70">Preparo: {recipe.prep_time} min</span>
+                              </div>
+                              <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/[0.04]">
+                                <ChefHat size={12} className="text-[#6b7280]" />
+                                <span className="text-[11px] font-medium text-white/70">Cozimento: {recipe.cook_time} min</span>
+                              </div>
+                            </div>
+
+                            {/* Ingredients */}
+                            <div>
+                              <h4 className="text-[10px] font-bold uppercase tracking-[0.15em] text-[#6b7280] mb-2.5">
+                                Ingredientes
+                              </h4>
+                              <ul className="space-y-1.5">
+                                {recipe.ingredients.map((ing, j) => (
+                                  <li key={j} className="flex items-start gap-2 text-[12px] text-white/70">
+                                    <span className="w-1 h-1 rounded-full bg-[#22c55e] shrink-0 mt-1.5" />
+                                    {ing}
+                                  </li>
+                                ))}
+                              </ul>
+                            </div>
+
+                            {/* Instructions */}
+                            <div>
+                              <h4 className="text-[10px] font-bold uppercase tracking-[0.15em] text-[#6b7280] mb-2.5">
+                                Modo de preparo
+                              </h4>
+                              <ol className="space-y-3">
+                                {recipe.instructions.map((step, j) => (
+                                  <li key={j} className="flex gap-3 text-[12px]">
+                                    <span className="w-5 h-5 rounded-full bg-white/[0.06] flex items-center justify-center text-[10px] font-bold text-white/40 shrink-0 mt-0.5">
+                                      {j + 1}
+                                    </span>
+                                    <span className="text-white/70 leading-relaxed">{step}</span>
+                                  </li>
+                                ))}
+                              </ol>
+                            </div>
+
+                            {/* Tip */}
+                            {recipe.tips && (
+                              <div className="flex items-start gap-2.5 p-3 rounded-xl bg-[#22c55e]/[0.06] border border-[#22c55e]/10">
+                                <Lightbulb size={14} className="text-[#22c55e] shrink-0 mt-0.5" />
+                                <p className="text-[11px] text-white/60 leading-relaxed">{recipe.tips}</p>
+                              </div>
+                            )}
+                          </div>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </motion.div>
+                );
+              })}
+            </div>
+          </ScrollArea>
+        </SheetContent>
+      </Sheet>
     </div>
   );
 }
