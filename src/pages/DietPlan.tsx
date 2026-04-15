@@ -150,14 +150,44 @@ export default function DietPlan() {
     );
   }, [currentDay]);
 
-  const toggleFavorite = (key: string) => {
+  // Load favorites from DB
+  useEffect(() => {
+    if (!user) return;
+    supabase
+      .from("meal_favorites")
+      .select("meal_key")
+      .eq("user_id", user.id)
+      .then(({ data }) => {
+        if (data) {
+          setFavorites(new Set(data.map((f: any) => f.meal_key)));
+        }
+        setFavoritesLoaded(true);
+      });
+  }, [user]);
+
+  const toggleFavorite = useCallback(async (key: string) => {
+    if (!user) return;
+    const isFav = favorites.has(key);
+    // Optimistic update
     setFavorites(prev => {
       const next = new Set(prev);
-      if (next.has(key)) next.delete(key);
+      if (isFav) next.delete(key);
       else next.add(key);
       return next;
     });
-  };
+
+    if (isFav) {
+      await supabase
+        .from("meal_favorites")
+        .delete()
+        .eq("user_id", user.id)
+        .eq("meal_key", key);
+    } else {
+      await supabase
+        .from("meal_favorites")
+        .insert({ user_id: user.id, meal_key: key });
+    }
+  }, [user, favorites]);
 
   const handleViewRecipes = async () => {
     if (!currentDay?.meals) return;
