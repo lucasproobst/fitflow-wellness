@@ -19,6 +19,7 @@ import Profile from "@/pages/Profile";
 import NotFound from "@/pages/NotFound";
 import Install from "@/pages/Install";
 import Achievements from "@/pages/Achievements";
+import Leaderboard from "@/pages/Leaderboard";
 
 const queryClient = new QueryClient();
 
@@ -48,6 +49,7 @@ function ProtectedRoutes() {
         <Route path="/diary" element={<FoodDiary />} />
         <Route path="/sleep" element={<SleepTracker />} />
         <Route path="/achievements" element={<Achievements />} />
+        <Route path="/leaderboard" element={<Leaderboard />} />
         <Route path="/profile" element={<Profile />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
