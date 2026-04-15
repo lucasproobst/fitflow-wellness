@@ -10,8 +10,13 @@ import { useTheme } from "@/lib/theme-context";
 import { useDailyLog, useAddWater, useStreak, useWeeklySummary } from "@/lib/use-tracking";
 import { useCheckAchievements } from "@/lib/use-achievements";
 import { useNotificationReminders } from "@/lib/use-notifications";
-import { Flame, Sun, Moon, Dumbbell, ChevronRight, TrendingDown, TrendingUp, Utensils, BarChart3, X } from "lucide-react";
+import { Flame, Sun, Moon, Dumbbell, ChevronRight, TrendingDown, TrendingUp, Utensils, BarChart3, X, Download, Smartphone } from "lucide-react";
 import { Link } from "react-router-dom";
+
+interface BeforeInstallPromptEvent extends Event {
+  prompt(): Promise<void>;
+  userChoice: Promise<{ outcome: "accepted" | "dismissed" }>;
+}
 
 export default function Dashboard() {
   const { user } = useAuth();
