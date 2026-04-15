@@ -337,6 +337,123 @@ export default function Progress() {
           })}
         </div>
       </motion.div>
+
+      {/* Histórico de Treinos */}
+      <WorkoutHistory userId={user?.id} fadeIn={fadeIn} />
     </div>
+  );
+}
+
+interface WorkoutSession {
+  id: string;
+  date: string;
+  exercises_completed: { name: string; sets_completed: number; total_sets: number }[] | null;
+}
+
+function WorkoutHistory({ userId, fadeIn }: { userId?: string; fadeIn: (d: number) => any }) {
+  const [expanded, setExpanded] = useState<string | null>(null);
+
+  const { data: sessions } = useQuery({
+    queryKey: ["workout-history", userId],
+    enabled: !!userId,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("workout_sessions")
+        .select("id, date, exercises_completed")
+        .eq("user_id", userId!)
+        .order("date", { ascending: false })
+        .limit(30);
+      if (error) throw error;
+      return (data as unknown) as WorkoutSession[];
+    },
+  });
+
+  if (!sessions || sessions.length === 0) return null;
+
+  // Group by date
+  const grouped = useMemo(() => {
+    const map = new Map<string, WorkoutSession[]>();
+    sessions.forEach((s) => {
+      const existing = map.get(s.date) || [];
+      existing.push(s);
+      map.set(s.date, existing);
+    });
+    return Array.from(map.entries());
+  }, [sessions]);
+
+  return (
+    <motion.div {...fadeIn(0.25)} className="rounded-2xl bg-[#16181f] border border-white/[0.06] p-4 mb-4">
+      <h2 className="text-[10px] font-bold uppercase tracking-[0.15em] text-white/30 mb-4 flex items-center gap-2">
+        <Dumbbell size={12} className="text-white/20" />
+        HISTÓRICO DE TREINOS
+      </h2>
+
+      <div className="space-y-2">
+        {grouped.map(([date, daySessions]) => {
+          const isOpen = expanded === date;
+          const exercises = daySessions.flatMap((s) => s.exercises_completed || []);
+          const totalSets = exercises.reduce((a, e) => a + e.total_sets, 0);
+          const doneSets = exercises.reduce((a, e) => a + e.sets_completed, 0);
+          const pct = totalSets > 0 ? Math.round((doneSets / totalSets) * 100) : 0;
+
+          return (
+            <div key={date}>
+              <button
+                onClick={() => setExpanded(isOpen ? null : date)}
+                className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-white/[0.03] transition-colors"
+              >
+                <div className="w-9 h-9 rounded-lg bg-[#22c55e]/10 flex items-center justify-center shrink-0">
+                  <Dumbbell size={14} className="text-[#22c55e]" />
+                </div>
+                <div className="flex-1 text-left min-w-0">
+                  <p className="text-sm font-medium text-white">
+                    {new Date(date + "T12:00:00").toLocaleDateString("pt-BR", { weekday: "long", day: "numeric", month: "short" })}
+                  </p>
+                  <p className="text-[10px] text-white/30 mt-0.5">
+                    {exercises.length} exercícios · {pct}% completado
+                  </p>
+                </div>
+                {/* Mini progress */}
+                <div className="w-10 h-1 rounded-full bg-white/[0.06] overflow-hidden shrink-0">
+                  <div className="h-full bg-[#22c55e] rounded-full" style={{ width: `${pct}%` }} />
+                </div>
+                {isOpen ? <ChevronUp size={14} className="text-white/20" /> : <ChevronDown size={14} className="text-white/20" />}
+              </button>
+
+              <AnimatePresence>
+                {isOpen && (
+                  <motion.div
+                    initial={{ height: 0, opacity: 0 }}
+                    animate={{ height: "auto", opacity: 1 }}
+                    exit={{ height: 0, opacity: 0 }}
+                    transition={{ duration: 0.2 }}
+                    className="overflow-hidden"
+                  >
+                    <div className="pl-14 pr-3 pb-2 space-y-1.5">
+                      {exercises.map((ex, i) => {
+                        const done = ex.sets_completed === ex.total_sets;
+                        return (
+                          <div key={i} className="flex items-center gap-2 py-1.5">
+                            <div className={`w-5 h-5 rounded-md flex items-center justify-center text-[10px] font-bold ${
+                              done ? "bg-[#22c55e]/15 text-[#22c55e]" : "bg-white/[0.04] text-white/20"
+                            }`}>
+                              {done ? "✓" : i + 1}
+                            </div>
+                            <span className="flex-1 text-xs text-white/70 truncate">{ex.name}</span>
+                            <span className="text-[10px] text-white/25 tabular-nums">
+                              {ex.sets_completed}/{ex.total_sets} séries
+                            </span>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+          );
+        })}
+      </div>
+    </motion.div>
   );
 }
