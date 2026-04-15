@@ -167,6 +167,9 @@ export default function Dashboard() {
           </div>
         </div>
       </GlassCard>
+      <GlassCard className="mt-4">
+        <AchievementBadges />
+      </GlassCard>
     </div>
   );
 }
