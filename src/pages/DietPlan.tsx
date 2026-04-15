@@ -55,7 +55,7 @@ export default function DietPlan() {
         .eq("week_start", weekStart)
         .maybeSingle();
       if (error) throw error;
-      return data?.plan_data as MealPlanData | null;
+      return (data?.plan_data as unknown) as MealPlanData | null;
     },
   });
 
