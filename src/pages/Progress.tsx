@@ -1,13 +1,13 @@
 import { useState, useRef } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { GlassCard } from "@/components/GlassCard";
 import { LineChart, Line, XAxis, YAxis, ResponsiveContainer, Tooltip } from "recharts";
-import { TrendingDown, TrendingUp, Upload, X, Camera, Share2 } from "lucide-react";
+import { TrendingDown, TrendingUp, Upload, Camera, Share2 } from "lucide-react";
 import { useWeightLogs, useLogWeight, useMeasurementLogs, useLogMeasurements, useStreak } from "@/lib/use-tracking";
 import { useAuth } from "@/lib/auth-context";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { MilestoneShareCard } from "@/components/MilestoneShareCard";
+import { motion } from "framer-motion";
 
 const timeRanges = [
   { label: "30d", days: 30 },
@@ -47,7 +47,6 @@ function useUploadPhoto() {
     mutationFn: async ({ file, type }: { file: File; type: PhotoType }) => {
       const ext = file.name.split(".").pop() || "jpg";
       const path = `${user!.id}/${type}/${Date.now()}.${ext}`;
-
       const { data: existing } = await supabase.storage
         .from("progress-photos")
         .list(`${user!.id}/${type}`);
@@ -56,7 +55,6 @@ function useUploadPhoto() {
           .from("progress-photos")
           .remove(existing.map(f => `${user!.id}/${type}/${f.name}`));
       }
-
       const { error } = await supabase.storage
         .from("progress-photos")
         .upload(path, file, { upsert: true });
@@ -159,18 +157,29 @@ export default function Progress() {
     uploadPhoto.mutate({ file, type });
   };
 
+  const fadeIn = (delay: number) => ({
+    initial: { opacity: 0, y: 12 },
+    animate: { opacity: 1, y: 0 },
+    transition: { duration: 0.3, delay },
+  });
+
   return (
     <div className="px-4 lg:px-8 py-6 max-w-4xl mx-auto">
-      <h1 className="text-2xl font-semibold tracking-tight text-foreground mb-6">Progresso</h1>
+      <div className="mb-8">
+        <h1 className="text-2xl font-semibold tracking-tight text-white">Progresso</h1>
+        <p className="text-sm text-white/40 mt-0.5">Acompanhe sua evolução</p>
+      </div>
 
       {/* Compartilhar Marco */}
-      <button
-        onClick={() => setShareOpen(true)}
-        className="w-full mb-4 h-12 rounded-xl bg-gradient-to-r from-fitflow-primary to-fitflow-accent text-white text-sm font-semibold flex items-center justify-center gap-2 active:scale-95 transition-all"
-      >
-        <Share2 size={16} />
-        Compartilhar Seu Marco
-      </button>
+      <motion.div {...fadeIn(0)}>
+        <button
+          onClick={() => setShareOpen(true)}
+          className="w-full mb-4 h-12 rounded-xl bg-[#22c55e] text-white text-sm font-semibold flex items-center justify-center gap-2 active:scale-[0.98] transition-all"
+        >
+          <Share2 size={16} />
+          Compartilhar Seu Marco
+        </button>
+      </motion.div>
 
       <MilestoneShareCard
         open={shareOpen}
@@ -185,35 +194,35 @@ export default function Progress() {
       />
 
       {/* Registrar peso */}
-      <GlassCard className="mb-4">
-        <h2 className="label-style text-[10px] mb-3">REGISTRAR PESO DE HOJE</h2>
+      <motion.div {...fadeIn(0.05)} className="rounded-2xl bg-[#16181f] border border-white/[0.06] p-4 mb-4">
+        <h2 className="text-[10px] font-bold uppercase tracking-[0.15em] text-white/30 mb-3">REGISTRAR PESO DE HOJE</h2>
         <div className="flex gap-2">
           <input
             type="number"
             value={newWeight}
             onChange={e => setNewWeight(e.target.value)}
             placeholder="ex: 75,5"
-            className="flex-1 h-11 px-4 rounded-xl bg-white/5 border border-white/10 text-foreground text-sm focus:outline-none focus:border-fitflow-primary transition-colors placeholder:text-foreground/20"
+            className="flex-1 h-11 px-4 rounded-xl bg-white/[0.03] border border-white/[0.06] text-white text-sm focus:outline-none focus:border-[#22c55e]/40 transition-colors placeholder:text-white/20"
           />
           <button
             onClick={handleLogWeight}
             disabled={logWeight.isPending}
-            className="px-5 h-11 rounded-xl bg-fitflow-primary text-white text-sm font-semibold active:scale-95 transition-all disabled:opacity-50"
+            className="px-5 h-11 rounded-xl bg-[#22c55e] text-white text-sm font-semibold active:scale-95 transition-all disabled:opacity-50"
           >
             {logWeight.isPending ? "..." : "Salvar"}
           </button>
         </div>
-      </GlassCard>
+      </motion.div>
 
       {/* Gráfico de Peso */}
-      <GlassCard className="mb-4">
+      <motion.div {...fadeIn(0.1)} className="rounded-2xl bg-[#16181f] border border-white/[0.06] p-4 mb-4">
         <div className="flex items-center justify-between mb-4">
           <div>
-            <h2 className="text-sm font-semibold text-foreground">Peso</h2>
+            <h2 className="text-sm font-semibold text-white">Peso</h2>
             {diff !== 0 && (
               <div className="flex items-center gap-1.5 mt-1">
-                <TrendIcon size={14} className="text-fitflow-primary" />
-                <span className="text-xs text-fitflow-primary font-medium">
+                <TrendIcon size={14} className="text-[#22c55e]" />
+                <span className="text-xs text-[#22c55e] font-medium">
                   {diff > 0 ? "+" : ""}{diff.toFixed(1)} kg
                 </span>
               </div>
@@ -225,7 +234,9 @@ export default function Progress() {
                 key={r.label}
                 onClick={() => setRangeIdx(i)}
                 className={`px-3 py-1 rounded-full text-[10px] font-semibold transition-all active:scale-95 ${
-                  rangeIdx === i ? "bg-fitflow-primary text-white" : "border border-white/10 text-foreground/40"
+                  rangeIdx === i
+                    ? "bg-[#22c55e] text-white"
+                    : "border border-white/[0.06] text-white/30 hover:bg-white/[0.03]"
                 }`}
               >
                 {r.label}
@@ -236,20 +247,23 @@ export default function Progress() {
         {chartData.length > 0 ? (
           <ResponsiveContainer width="100%" height={180}>
             <LineChart data={chartData}>
-              <XAxis dataKey="date" tick={{ fontSize: 10, fill: "rgba(255,255,255,0.3)" }} axisLine={false} tickLine={false} />
-              <YAxis domain={["auto", "auto"]} tick={{ fontSize: 10, fill: "rgba(255,255,255,0.3)" }} axisLine={false} tickLine={false} width={30} />
-              <Tooltip contentStyle={{ background: "rgba(15,17,23,0.9)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 12, fontSize: 12 }} labelStyle={{ color: "rgba(255,255,255,0.5)" }} />
-              <Line type="monotone" dataKey="weight" stroke="#0D9E75" strokeWidth={2} dot={{ fill: "#0D9E75", r: 3 }} />
+              <XAxis dataKey="date" tick={{ fontSize: 10, fill: "rgba(255,255,255,0.25)" }} axisLine={false} tickLine={false} />
+              <YAxis domain={["auto", "auto"]} tick={{ fontSize: 10, fill: "rgba(255,255,255,0.25)" }} axisLine={false} tickLine={false} width={30} />
+              <Tooltip
+                contentStyle={{ background: "#16181f", border: "1px solid rgba(255,255,255,0.06)", borderRadius: 12, fontSize: 12, color: "#fff" }}
+                labelStyle={{ color: "rgba(255,255,255,0.4)" }}
+              />
+              <Line type="monotone" dataKey="weight" stroke="#22c55e" strokeWidth={2} dot={{ fill: "#22c55e", r: 3 }} />
             </LineChart>
           </ResponsiveContainer>
         ) : (
-          <p className="text-center text-sm text-foreground/30 py-8">Registre seu peso para ver o progresso</p>
+          <p className="text-center text-sm text-white/20 py-8">Registre seu peso para ver o progresso</p>
         )}
-      </GlassCard>
+      </motion.div>
 
       {/* Medidas */}
-      <GlassCard className="mb-4">
-        <h2 className="label-style text-[10px] mb-4">MEDIDAS CORPORAIS</h2>
+      <motion.div {...fadeIn(0.15)} className="rounded-2xl bg-[#16181f] border border-white/[0.06] p-4 mb-4">
+        <h2 className="text-[10px] font-bold uppercase tracking-[0.15em] text-white/30 mb-4">MEDIDAS CORPORAIS</h2>
         <div className="grid grid-cols-3 gap-3 mb-3">
           {[
             { label: "Cintura", value: waist, set: setWaist },
@@ -257,13 +271,13 @@ export default function Progress() {
             { label: "Braços", value: arms, set: setArms },
           ].map(m => (
             <div key={m.label}>
-              <label className="text-[10px] text-foreground/40 block mb-1">{m.label} (cm)</label>
+              <label className="text-[10px] text-white/30 block mb-1">{m.label} (cm)</label>
               <input
                 type="number"
                 value={m.value}
                 onChange={e => m.set(e.target.value)}
                 placeholder="—"
-                className="w-full h-10 px-3 rounded-xl bg-white/5 border border-white/10 text-foreground text-sm text-center focus:outline-none focus:border-fitflow-primary transition-colors placeholder:text-foreground/20"
+                className="w-full h-10 px-3 rounded-xl bg-white/[0.03] border border-white/[0.06] text-white text-sm text-center focus:outline-none focus:border-[#22c55e]/40 transition-colors placeholder:text-white/15"
               />
             </div>
           ))}
@@ -271,15 +285,15 @@ export default function Progress() {
         <button
           onClick={handleLogMeasurements}
           disabled={logMeasurements.isPending}
-          className="w-full h-10 rounded-xl bg-fitflow-primary/10 text-fitflow-primary text-sm font-semibold active:scale-95 transition-all disabled:opacity-50"
+          className="w-full h-10 rounded-xl bg-white/[0.04] text-white/60 text-sm font-semibold hover:bg-white/[0.06] active:scale-[0.98] transition-all disabled:opacity-50"
         >
           Salvar Medidas
         </button>
-      </GlassCard>
+      </motion.div>
 
       {/* Fotos Antes/Depois */}
-      <GlassCard className="mb-4">
-        <h2 className="label-style text-[10px] mb-4">ANTES & DEPOIS</h2>
+      <motion.div {...fadeIn(0.2)} className="rounded-2xl bg-[#16181f] border border-white/[0.06] p-4 mb-4">
+        <h2 className="text-[10px] font-bold uppercase tracking-[0.15em] text-white/30 mb-4">ANTES & DEPOIS</h2>
         <div className="grid grid-cols-2 gap-3">
           {(["before", "after"] as PhotoType[]).map(type => {
             const url = photos?.[type];
@@ -309,20 +323,20 @@ export default function Progress() {
                 ) : (
                   <div
                     onClick={() => (type === "before" ? beforeRef : afterRef).current?.click()}
-                    className={`aspect-[3/4] rounded-xl bg-white/5 border border-dashed border-white/10 flex flex-col items-center justify-center gap-2 cursor-pointer hover:border-fitflow-primary/30 transition-colors ${
+                    className={`aspect-[3/4] rounded-xl bg-white/[0.02] border border-dashed border-white/[0.08] flex flex-col items-center justify-center gap-2 cursor-pointer hover:border-[#22c55e]/20 transition-colors ${
                       uploadPhoto.isPending ? "opacity-50 pointer-events-none" : ""
                     }`}
                   >
-                    <Upload size={20} className="text-foreground/20" />
-                    <span className="text-xs text-foreground/30">{label}</span>
-                    <span className="text-[10px] text-foreground/20">Toque para enviar</span>
+                    <Upload size={20} className="text-white/15" />
+                    <span className="text-xs text-white/25">{label}</span>
+                    <span className="text-[10px] text-white/15">Toque para enviar</span>
                   </div>
                 )}
               </div>
             );
           })}
         </div>
-      </GlassCard>
+      </motion.div>
     </div>
   );
 }
