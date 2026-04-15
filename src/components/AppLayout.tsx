@@ -1,0 +1,123 @@
+import { ReactNode } from "react";
+import { NavLink, useLocation } from "react-router-dom";
+import { Home, Utensils, Dumbbell, Camera, TrendingUp, User, Settings, Moon, Sun, Plus } from "lucide-react";
+import { useTheme } from "@/lib/theme-context";
+import { useAuth } from "@/lib/auth-context";
+import { motion } from "framer-motion";
+
+const tabs = [
+  { to: "/", icon: Home, label: "Home" },
+  { to: "/diet", icon: Utensils, label: "Diet" },
+  { to: "/workout", icon: Dumbbell, label: "Workout" },
+  { to: "/scanner", icon: Camera, label: "Scanner" },
+  { to: "/progress", icon: TrendingUp, label: "Progress" },
+];
+
+export default function AppLayout({ children }: { children: ReactNode }) {
+  const { theme, toggle } = useTheme();
+  const { user } = useAuth();
+  const location = useLocation();
+  const initials = user?.email?.slice(0, 2).toUpperCase() || "FF";
+
+  return (
+    <div className="min-h-screen bg-background flex">
+      {/* Desktop sidebar */}
+      <aside className="hidden lg:flex w-64 flex-col border-r border-white/5 p-4 sticky top-0 h-screen">
+        <div className="mb-8">
+          <h1 className="text-xl font-semibold tracking-tight text-foreground">
+            Fit<span className="text-fitflow-primary">Flow</span>
+          </h1>
+        </div>
+        <nav className="flex-1 space-y-1">
+          {tabs.map(t => (
+            <NavLink
+              key={t.to}
+              to={t.to}
+              end={t.to === "/"}
+              className={({ isActive }) =>
+                `flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all ${
+                  isActive ? "bg-fitflow-primary/10 text-fitflow-primary" : "text-foreground/50 hover:text-foreground/80 hover:bg-white/5"
+                }`
+              }
+            >
+              <t.icon size={20} />
+              {t.label}
+            </NavLink>
+          ))}
+          <div className="h-px bg-white/5 my-4" />
+          <NavLink
+            to="/profile"
+            className={({ isActive }) =>
+              `flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all ${
+                isActive ? "bg-fitflow-primary/10 text-fitflow-primary" : "text-foreground/50 hover:text-foreground/80 hover:bg-white/5"
+              }`
+            }
+          >
+            <User size={20} />
+            Profile
+          </NavLink>
+          <NavLink
+            to="/sleep"
+            className={({ isActive }) =>
+              `flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all ${
+                isActive ? "bg-fitflow-primary/10 text-fitflow-primary" : "text-foreground/50 hover:text-foreground/80 hover:bg-white/5"
+              }`
+            }
+          >
+            <Moon size={20} />
+            Sleep
+          </NavLink>
+        </nav>
+        <div className="mt-auto space-y-2">
+          <button
+            onClick={toggle}
+            className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-foreground/50 hover:text-foreground/80 hover:bg-white/5 w-full transition-all"
+          >
+            {theme === "dark" ? <Sun size={20} /> : <Moon size={20} />}
+            {theme === "dark" ? "Light Mode" : "Dark Mode"}
+          </button>
+        </div>
+      </aside>
+
+      {/* Main area */}
+      <div className="flex-1 flex flex-col min-h-screen">
+        <motion.main
+          key={location.pathname}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.15 }}
+          className="flex-1 pb-24 lg:pb-6"
+        >
+          {children}
+        </motion.main>
+
+        {/* Mobile bottom tab bar */}
+        <nav className="lg:hidden fixed bottom-0 left-0 right-0 bg-background/90 backdrop-blur-lg border-t border-white/5 flex justify-around items-center h-16 safe-area-pb z-50">
+          {tabs.map(t => {
+            const active = t.to === "/" ? location.pathname === "/" : location.pathname.startsWith(t.to);
+            return (
+              <NavLink
+                key={t.to}
+                to={t.to}
+                className="flex flex-col items-center gap-0.5 min-w-[44px] min-h-[44px] justify-center"
+              >
+                <t.icon size={20} className={active ? "text-fitflow-primary" : "text-foreground/40"} />
+                <span className={`text-[10px] font-medium ${active ? "text-fitflow-primary" : "text-foreground/40"}`}>
+                  {t.label}
+                </span>
+              </NavLink>
+            );
+          })}
+        </nav>
+
+        {/* FAB */}
+        <NavLink
+          to="/diary"
+          className="lg:hidden fixed bottom-20 right-4 w-14 h-14 rounded-full bg-fitflow-primary flex items-center justify-center shadow-lg shadow-fitflow-primary/25 active:scale-95 transition-transform z-50"
+        >
+          <Plus size={24} className="text-white" />
+        </NavLink>
+      </div>
+    </div>
+  );
+}
