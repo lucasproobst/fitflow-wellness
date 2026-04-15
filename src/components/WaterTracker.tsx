@@ -10,14 +10,14 @@ export function WaterTracker({ glasses, onAdd, target = 8 }: WaterTrackerProps) 
   return (
     <div className="flex items-center justify-between">
       <div className="flex items-center gap-2">
-        <Droplets size={20} className="text-blue-400" />
-        <span className="text-sm font-medium text-foreground/80">
+        <Droplets size={18} className="text-white/30" />
+        <span className="text-sm font-medium text-white/60">
           {glasses * 250}ml / {target * 250}ml
         </span>
       </div>
       <button
         onClick={onAdd}
-        className="px-3 py-1.5 rounded-full border border-white/10 text-xs font-medium text-foreground/80 hover:bg-white/5 active:scale-95 transition-all"
+        className="px-3 py-1.5 rounded-full border border-white/[0.08] text-xs font-medium text-white/50 hover:bg-white/[0.04] active:scale-95 transition-all"
       >
         +250ml
       </button>

@@ -1,5 +1,4 @@
 import { useState, useEffect } from "react";
-import { GlassCard } from "@/components/GlassCard";
 import { CalorieRing } from "@/components/CalorieRing";
 import { MacroBar } from "@/components/MacroBar";
 import { WaterTracker } from "@/components/WaterTracker";
@@ -10,8 +9,9 @@ import { useTheme } from "@/lib/theme-context";
 import { useDailyLog, useAddWater, useStreak, useWeeklySummary } from "@/lib/use-tracking";
 import { useCheckAchievements } from "@/lib/use-achievements";
 import { useNotificationReminders } from "@/lib/use-notifications";
-import { Flame, Dumbbell, ChevronRight, TrendingDown, TrendingUp, Utensils, BarChart3, X, Download, Smartphone } from "lucide-react";
+import { Flame, Dumbbell, ChevronRight, TrendingDown, TrendingUp, Utensils, BarChart3, X, Download, Smartphone, Droplets } from "lucide-react";
 import { Link } from "react-router-dom";
+import { motion } from "framer-motion";
 
 interface BeforeInstallPromptEvent extends Event {
   prompt(): Promise<void>;
@@ -21,7 +21,7 @@ interface BeforeInstallPromptEvent extends Event {
 export default function Dashboard() {
   const { user } = useAuth();
   const { data: profile } = useProfile();
-  useTheme(); // keep hook call order
+  useTheme();
   const { data: dailyLog } = useDailyLog();
   const addWater = useAddWater();
   const { data: streak } = useStreak();
@@ -81,9 +81,15 @@ export default function Dashboard() {
   const totalCarbs = meals.reduce((s, m) => s + (m.carbs || 0), 0);
   const totalFat = meals.reduce((s, m) => s + (m.fat || 0), 0);
 
+  const fadeIn = (delay: number) => ({
+    initial: { opacity: 0, y: 12 },
+    animate: { opacity: 1, y: 0 },
+    transition: { duration: 0.3, delay },
+  });
+
   return (
     <div className="px-4 lg:px-8 py-6 max-w-4xl mx-auto">
-      {/* Barra superior */}
+      {/* Top bar */}
       <div className="flex items-center justify-between mb-8">
         <div className="flex items-center gap-3 min-w-0">
           <div className="w-10 h-10 rounded-full bg-[#22c55e] flex items-center justify-center text-white text-sm font-semibold shrink-0">
@@ -100,70 +106,70 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* Resumo semanal */}
+      {/* Weekly summary */}
       {showWeekly && weeklySummary && (
-        <GlassCard className="mb-4 relative border-fitflow-primary/20">
+        <motion.div {...fadeIn(0)} className="rounded-2xl bg-[#16181f] border border-white/[0.06] p-4 mb-4 relative">
           <button
             onClick={() => { setShowWeekly(false); sessionStorage.setItem("weekly-summary-dismissed", "1"); }}
-            className="absolute top-3 right-3 w-6 h-6 rounded-full bg-white/5 flex items-center justify-center hover:bg-white/10 transition-colors"
+            className="absolute top-3 right-3 w-6 h-6 rounded-full bg-white/[0.04] flex items-center justify-center hover:bg-white/[0.08] transition-colors"
           >
-            <X size={12} className="text-foreground/40" />
+            <X size={12} className="text-white/30" />
           </button>
           <div className="flex items-center gap-2 mb-3">
-            <BarChart3 size={14} className="text-fitflow-primary" />
-            <h3 className="text-xs font-bold uppercase tracking-wider text-fitflow-primary">Esta Semana</h3>
+            <BarChart3 size={14} className="text-[#22c55e]" />
+            <h3 className="text-xs font-bold uppercase tracking-wider text-[#22c55e]">Esta Semana</h3>
           </div>
           <div className="grid grid-cols-3 gap-3">
             <div className="text-center">
               <div className="flex items-center justify-center gap-1 mb-1">
-                <Utensils size={12} className="text-foreground/40" />
+                <Utensils size={12} className="text-white/25" />
               </div>
-              <p className="text-lg font-bold text-foreground">{weeklySummary.avgCaloriesPerDay.toLocaleString()}</p>
-              <p className="text-[10px] text-foreground/40 uppercase tracking-wider">Méd cal/dia</p>
+              <p className="text-lg font-bold text-white">{weeklySummary.avgCaloriesPerDay.toLocaleString()}</p>
+              <p className="text-[10px] text-white/30 uppercase tracking-wider">Méd cal/dia</p>
             </div>
             <div className="text-center">
               <div className="flex items-center justify-center gap-1 mb-1">
-                <Dumbbell size={12} className="text-foreground/40" />
+                <Dumbbell size={12} className="text-white/25" />
               </div>
-              <p className="text-lg font-bold text-foreground">{weeklySummary.workoutsCompleted}</p>
-              <p className="text-[10px] text-foreground/40 uppercase tracking-wider">Treinos</p>
+              <p className="text-lg font-bold text-white">{weeklySummary.workoutsCompleted}</p>
+              <p className="text-[10px] text-white/30 uppercase tracking-wider">Treinos</p>
             </div>
             <div className="text-center">
               <div className="flex items-center justify-center gap-1 mb-1">
                 {weeklySummary.weightChange !== null && weeklySummary.weightChange <= 0
-                  ? <TrendingDown size={12} className="text-fitflow-primary" />
-                  : <TrendingUp size={12} className="text-foreground/40" />}
+                  ? <TrendingDown size={12} className="text-[#22c55e]" />
+                  : <TrendingUp size={12} className="text-white/25" />}
               </div>
-              <p className="text-lg font-bold text-foreground">
+              <p className="text-lg font-bold text-white">
                 {weeklySummary.weightChange !== null
                   ? `${weeklySummary.weightChange > 0 ? "+" : ""}${weeklySummary.weightChange.toFixed(1)}`
                   : "—"}
               </p>
-              <p className="text-[10px] text-foreground/40 uppercase tracking-wider">Variação kg</p>
+              <p className="text-[10px] text-white/30 uppercase tracking-wider">Variação kg</p>
             </div>
           </div>
-          <p className="text-[10px] text-foreground/30 mt-3 text-center">
+          <p className="text-[10px] text-white/20 mt-3 text-center">
             {weeklySummary.daysLogged} dia{weeklySummary.daysLogged !== 1 ? "s" : ""} registrado{weeklySummary.daysLogged !== 1 ? "s" : ""} • {weeklySummary.totalCalories.toLocaleString()} calorias totais
           </p>
-        </GlassCard>
+        </motion.div>
       )}
 
-      {/* Banner de instalação */}
+      {/* Install banner */}
       {showInstallBanner && (
-        <GlassCard className="mb-4 relative border-fitflow-accent/20 overflow-hidden">
+        <motion.div {...fadeIn(0.05)} className="rounded-2xl bg-[#16181f] border border-white/[0.06] p-4 mb-4 relative">
           <button
             onClick={dismissInstallBanner}
-            className="absolute top-3 right-3 w-6 h-6 rounded-full bg-white/5 flex items-center justify-center hover:bg-white/10 transition-colors z-10"
+            className="absolute top-3 right-3 w-6 h-6 rounded-full bg-white/[0.04] flex items-center justify-center hover:bg-white/[0.08] transition-colors z-10"
           >
-            <X size={12} className="text-foreground/40" />
+            <X size={12} className="text-white/30" />
           </button>
           <div className="flex items-center gap-4">
-            <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-fitflow-primary to-fitflow-accent flex items-center justify-center shrink-0">
-              <Smartphone size={20} className="text-white" />
+            <div className="w-11 h-11 rounded-2xl bg-[#22c55e]/10 flex items-center justify-center shrink-0">
+              <Smartphone size={20} className="text-[#22c55e]" />
             </div>
             <div className="flex-1 min-w-0 pr-6">
-              <p className="text-sm font-semibold text-foreground mb-0.5">Instale o FitFlow</p>
-              <p className="text-xs text-foreground/50 leading-relaxed">
+              <p className="text-sm font-semibold text-white mb-0.5">Instale o FitFlow</p>
+              <p className="text-xs text-white/40 leading-relaxed">
                 Adicione à sua tela inicial para acesso rápido e experiência completa.
               </p>
             </div>
@@ -171,7 +177,7 @@ export default function Dashboard() {
           {installPrompt ? (
             <button
               onClick={handleInstallBanner}
-              className="mt-3 w-full h-10 rounded-xl bg-gradient-to-r from-fitflow-primary to-fitflow-accent text-white text-xs font-semibold flex items-center justify-center gap-2 active:scale-[0.98] transition-transform"
+              className="mt-3 w-full h-10 rounded-xl bg-[#22c55e] text-white text-xs font-semibold flex items-center justify-center gap-2 active:scale-[0.98] transition-transform"
             >
               <Download size={14} />
               Instalar Agora
@@ -179,70 +185,79 @@ export default function Dashboard() {
           ) : (
             <Link
               to="/install"
-              className="mt-3 w-full h-10 rounded-xl bg-fitflow-primary/10 text-fitflow-primary text-xs font-semibold flex items-center justify-center gap-2 active:scale-[0.98] transition-transform"
+              className="mt-3 w-full h-10 rounded-xl bg-white/[0.04] text-white/50 text-xs font-semibold flex items-center justify-center gap-2 active:scale-[0.98] transition-transform hover:bg-white/[0.06]"
             >
               <Download size={14} />
               Como instalar
             </Link>
           )}
-        </GlassCard>
+        </motion.div>
       )}
 
-
-      <div className="flex justify-center mb-8">
+      {/* Calorie Ring */}
+      <motion.div {...fadeIn(0.1)} className="flex justify-center mb-8">
         <CalorieRing consumed={consumed} target={calorieTarget} />
-      </div>
+      </motion.div>
 
       {/* Macros */}
-      <GlassCard className="mb-4 space-y-3">
+      <motion.div {...fadeIn(0.15)} className="rounded-2xl bg-[#16181f] border border-white/[0.06] p-4 mb-4 space-y-4">
         <MacroBar label="Proteína" current={totalProtein} target={150} />
         <MacroBar label="Carboidratos" current={totalCarbs} target={200} />
         <MacroBar label="Gordura" current={totalFat} target={60} />
-      </GlassCard>
+      </motion.div>
 
       <div className="grid gap-4 lg:grid-cols-2">
-        <GlassCard>
-          <h3 className="label-style text-[10px] mb-3">HIDRATAÇÃO</h3>
+        {/* Hydration */}
+        <motion.div {...fadeIn(0.2)} className="rounded-2xl bg-[#16181f] border border-white/[0.06] p-4">
+          <h3 className="text-[10px] font-bold uppercase tracking-[0.15em] text-white/30 mb-3">HIDRATAÇÃO</h3>
           <WaterTracker
             glasses={waterGlasses}
             onAdd={() => addWater.mutate()}
           />
-        </GlassCard>
+        </motion.div>
 
-        <Link to="/workout">
-          <GlassCard className="hover:border-fitflow-primary/30 transition-colors">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-fitflow-primary/10 flex items-center justify-center">
-                  <Dumbbell size={18} className="text-fitflow-primary" />
+        {/* Workout shortcut */}
+        <motion.div {...fadeIn(0.25)}>
+          <Link to="/workout">
+            <div className="rounded-2xl bg-[#16181f] border border-white/[0.06] p-4 hover:border-white/[0.1] transition-colors">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-white/[0.03] flex items-center justify-center">
+                    <Dumbbell size={18} className="text-white/30" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-semibold text-white">Treino de Hoje</p>
+                    <p className="text-xs text-white/30">Superior · 6 exercícios</p>
+                  </div>
                 </div>
-                <div>
-                  <p className="text-sm font-semibold text-foreground">Treino de Hoje</p>
-                  <p className="text-xs text-foreground/40">Superior · 6 exercícios</p>
-                </div>
+                <ChevronRight size={16} className="text-white/20" />
               </div>
-              <ChevronRight size={16} className="text-foreground/30" />
             </div>
-          </GlassCard>
-        </Link>
+          </Link>
+        </motion.div>
       </div>
 
-      <GlassCard className="mt-4">
+      {/* Streak */}
+      <motion.div {...fadeIn(0.3)} className="rounded-2xl bg-[#16181f] border border-white/[0.06] p-4 mt-4">
         <div className="flex items-center gap-3">
           <Flame size={24} className="text-orange-400" />
           <div>
-            <p className="text-lg font-semibold text-foreground">Sequência de {streakCount} Dia{streakCount !== 1 ? "s" : ""}</p>
-            <p className="text-xs text-foreground/40">
+            <p className="text-lg font-semibold text-white">Sequência de {streakCount} Dia{streakCount !== 1 ? "s" : ""}</p>
+            <p className="text-xs text-white/30">
               {streakCount > 0 ? "Continue assim! Você está arrasando" : "Registre refeições e treinos para começar sua sequência"}
             </p>
           </div>
         </div>
-      </GlassCard>
-      <Link to="/achievements">
-        <GlassCard className="mt-4 hover:border-fitflow-primary/20 transition-colors">
-          <AchievementBadges />
-        </GlassCard>
-      </Link>
+      </motion.div>
+
+      {/* Achievements */}
+      <motion.div {...fadeIn(0.35)}>
+        <Link to="/achievements">
+          <div className="rounded-2xl bg-[#16181f] border border-white/[0.06] p-4 mt-4 hover:border-white/[0.1] transition-colors">
+            <AchievementBadges />
+          </div>
+        </Link>
+      </motion.div>
     </div>
   );
 }
