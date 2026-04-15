@@ -368,10 +368,9 @@ function WorkoutHistory({ userId, fadeIn }: { userId?: string; fadeIn: (d: numbe
     },
   });
 
-  if (!sessions || sessions.length === 0) return null;
-
   // Group by date
   const grouped = useMemo(() => {
+    if (!sessions || sessions.length === 0) return [];
     const map = new Map<string, WorkoutSession[]>();
     sessions.forEach((s) => {
       const existing = map.get(s.date) || [];
@@ -380,6 +379,8 @@ function WorkoutHistory({ userId, fadeIn }: { userId?: string; fadeIn: (d: numbe
     });
     return Array.from(map.entries());
   }, [sessions]);
+
+  if (!sessions || sessions.length === 0) return null;
 
   return (
     <motion.div {...fadeIn(0.25)} className="rounded-2xl bg-[#16181f] border border-white/[0.06] p-4 mb-4">
