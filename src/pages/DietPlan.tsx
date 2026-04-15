@@ -80,6 +80,7 @@ export default function DietPlan() {
   const [recipes, setRecipes] = useState<Recipe[]>([]);
   const [loadingRecipes, setLoadingRecipes] = useState(false);
   const [expandedRecipe, setExpandedRecipe] = useState<number | null>(null);
+  const recipesCache = useRef<Record<number, Recipe[]>>({});
   const { user } = useAuth();
   const qc = useQueryClient();
 
