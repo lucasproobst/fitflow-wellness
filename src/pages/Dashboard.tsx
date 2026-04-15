@@ -17,8 +17,19 @@ export default function Dashboard() {
   const { data: dailyLog } = useDailyLog();
   const addWater = useAddWater();
   const { data: streak } = useStreak();
+  const { data: weeklySummary } = useWeeklySummary();
   const streakCount = streak ?? 0;
   const initials = user?.email?.slice(0, 2).toUpperCase() || "FF";
+
+  const [showWeekly, setShowWeekly] = useState(false);
+
+  // Show weekly summary banner once per session if there's data
+  useEffect(() => {
+    if (weeklySummary && weeklySummary.daysLogged > 0) {
+      const lastDismissed = sessionStorage.getItem("weekly-summary-dismissed");
+      if (!lastDismissed) setShowWeekly(true);
+    }
+  }, [weeklySummary]);
 
   const calorieTarget = profile?.goal === "lose_weight" ? 1800 : profile?.goal === "gain_muscle" ? 2600 : 2200;
   const consumed = dailyLog?.calories_total || 0;
