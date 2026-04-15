@@ -1,6 +1,7 @@
 import { useAuth } from "@/lib/auth-context";
 import { useProfile } from "@/lib/use-profile";
 import { GlassCard } from "@/components/GlassCard";
+import { NotificationSettings } from "@/components/NotificationSettings";
 import { LogOut, User, Mail, Target, Activity } from "lucide-react";
 
 export default function Profile() {
@@ -54,6 +55,9 @@ export default function Profile() {
           </div>
         </GlassCard>
       )}
+
+
+      <NotificationSettings />
 
       <button
         onClick={signOut}
