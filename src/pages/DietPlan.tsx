@@ -84,21 +84,24 @@ export default function DietPlan() {
   const { user } = useAuth();
   const qc = useQueryClient();
 
-  const { data: planData, isLoading } = useQuery({
+  const { data: planRow, isLoading } = useQuery({
     queryKey: ["meal-plan", user?.id],
     enabled: !!user,
     queryFn: async () => {
       const weekStart = getWeekStart();
       const { data, error } = await supabase
         .from("meal_plans")
-        .select("plan_data")
+        .select("id, plan_data")
         .eq("user_id", user!.id)
         .eq("week_start", weekStart)
         .maybeSingle();
       if (error) throw error;
-      return (data?.plan_data as unknown) as MealPlanData | null;
+      return data;
     },
   });
+
+  const planData = planRow ? (planRow.plan_data as unknown as MealPlanData) : null;
+  const mealPlanId = planRow?.id;
 
   const generate = useMutation({
     mutationFn: async () => {
@@ -107,8 +110,12 @@ export default function DietPlan() {
       if (data?.error) throw new Error(data.error);
       return data as MealPlanData;
     },
-    onSuccess: () => {
+    onSuccess: async () => {
       recipesCache.current = {};
+      // Clear DB recipe cache for old plan
+      if (user && mealPlanId) {
+        await supabase.from("recipe_cache").delete().eq("meal_plan_id", mealPlanId);
+      }
       qc.invalidateQueries({ queryKey: ["meal-plan"] });
       toast.success("Plano alimentar gerado!");
     },
@@ -193,17 +200,35 @@ export default function DietPlan() {
   }, [user, favorites]);
 
   const handleViewRecipes = async () => {
-    if (!currentDay?.meals) return;
+    if (!currentDay?.meals || !user || !mealPlanId) return;
 
-    // Check cache first
-    const cached = recipesCache.current[selectedDay];
-    if (cached && cached.length > 0) {
+    // Check in-memory cache first
+    const memCached = recipesCache.current[selectedDay];
+    if (memCached && memCached.length > 0) {
+      setRecipes(memCached);
+      setExpandedRecipe(0);
+      setRecipesOpen(true);
+      return;
+    }
+
+    // Check DB cache
+    const { data: dbCached } = await supabase
+      .from("recipe_cache")
+      .select("recipes")
+      .eq("meal_plan_id", mealPlanId)
+      .eq("day_index", selectedDay)
+      .maybeSingle();
+
+    if (dbCached?.recipes && (dbCached.recipes as any[]).length > 0) {
+      const cached = dbCached.recipes as unknown as Recipe[];
+      recipesCache.current[selectedDay] = cached;
       setRecipes(cached);
       setExpandedRecipe(0);
       setRecipesOpen(true);
       return;
     }
 
+    // Generate new recipes
     setRecipesOpen(true);
     setLoadingRecipes(true);
     setRecipes([]);
@@ -228,6 +253,14 @@ export default function DietPlan() {
       recipesCache.current[selectedDay] = result;
       setRecipes(result);
       setExpandedRecipe(0);
+
+      // Save to DB cache
+      await supabase.from("recipe_cache").upsert({
+        user_id: user.id,
+        meal_plan_id: mealPlanId,
+        day_index: selectedDay,
+        recipes: result as any,
+      }, { onConflict: "meal_plan_id,day_index" });
     } catch (err: any) {
       toast.error(err.message || "Falha ao gerar receitas");
       setRecipesOpen(false);

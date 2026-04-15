@@ -125,6 +125,33 @@ export type Database = {
         }
         Relationships: []
       }
+      recipe_cache: {
+        Row: {
+          created_at: string
+          day_index: number
+          id: string
+          meal_plan_id: string
+          recipes: Json
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          day_index: number
+          id?: string
+          meal_plan_id: string
+          recipes?: Json
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          day_index?: number
+          id?: string
+          meal_plan_id?: string
+          recipes?: Json
+          user_id?: string
+        }
+        Relationships: []
+      }
       sleep_logs: {
         Row: {
           created_at: string
