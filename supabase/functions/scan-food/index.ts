@@ -30,12 +30,12 @@ serve(async (req) => {
         messages: [
           {
             role: "system",
-            content: `You are a nutrition analysis expert. Analyze the food in the image and return structured nutrition data. Always respond using the provided tool.`,
+            content: `You are a nutrition analysis expert. Analyze the food in the image and return structured nutrition data. All food names and serving descriptions MUST be in Brazilian Portuguese. Always respond using the provided tool.`,
           },
           {
             role: "user",
             content: [
-              { type: "text", text: "Analyze this food image. Identify the food, estimate the serving size, and provide nutrition data including calories, protein, carbs, and fat." },
+              { type: "text", text: "Analise esta imagem de alimento. Identifique o alimento, estime o tamanho da porção e forneça dados nutricionais incluindo calorias, proteína, carboidratos e gordura. Responda em português do Brasil." },
               { type: "image_url", image_url: { url: image_base64 } },
             ],
           },
