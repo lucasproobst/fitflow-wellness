@@ -66,6 +66,54 @@ export default function Dashboard() {
         </div>
       </div>
 
+      {/* Weekly Summary Notification */}
+      {showWeekly && weeklySummary && (
+        <GlassCard className="mb-4 relative border-fitflow-primary/20">
+          <button
+            onClick={() => { setShowWeekly(false); sessionStorage.setItem("weekly-summary-dismissed", "1"); }}
+            className="absolute top-3 right-3 w-6 h-6 rounded-full bg-white/5 flex items-center justify-center hover:bg-white/10 transition-colors"
+          >
+            <X size={12} className="text-foreground/40" />
+          </button>
+          <div className="flex items-center gap-2 mb-3">
+            <BarChart3 size={14} className="text-fitflow-primary" />
+            <h3 className="text-xs font-bold uppercase tracking-wider text-fitflow-primary">This Week</h3>
+          </div>
+          <div className="grid grid-cols-3 gap-3">
+            <div className="text-center">
+              <div className="flex items-center justify-center gap-1 mb-1">
+                <Utensils size={12} className="text-foreground/40" />
+              </div>
+              <p className="text-lg font-bold text-foreground">{weeklySummary.avgCaloriesPerDay.toLocaleString()}</p>
+              <p className="text-[10px] text-foreground/40 uppercase tracking-wider">Avg cal/day</p>
+            </div>
+            <div className="text-center">
+              <div className="flex items-center justify-center gap-1 mb-1">
+                <Dumbbell size={12} className="text-foreground/40" />
+              </div>
+              <p className="text-lg font-bold text-foreground">{weeklySummary.workoutsCompleted}</p>
+              <p className="text-[10px] text-foreground/40 uppercase tracking-wider">Workouts</p>
+            </div>
+            <div className="text-center">
+              <div className="flex items-center justify-center gap-1 mb-1">
+                {weeklySummary.weightChange !== null && weeklySummary.weightChange <= 0
+                  ? <TrendingDown size={12} className="text-fitflow-primary" />
+                  : <TrendingUp size={12} className="text-foreground/40" />}
+              </div>
+              <p className="text-lg font-bold text-foreground">
+                {weeklySummary.weightChange !== null
+                  ? `${weeklySummary.weightChange > 0 ? "+" : ""}${weeklySummary.weightChange.toFixed(1)}`
+                  : "—"}
+              </p>
+              <p className="text-[10px] text-foreground/40 uppercase tracking-wider">kg change</p>
+            </div>
+          </div>
+          <p className="text-[10px] text-foreground/30 mt-3 text-center">
+            {weeklySummary.daysLogged} day{weeklySummary.daysLogged !== 1 ? "s" : ""} logged • {weeklySummary.totalCalories.toLocaleString()} total calories
+          </p>
+        </GlassCard>
+      )}
+
       {/* Calorie ring */}
       <div className="flex justify-center mb-8">
         <CalorieRing consumed={consumed} target={calorieTarget} />
