@@ -169,9 +169,11 @@ export default function Dashboard() {
           </div>
         </div>
       </GlassCard>
-      <GlassCard className="mt-4">
-        <AchievementBadges />
-      </GlassCard>
+      <Link to="/achievements">
+        <GlassCard className="mt-4 hover:border-fitflow-primary/20 transition-colors">
+          <AchievementBadges />
+        </GlassCard>
+      </Link>
     </div>
   );
 }

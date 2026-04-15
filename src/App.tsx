@@ -18,6 +18,7 @@ import SleepTracker from "@/pages/SleepTracker";
 import Profile from "@/pages/Profile";
 import NotFound from "@/pages/NotFound";
 import Install from "@/pages/Install";
+import Achievements from "@/pages/Achievements";
 
 const queryClient = new QueryClient();
 
@@ -46,6 +47,7 @@ function ProtectedRoutes() {
         <Route path="/progress" element={<Progress />} />
         <Route path="/diary" element={<FoodDiary />} />
         <Route path="/sleep" element={<SleepTracker />} />
+        <Route path="/achievements" element={<Achievements />} />
         <Route path="/profile" element={<Profile />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
