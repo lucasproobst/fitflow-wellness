@@ -151,6 +151,7 @@ export type Database = {
           activity_level: string | null
           age: number | null
           created_at: string
+          display_name: string | null
           food_restrictions: Json | null
           goal: string | null
           height_cm: number | null
@@ -165,6 +166,7 @@ export type Database = {
           activity_level?: string | null
           age?: number | null
           created_at?: string
+          display_name?: string | null
           food_restrictions?: Json | null
           goal?: string | null
           height_cm?: number | null
@@ -179,6 +181,7 @@ export type Database = {
           activity_level?: string | null
           age?: number | null
           created_at?: string
+          display_name?: string | null
           food_restrictions?: Json | null
           goal?: string | null
           height_cm?: number | null
