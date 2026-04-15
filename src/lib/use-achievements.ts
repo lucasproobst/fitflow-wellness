@@ -3,6 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth-context";
 import { useEffect } from "react";
 import { toast } from "sonner";
+import confetti from "canvas-confetti";
 
 export interface AchievementDef {
   key: string;
@@ -133,6 +134,29 @@ export function useCheckAchievements() {
         unlock.mutate(key, {
           onSuccess: () => {
             if (def) {
+              // Fire confetti burst
+              confetti({
+                particleCount: 80,
+                spread: 70,
+                origin: { y: 0.7 },
+                colors: ["#0D9E75", "#A8E063", "#FFD700", "#FF6B6B", "#4FC3F7"],
+              });
+              // Second burst slightly delayed for extra celebration
+              setTimeout(() => {
+                confetti({
+                  particleCount: 40,
+                  spread: 100,
+                  origin: { y: 0.6, x: 0.3 },
+                  colors: ["#0D9E75", "#A8E063", "#FFD700"],
+                });
+                confetti({
+                  particleCount: 40,
+                  spread: 100,
+                  origin: { y: 0.6, x: 0.7 },
+                  colors: ["#0D9E75", "#A8E063", "#FFD700"],
+                });
+              }, 300);
+
               toast(
                 `${def.icon} ${def.title} Desbloqueado!`,
                 {
