@@ -2,11 +2,12 @@ import { useState, useRef } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { GlassCard } from "@/components/GlassCard";
 import { LineChart, Line, XAxis, YAxis, ResponsiveContainer, Tooltip } from "recharts";
-import { TrendingDown, TrendingUp, Upload, X, Camera } from "lucide-react";
-import { useWeightLogs, useLogWeight, useMeasurementLogs, useLogMeasurements } from "@/lib/use-tracking";
+import { TrendingDown, TrendingUp, Upload, X, Camera, Share2 } from "lucide-react";
+import { useWeightLogs, useLogWeight, useMeasurementLogs, useLogMeasurements, useStreak } from "@/lib/use-tracking";
 import { useAuth } from "@/lib/auth-context";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { MilestoneShareCard } from "@/components/MilestoneShareCard";
 
 const timeRanges = [
   { label: "30d", days: 30 },
