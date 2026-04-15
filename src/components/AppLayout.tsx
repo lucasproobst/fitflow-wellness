@@ -1,9 +1,10 @@
-import { ReactNode } from "react";
+import { ReactNode, useMemo } from "react";
 import { NavLink, useLocation } from "react-router-dom";
-import { Home, Utensils, Dumbbell, Camera, TrendingUp, User, Moon, Sun, Plus, Trophy, Users } from "lucide-react";
+import { Home, Utensils, Dumbbell, Camera, TrendingUp, User, Moon, Sun, Plus, Trophy, Users, Bell } from "lucide-react";
 import { useTheme } from "@/lib/theme-context";
 import { useAuth } from "@/lib/auth-context";
 import { motion } from "framer-motion";
+import { getNotificationPrefs } from "@/lib/use-notifications";
 
 const tabs = [
   { to: "/", icon: Home, label: "Início" },
@@ -107,12 +108,21 @@ export default function AppLayout({ children }: { children: ReactNode }) {
           <h1 className="text-base font-semibold tracking-tight text-foreground">
             Fit<span className="text-fitflow-primary">Flow</span>
           </h1>
-          <NavLink
-            to="/profile"
-            className="w-9 h-9 rounded-full bg-gradient-to-br from-fitflow-primary to-fitflow-accent flex items-center justify-center active:scale-90 transition-transform"
-          >
-            <User size={16} className="text-white" />
-          </NavLink>
+          <div className="flex items-center gap-2">
+            <NavLink
+              to="/profile"
+              className="relative w-9 h-9 rounded-full bg-gradient-to-br from-fitflow-primary to-fitflow-accent flex items-center justify-center active:scale-90 transition-transform"
+            >
+              <User size={16} className="text-white" />
+              {/* Notification dot */}
+              {typeof window !== "undefined" && "Notification" in window && Notification.permission === "granted" && getNotificationPrefs().enabled && (
+                <span className="absolute -top-0.5 -right-0.5 flex h-3 w-3">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-fitflow-accent opacity-75" />
+                  <span className="relative inline-flex rounded-full h-3 w-3 bg-fitflow-accent border-2 border-background" />
+                </span>
+              )}
+            </NavLink>
+          </div>
         </header>
 
         <motion.main
