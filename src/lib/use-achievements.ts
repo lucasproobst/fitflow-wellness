@@ -2,6 +2,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth-context";
 import { useEffect } from "react";
+import { toast } from "sonner";
 
 export interface AchievementDef {
   key: string;
@@ -141,7 +142,21 @@ export function useCheckAchievements() {
 
       // Unlock all new achievements
       for (const key of toUnlock) {
-        unlock.mutate(key);
+        const def = ACHIEVEMENTS.find(a => a.key === key);
+        unlock.mutate(key, {
+          onSuccess: () => {
+            if (def) {
+              toast(
+                `${def.icon} ${def.title} Unlocked!`,
+                {
+                  description: def.description,
+                  duration: 5000,
+                  className: "achievement-toast",
+                }
+              );
+            }
+          },
+        });
       }
     };
 
