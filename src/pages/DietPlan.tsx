@@ -110,8 +110,12 @@ export default function DietPlan() {
       if (data?.error) throw new Error(data.error);
       return data as MealPlanData;
     },
-    onSuccess: () => {
+    onSuccess: async () => {
       recipesCache.current = {};
+      // Clear DB recipe cache for old plan
+      if (user && mealPlanId) {
+        await supabase.from("recipe_cache").delete().eq("meal_plan_id", mealPlanId);
+      }
       qc.invalidateQueries({ queryKey: ["meal-plan"] });
       toast.success("Plano alimentar gerado!");
     },
