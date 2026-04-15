@@ -117,7 +117,7 @@ export default function DietPlan() {
       </div>
 
       {/* Day selector */}
-      <div className="flex gap-2 mb-4 overflow-x-auto pb-2">
+      <div className="flex gap-2 mb-4 overflow-x-auto pb-2 no-scrollbar">
         {shortDays.map((d, i) => (
           <button
             key={d}
@@ -134,7 +134,7 @@ export default function DietPlan() {
       </div>
 
       {/* Filters */}
-      <div className="flex gap-2 mb-6 overflow-x-auto pb-2">
+      <div className="flex gap-2 mb-6 overflow-x-auto pb-2 no-scrollbar">
         {filters.map(f => (
           <button
             key={f}

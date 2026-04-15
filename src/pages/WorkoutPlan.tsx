@@ -120,7 +120,7 @@ export default function WorkoutPlan() {
       </div>
 
       {/* Day selector */}
-      <div className="flex gap-2 mb-6 overflow-x-auto pb-2">
+      <div className="flex gap-2 mb-6 overflow-x-auto pb-2 no-scrollbar">
         {shortDays.map((d, i) => (
           <button
             key={d}
