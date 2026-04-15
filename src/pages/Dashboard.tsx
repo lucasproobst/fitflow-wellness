@@ -18,6 +18,33 @@ interface BeforeInstallPromptEvent extends Event {
   userChoice: Promise<{ outcome: "accepted" | "dismissed" }>;
 }
 
+// Reusable animated card wrapper with hover effects
+function AnimCard({
+  children,
+  delay = 0,
+  className = "",
+  hoverable = false,
+}: {
+  children: React.ReactNode;
+  delay?: number;
+  className?: string;
+  hoverable?: boolean;
+}) {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 12 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.3, delay }}
+      whileHover={hoverable ? { y: -2, transition: { duration: 0.2 } } : undefined}
+      className={`rounded-2xl bg-[#16181f] border border-white/[0.06] ${
+        hoverable ? "hover:border-white/[0.1] hover:shadow-[0_4px_24px_rgba(34,197,94,0.04)] cursor-pointer" : ""
+      } transition-[border-color,box-shadow] duration-300 ${className}`}
+    >
+      {children}
+    </motion.div>
+  );
+}
+
 export default function Dashboard() {
   const { user } = useAuth();
   const { data: profile } = useProfile();
@@ -81,34 +108,40 @@ export default function Dashboard() {
   const totalCarbs = meals.reduce((s, m) => s + (m.carbs || 0), 0);
   const totalFat = meals.reduce((s, m) => s + (m.fat || 0), 0);
 
-  const fadeIn = (delay: number) => ({
-    initial: { opacity: 0, y: 12 },
-    animate: { opacity: 1, y: 0 },
-    transition: { duration: 0.3, delay },
-  });
-
   return (
     <div className="px-4 lg:px-8 py-6 max-w-4xl mx-auto">
       {/* Top bar */}
-      <div className="flex items-center justify-between mb-8">
+      <motion.div
+        initial={{ opacity: 0, y: -8 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.3 }}
+        className="flex items-center justify-between mb-8"
+      >
         <div className="flex items-center gap-3 min-w-0">
-          <div className="w-10 h-10 rounded-full bg-[#22c55e] flex items-center justify-center text-white text-sm font-semibold shrink-0">
+          <motion.div
+            whileHover={{ scale: 1.08 }}
+            whileTap={{ scale: 0.95 }}
+            className="w-10 h-10 rounded-full bg-[#22c55e] flex items-center justify-center text-white text-sm font-semibold shrink-0"
+          >
             {initials}
-          </div>
+          </motion.div>
           <div className="min-w-0">
             <p className="text-sm font-semibold text-white">Bem-vindo de volta</p>
             <p className="text-xs text-white/40 truncate">{user?.email}</p>
           </div>
         </div>
-        <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/[0.04] border border-white/[0.06]">
+        <motion.div
+          whileHover={{ scale: 1.05 }}
+          className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/[0.04] border border-white/[0.06]"
+        >
           <Flame size={14} className="text-orange-400" />
           <span className="text-xs font-semibold text-white">{streakCount}</span>
-        </div>
-      </div>
+        </motion.div>
+      </motion.div>
 
       {/* Weekly summary */}
       {showWeekly && weeklySummary && (
-        <motion.div {...fadeIn(0)} className="rounded-2xl bg-[#16181f] border border-white/[0.06] p-4 mb-4 relative">
+        <AnimCard delay={0} className="p-4 mb-4 relative">
           <button
             onClick={() => { setShowWeekly(false); sessionStorage.setItem("weekly-summary-dismissed", "1"); }}
             className="absolute top-3 right-3 w-6 h-6 rounded-full bg-white/[0.04] flex items-center justify-center hover:bg-white/[0.08] transition-colors"
@@ -120,43 +153,38 @@ export default function Dashboard() {
             <h3 className="text-xs font-bold uppercase tracking-wider text-[#22c55e]">Esta Semana</h3>
           </div>
           <div className="grid grid-cols-3 gap-3">
-            <div className="text-center">
-              <div className="flex items-center justify-center gap-1 mb-1">
-                <Utensils size={12} className="text-white/25" />
-              </div>
-              <p className="text-lg font-bold text-white">{weeklySummary.avgCaloriesPerDay.toLocaleString()}</p>
-              <p className="text-[10px] text-white/30 uppercase tracking-wider">Méd cal/dia</p>
-            </div>
-            <div className="text-center">
-              <div className="flex items-center justify-center gap-1 mb-1">
-                <Dumbbell size={12} className="text-white/25" />
-              </div>
-              <p className="text-lg font-bold text-white">{weeklySummary.workoutsCompleted}</p>
-              <p className="text-[10px] text-white/30 uppercase tracking-wider">Treinos</p>
-            </div>
-            <div className="text-center">
-              <div className="flex items-center justify-center gap-1 mb-1">
-                {weeklySummary.weightChange !== null && weeklySummary.weightChange <= 0
-                  ? <TrendingDown size={12} className="text-[#22c55e]" />
-                  : <TrendingUp size={12} className="text-white/25" />}
-              </div>
-              <p className="text-lg font-bold text-white">
-                {weeklySummary.weightChange !== null
-                  ? `${weeklySummary.weightChange > 0 ? "+" : ""}${weeklySummary.weightChange.toFixed(1)}`
-                  : "—"}
-              </p>
-              <p className="text-[10px] text-white/30 uppercase tracking-wider">Variação kg</p>
-            </div>
+            {[
+              { icon: Utensils, value: weeklySummary.avgCaloriesPerDay.toLocaleString(), label: "Méd cal/dia", highlight: false },
+              { icon: Dumbbell, value: weeklySummary.workoutsCompleted, label: "Treinos", highlight: false },
+              {
+                icon: weeklySummary.weightChange !== null && weeklySummary.weightChange <= 0 ? TrendingDown : TrendingUp,
+                value: weeklySummary.weightChange !== null ? `${weeklySummary.weightChange > 0 ? "+" : ""}${weeklySummary.weightChange.toFixed(1)}` : "—",
+                label: "Variação kg",
+                highlight: weeklySummary.weightChange !== null && weeklySummary.weightChange <= 0,
+              },
+            ].map((item, i) => (
+              <motion.div
+                key={i}
+                whileHover={{ scale: 1.05 }}
+                className="text-center"
+              >
+                <div className="flex items-center justify-center gap-1 mb-1">
+                  <item.icon size={12} className={item.highlight ? "text-[#22c55e]" : "text-white/25"} />
+                </div>
+                <p className="text-lg font-bold text-white">{item.value}</p>
+                <p className="text-[10px] text-white/30 uppercase tracking-wider">{item.label}</p>
+              </motion.div>
+            ))}
           </div>
           <p className="text-[10px] text-white/20 mt-3 text-center">
             {weeklySummary.daysLogged} dia{weeklySummary.daysLogged !== 1 ? "s" : ""} registrado{weeklySummary.daysLogged !== 1 ? "s" : ""} • {weeklySummary.totalCalories.toLocaleString()} calorias totais
           </p>
-        </motion.div>
+        </AnimCard>
       )}
 
       {/* Install banner */}
       {showInstallBanner && (
-        <motion.div {...fadeIn(0.05)} className="rounded-2xl bg-[#16181f] border border-white/[0.06] p-4 mb-4 relative">
+        <AnimCard delay={0.05} className="p-4 mb-4 relative">
           <button
             onClick={dismissInstallBanner}
             className="absolute top-3 right-3 w-6 h-6 rounded-full bg-white/[0.04] flex items-center justify-center hover:bg-white/[0.08] transition-colors z-10"
@@ -164,9 +192,12 @@ export default function Dashboard() {
             <X size={12} className="text-white/30" />
           </button>
           <div className="flex items-center gap-4">
-            <div className="w-11 h-11 rounded-2xl bg-[#22c55e]/10 flex items-center justify-center shrink-0">
+            <motion.div
+              whileHover={{ rotate: 6, scale: 1.05 }}
+              className="w-11 h-11 rounded-2xl bg-[#22c55e]/10 flex items-center justify-center shrink-0"
+            >
               <Smartphone size={20} className="text-[#22c55e]" />
-            </div>
+            </motion.div>
             <div className="flex-1 min-w-0 pr-6">
               <p className="text-sm font-semibold text-white mb-0.5">Instale o FitFlow</p>
               <p className="text-xs text-white/40 leading-relaxed">
@@ -175,62 +206,82 @@ export default function Dashboard() {
             </div>
           </div>
           {installPrompt ? (
-            <button
+            <motion.button
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.97 }}
               onClick={handleInstallBanner}
-              className="mt-3 w-full h-10 rounded-xl bg-[#22c55e] text-white text-xs font-semibold flex items-center justify-center gap-2 active:scale-[0.98] transition-transform"
+              className="mt-3 w-full h-10 rounded-xl bg-[#22c55e] text-white text-xs font-semibold flex items-center justify-center gap-2"
             >
               <Download size={14} />
               Instalar Agora
-            </button>
+            </motion.button>
           ) : (
-            <Link
-              to="/install"
-              className="mt-3 w-full h-10 rounded-xl bg-white/[0.04] text-white/50 text-xs font-semibold flex items-center justify-center gap-2 active:scale-[0.98] transition-transform hover:bg-white/[0.06]"
-            >
-              <Download size={14} />
-              Como instalar
+            <Link to="/install">
+              <motion.div
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.97 }}
+                className="mt-3 w-full h-10 rounded-xl bg-white/[0.04] text-white/50 text-xs font-semibold flex items-center justify-center gap-2 hover:bg-white/[0.06]"
+              >
+                <Download size={14} />
+                Como instalar
+              </motion.div>
             </Link>
           )}
-        </motion.div>
+        </AnimCard>
       )}
 
       {/* Calorie Ring */}
-      <motion.div {...fadeIn(0.1)} className="flex justify-center mb-8">
+      <motion.div
+        initial={{ opacity: 0, scale: 0.9 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ duration: 0.4, delay: 0.1, type: "spring", stiffness: 200 }}
+        className="flex justify-center mb-8"
+      >
         <CalorieRing consumed={consumed} target={calorieTarget} />
       </motion.div>
 
       {/* Macros */}
-      <motion.div {...fadeIn(0.15)} className="rounded-2xl bg-[#16181f] border border-white/[0.06] p-4 mb-4 space-y-4">
+      <AnimCard delay={0.15} hoverable className="p-4 mb-4 space-y-4">
         <MacroBar label="Proteína" current={totalProtein} target={150} />
         <MacroBar label="Carboidratos" current={totalCarbs} target={200} />
         <MacroBar label="Gordura" current={totalFat} target={60} />
-      </motion.div>
+      </AnimCard>
 
       <div className="grid gap-4 lg:grid-cols-2">
         {/* Hydration */}
-        <motion.div {...fadeIn(0.2)} className="rounded-2xl bg-[#16181f] border border-white/[0.06] p-4">
+        <AnimCard delay={0.2} hoverable className="p-4">
           <h3 className="text-[10px] font-bold uppercase tracking-[0.15em] text-white/30 mb-3">HIDRATAÇÃO</h3>
           <WaterTracker
             glasses={waterGlasses}
             onAdd={() => addWater.mutate()}
           />
-        </motion.div>
+        </AnimCard>
 
         {/* Workout shortcut */}
-        <motion.div {...fadeIn(0.25)}>
+        <motion.div
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.3, delay: 0.25 }}
+          whileHover={{ y: -2 }}
+        >
           <Link to="/workout">
-            <div className="rounded-2xl bg-[#16181f] border border-white/[0.06] p-4 hover:border-white/[0.1] transition-colors">
+            <div className="rounded-2xl bg-[#16181f] border border-white/[0.06] p-4 hover:border-white/[0.1] hover:shadow-[0_4px_24px_rgba(34,197,94,0.04)] transition-all duration-300">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-white/[0.03] flex items-center justify-center">
+                  <motion.div
+                    whileHover={{ rotate: -8 }}
+                    className="w-10 h-10 rounded-xl bg-white/[0.03] flex items-center justify-center"
+                  >
                     <Dumbbell size={18} className="text-white/30" />
-                  </div>
+                  </motion.div>
                   <div>
                     <p className="text-sm font-semibold text-white">Treino de Hoje</p>
                     <p className="text-xs text-white/30">Superior · 6 exercícios</p>
                   </div>
                 </div>
-                <ChevronRight size={16} className="text-white/20" />
+                <motion.div whileHover={{ x: 3 }}>
+                  <ChevronRight size={16} className="text-white/20" />
+                </motion.div>
               </div>
             </div>
           </Link>
@@ -238,9 +289,14 @@ export default function Dashboard() {
       </div>
 
       {/* Streak */}
-      <motion.div {...fadeIn(0.3)} className="rounded-2xl bg-[#16181f] border border-white/[0.06] p-4 mt-4">
+      <AnimCard delay={0.3} hoverable className="p-4 mt-4">
         <div className="flex items-center gap-3">
-          <Flame size={24} className="text-orange-400" />
+          <motion.div
+            animate={{ scale: [1, 1.1, 1] }}
+            transition={{ duration: 2, repeat: Infinity, repeatDelay: 3 }}
+          >
+            <Flame size={24} className="text-orange-400" />
+          </motion.div>
           <div>
             <p className="text-lg font-semibold text-white">Sequência de {streakCount} Dia{streakCount !== 1 ? "s" : ""}</p>
             <p className="text-xs text-white/30">
@@ -248,12 +304,17 @@ export default function Dashboard() {
             </p>
           </div>
         </div>
-      </motion.div>
+      </AnimCard>
 
       {/* Achievements */}
-      <motion.div {...fadeIn(0.35)}>
+      <motion.div
+        initial={{ opacity: 0, y: 12 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.3, delay: 0.35 }}
+        whileHover={{ y: -2 }}
+      >
         <Link to="/achievements">
-          <div className="rounded-2xl bg-[#16181f] border border-white/[0.06] p-4 mt-4 hover:border-white/[0.1] transition-colors">
+          <div className="rounded-2xl bg-[#16181f] border border-white/[0.06] p-4 mt-4 hover:border-white/[0.1] hover:shadow-[0_4px_24px_rgba(34,197,94,0.04)] transition-all duration-300">
             <AchievementBadges />
           </div>
         </Link>
