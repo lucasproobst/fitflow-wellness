@@ -10,8 +10,13 @@ import { useTheme } from "@/lib/theme-context";
 import { useDailyLog, useAddWater, useStreak, useWeeklySummary } from "@/lib/use-tracking";
 import { useCheckAchievements } from "@/lib/use-achievements";
 import { useNotificationReminders } from "@/lib/use-notifications";
-import { Flame, Sun, Moon, Dumbbell, ChevronRight, TrendingDown, TrendingUp, Utensils, BarChart3, X } from "lucide-react";
+import { Flame, Sun, Moon, Dumbbell, ChevronRight, TrendingDown, TrendingUp, Utensils, BarChart3, X, Download, Smartphone } from "lucide-react";
 import { Link } from "react-router-dom";
+
+interface BeforeInstallPromptEvent extends Event {
+  prompt(): Promise<void>;
+  userChoice: Promise<{ outcome: "accepted" | "dismissed" }>;
+}
 
 export default function Dashboard() {
   const { user } = useAuth();
@@ -27,6 +32,9 @@ export default function Dashboard() {
   useNotificationReminders();
 
   const [showWeekly, setShowWeekly] = useState(false);
+  const [installPrompt, setInstallPrompt] = useState<BeforeInstallPromptEvent | null>(null);
+  const [installDismissed, setInstallDismissed] = useState(() => localStorage.getItem("install-banner-dismissed") === "1");
+  const [isAppInstalled, setIsAppInstalled] = useState(() => window.matchMedia("(display-mode: standalone)").matches);
 
   useEffect(() => {
     if (weeklySummary && weeklySummary.daysLogged > 0) {
@@ -34,6 +42,36 @@ export default function Dashboard() {
       if (!lastDismissed) setShowWeekly(true);
     }
   }, [weeklySummary]);
+
+  useEffect(() => {
+    if (isAppInstalled || installDismissed) return;
+    const handler = (e: Event) => {
+      e.preventDefault();
+      setInstallPrompt(e as BeforeInstallPromptEvent);
+    };
+    const installedHandler = () => setIsAppInstalled(true);
+    window.addEventListener("beforeinstallprompt", handler);
+    window.addEventListener("appinstalled", installedHandler);
+    return () => {
+      window.removeEventListener("beforeinstallprompt", handler);
+      window.removeEventListener("appinstalled", installedHandler);
+    };
+  }, [isAppInstalled, installDismissed]);
+
+  const handleInstallBanner = async () => {
+    if (!installPrompt) return;
+    installPrompt.prompt();
+    const { outcome } = await installPrompt.userChoice;
+    if (outcome === "accepted") setIsAppInstalled(true);
+    setInstallPrompt(null);
+  };
+
+  const dismissInstallBanner = () => {
+    setInstallDismissed(true);
+    localStorage.setItem("install-banner-dismissed", "1");
+  };
+
+  const showInstallBanner = !isAppInstalled && !installDismissed;
 
   const calorieTarget = profile?.goal === "lose_weight" ? 1800 : profile?.goal === "gain_muscle" ? 2600 : 2200;
   const consumed = dailyLog?.calories_total || 0;
@@ -118,7 +156,47 @@ export default function Dashboard() {
         </GlassCard>
       )}
 
-      {/* Anel de calorias */}
+      {/* Banner de instalação */}
+      {showInstallBanner && (
+        <GlassCard className="mb-4 relative border-fitflow-accent/20 overflow-hidden">
+          <button
+            onClick={dismissInstallBanner}
+            className="absolute top-3 right-3 w-6 h-6 rounded-full bg-white/5 flex items-center justify-center hover:bg-white/10 transition-colors z-10"
+          >
+            <X size={12} className="text-foreground/40" />
+          </button>
+          <div className="flex items-center gap-4">
+            <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-fitflow-primary to-fitflow-accent flex items-center justify-center shrink-0">
+              <Smartphone size={20} className="text-white" />
+            </div>
+            <div className="flex-1 min-w-0 pr-6">
+              <p className="text-sm font-semibold text-foreground mb-0.5">Instale o FitFlow</p>
+              <p className="text-xs text-foreground/50 leading-relaxed">
+                Adicione à sua tela inicial para acesso rápido e experiência completa.
+              </p>
+            </div>
+          </div>
+          {installPrompt ? (
+            <button
+              onClick={handleInstallBanner}
+              className="mt-3 w-full h-10 rounded-xl bg-gradient-to-r from-fitflow-primary to-fitflow-accent text-white text-xs font-semibold flex items-center justify-center gap-2 active:scale-[0.98] transition-transform"
+            >
+              <Download size={14} />
+              Instalar Agora
+            </button>
+          ) : (
+            <Link
+              to="/install"
+              className="mt-3 w-full h-10 rounded-xl bg-fitflow-primary/10 text-fitflow-primary text-xs font-semibold flex items-center justify-center gap-2 active:scale-[0.98] transition-transform"
+            >
+              <Download size={14} />
+              Como instalar
+            </Link>
+          )}
+        </GlassCard>
+      )}
+
+
       <div className="flex justify-center mb-8">
         <CalorieRing consumed={consumed} target={calorieTarget} />
       </div>
