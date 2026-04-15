@@ -15,6 +15,8 @@ export default function Dashboard() {
   const { theme, toggle } = useTheme();
   const { data: dailyLog } = useDailyLog();
   const addWater = useAddWater();
+  const { data: streak } = useStreak();
+  const streakCount = streak ?? 0;
   const initials = user?.email?.slice(0, 2).toUpperCase() || "FF";
 
   const calorieTarget = profile?.goal === "lose_weight" ? 1800 : profile?.goal === "gain_muscle" ? 2600 : 2200;
@@ -41,7 +43,7 @@ export default function Dashboard() {
         <div className="flex items-center gap-2">
           <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/5 border border-white/10">
             <Flame size={14} className="text-orange-400" />
-            <span className="text-xs font-semibold text-foreground">7</span>
+            <span className="text-xs font-semibold text-foreground">{streakCount}</span>
           </div>
           <button
             onClick={toggle}
@@ -95,8 +97,10 @@ export default function Dashboard() {
         <div className="flex items-center gap-3">
           <Flame size={24} className="text-orange-400" />
           <div>
-            <p className="text-lg font-semibold text-foreground">7 Day Streak</p>
-            <p className="text-xs text-foreground/40">Keep it up! You're on fire</p>
+            <p className="text-lg font-semibold text-foreground">{streakCount} Day Streak</p>
+            <p className="text-xs text-foreground/40">
+              {streakCount > 0 ? "Keep it up! You're on fire" : "Log meals & workouts to start your streak"}
+            </p>
           </div>
         </div>
       </GlassCard>
