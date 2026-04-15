@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { GlassCard } from "@/components/GlassCard";
-import { RefreshCw } from "lucide-react";
+import { RefreshCw, Shuffle } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth-context";
 import { toast } from "sonner";
@@ -40,6 +40,7 @@ function getWeekStart() {
 export default function DietPlan() {
   const [selectedDay, setSelectedDay] = useState(0);
   const [activeFilter, setActiveFilter] = useState("All");
+  const [swappingMeal, setSwappingMeal] = useState<string | null>(null);
   const { user } = useAuth();
   const qc = useQueryClient();
 
@@ -72,6 +73,27 @@ export default function DietPlan() {
     },
     onError: (err: any) => {
       toast.error(err.message || "Failed to generate plan");
+    },
+  });
+
+  const swapMeal = useMutation({
+    mutationFn: async ({ day, mealType }: { day: string; mealType: string }) => {
+      setSwappingMeal(`${day}-${mealType}`);
+      const { data, error } = await supabase.functions.invoke("generate-meal-plan", {
+        body: { swapDay: day, swapMealType: mealType, existingPlan: planData },
+      });
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+      return data as MealPlanData;
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["meal-plan"] });
+      toast.success("Meal swapped!");
+      setSwappingMeal(null);
+    },
+    onError: (err: any) => {
+      toast.error(err.message || "Failed to swap meal");
+      setSwappingMeal(null);
     },
   });
 
@@ -165,8 +187,9 @@ export default function DietPlan() {
           {mealTypes.map(type => {
             const meal = currentDay.meals?.[type];
             if (!meal) return null;
+            const isSwapping = swappingMeal === `${dayNames[selectedDay]}-${type}`;
             return (
-              <GlassCard key={type}>
+              <GlassCard key={type} className={isSwapping ? "opacity-60" : ""}>
                 <div className="flex items-center justify-between mb-2">
                   <span className="label-style text-[10px]">{type.toUpperCase()}</span>
                   <span className="text-sm font-semibold text-fitflow-accent">{meal.calories} cal</span>
@@ -186,8 +209,13 @@ export default function DietPlan() {
                       </div>
                     ))}
                   </div>
-                  <button className="px-3 py-1 rounded-full border border-white/10 text-[10px] uppercase tracking-wider font-medium text-foreground/50 hover:bg-white/5 active:scale-95 transition-all">
-                    Swap
+                  <button
+                    onClick={() => swapMeal.mutate({ day: dayNames[selectedDay], mealType: type })}
+                    disabled={isSwapping || swapMeal.isPending}
+                    className="flex items-center gap-1 px-3 py-1 rounded-full border border-white/10 text-[10px] uppercase tracking-wider font-medium text-foreground/50 hover:bg-white/5 active:scale-95 transition-all disabled:opacity-50"
+                  >
+                    <Shuffle size={10} className={isSwapping ? "animate-spin" : ""} />
+                    {isSwapping ? "Swapping..." : "Swap"}
                   </button>
                 </div>
               </GlassCard>
