@@ -207,15 +207,18 @@ export default function AppLayout({ children }: { children: ReactNode }) {
           )}
         </AnimatePresence>
 
-        <motion.main
-          key={location.pathname}
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.15 }}
-          className="flex-1 pb-28 lg:pb-6"
-        >
-          {children}
-        </motion.main>
+        <AnimatePresence mode="wait">
+          <motion.main
+            key={location.pathname}
+            initial={{ opacity: 0, y: 6 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -6 }}
+            transition={{ duration: 0.2, ease: "easeInOut" }}
+            className="flex-1 pb-28 lg:pb-6"
+          >
+            {children}
+          </motion.main>
+        </AnimatePresence>
 
         {/* Barra de navegação mobile */}
         <nav className="lg:hidden fixed bottom-0 left-0 right-0 bg-[#0f1117]/95 backdrop-blur-xl border-t border-white/[0.06] safe-bottom z-50">
