@@ -247,15 +247,13 @@ export default function WorkoutPlan() {
 
                           <div className="flex items-center gap-3 mt-2">
                             <span className="text-[10px] uppercase font-bold text-white/30 tracking-wider">{ex.muscle_group}</span>
-                            <a
-                              href={`https://www.youtube.com/results?search_query=${encodeURIComponent(ex.name + " exercício forma correta")}`}
-                              target="_blank"
-                              rel="noopener noreferrer"
+                            <button
+                              onClick={() => setVideoExercise(ex.name)}
                               className="flex items-center gap-1 text-white/25 hover:text-white/50 text-[10px] font-medium transition-colors"
                             >
                               <PlayCircle size={11} />
                               Assistir
-                            </a>
+                            </button>
                           </div>
 
                           {/* Set tracker */}
