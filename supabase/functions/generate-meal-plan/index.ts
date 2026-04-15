@@ -59,6 +59,108 @@ serve(async (req) => {
     if (goal === "lose_weight") calorieTarget = 1600;
     else if (goal === "gain_muscle") calorieTarget = 2600;
 
+    // Check for swap mode
+    let body: any = {};
+    try { body = await req.json(); } catch { /* no body = full generation */ }
+    const swapDay: string | undefined = body?.swapDay;
+    const swapMealType: string | undefined = body?.swapMealType;
+    const existingPlan: any = body?.existingPlan;
+
+    const mealSchema = {
+      type: "object",
+      properties: {
+        name: { type: "string" },
+        description: { type: "string" },
+        calories: { type: "number" },
+        protein: { type: "number" },
+        carbs: { type: "number" },
+        fat: { type: "number" },
+      },
+      required: ["name", "description", "calories", "protein", "carbs", "fat"],
+    };
+
+    if (swapDay && swapMealType && existingPlan) {
+      // --- Swap single meal ---
+      const currentMeal = existingPlan.days?.find((d: any) => d.day === swapDay)?.meals?.[swapMealType];
+      const swapPrompt = `You are a certified nutritionist. Replace ONLY the ${swapMealType} meal for ${swapDay}.
+Rules:
+- Target ~${calorieTarget / 4} calories for this meal
+- Goal: ${goal.replace("_", " ")}
+- NEVER include these foods: ${restrictions.length > 0 ? restrictions.join(", ") : "none"}
+- Must be DIFFERENT from: "${currentMeal?.name || "unknown"}"
+- Realistic macros
+- Use the provided tool to return the single replacement meal`;
+
+      const swapResp = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${LOVABLE_API_KEY}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          model: "google/gemini-2.5-flash",
+          messages: [
+            { role: "system", content: swapPrompt },
+            { role: "user", content: `Generate a replacement ${swapMealType} meal for ${swapDay}.` },
+          ],
+          tools: [{
+            type: "function",
+            function: {
+              name: "return_single_meal",
+              description: "Return a single replacement meal",
+              parameters: {
+                type: "object",
+                properties: { meal: mealSchema },
+                required: ["meal"],
+                additionalProperties: false,
+              },
+            },
+          }],
+          tool_choice: { type: "function", function: { name: "return_single_meal" } },
+        }),
+      });
+
+      if (!swapResp.ok) {
+        const text = await swapResp.text();
+        console.error("Swap AI error:", swapResp.status, text);
+        return new Response(JSON.stringify({ error: "Failed to swap meal" }), {
+          status: swapResp.status, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+
+      const swapData = await swapResp.json();
+      const swapTool = swapData.choices?.[0]?.message?.tool_calls?.[0];
+      if (!swapTool) {
+        return new Response(JSON.stringify({ error: "No replacement meal returned" }), {
+          status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+      const newMeal = JSON.parse(swapTool.function.arguments).meal;
+
+      // Patch existing plan
+      const updatedPlan = { ...existingPlan };
+      updatedPlan.days = updatedPlan.days.map((d: any) => {
+        if (d.day === swapDay) {
+          return { ...d, meals: { ...d.meals, [swapMealType]: newMeal } };
+        }
+        return d;
+      });
+
+      // Save
+      const today = new Date();
+      const dayOfWeek = today.getDay();
+      const monday = new Date(today);
+      monday.setDate(today.getDate() - ((dayOfWeek + 6) % 7));
+      const weekStart = monday.toISOString().split("T")[0];
+      await supabase.from("meal_plans").delete().eq("user_id", userId).eq("week_start", weekStart);
+      await supabase.from("meal_plans").insert({ user_id: userId, week_start: weekStart, plan_data: updatedPlan });
+
+      return new Response(JSON.stringify(updatedPlan), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    // --- Full plan generation ---
     const systemPrompt = `You are a certified nutritionist. Create a complete 7-day meal plan. 
 Rules:
 - Target ${calorieTarget} calories per day
@@ -100,54 +202,10 @@ Rules:
                         meals: {
                           type: "object",
                           properties: {
-                            breakfast: {
-                              type: "object",
-                              properties: {
-                                name: { type: "string" },
-                                description: { type: "string" },
-                                calories: { type: "number" },
-                                protein: { type: "number" },
-                                carbs: { type: "number" },
-                                fat: { type: "number" },
-                              },
-                              required: ["name", "description", "calories", "protein", "carbs", "fat"],
-                            },
-                            lunch: {
-                              type: "object",
-                              properties: {
-                                name: { type: "string" },
-                                description: { type: "string" },
-                                calories: { type: "number" },
-                                protein: { type: "number" },
-                                carbs: { type: "number" },
-                                fat: { type: "number" },
-                              },
-                              required: ["name", "description", "calories", "protein", "carbs", "fat"],
-                            },
-                            dinner: {
-                              type: "object",
-                              properties: {
-                                name: { type: "string" },
-                                description: { type: "string" },
-                                calories: { type: "number" },
-                                protein: { type: "number" },
-                                carbs: { type: "number" },
-                                fat: { type: "number" },
-                              },
-                              required: ["name", "description", "calories", "protein", "carbs", "fat"],
-                            },
-                            snack: {
-                              type: "object",
-                              properties: {
-                                name: { type: "string" },
-                                description: { type: "string" },
-                                calories: { type: "number" },
-                                protein: { type: "number" },
-                                carbs: { type: "number" },
-                                fat: { type: "number" },
-                              },
-                              required: ["name", "description", "calories", "protein", "carbs", "fat"],
-                            },
+                            breakfast: mealSchema,
+                            lunch: mealSchema,
+                            dinner: mealSchema,
+                            snack: mealSchema,
                           },
                           required: ["breakfast", "lunch", "dinner", "snack"],
                         },
@@ -194,20 +252,14 @@ Rules:
 
     const plan = JSON.parse(toolCall.function.arguments);
 
-    // Save to DB
     const today = new Date();
     const dayOfWeek = today.getDay();
     const monday = new Date(today);
     monday.setDate(today.getDate() - ((dayOfWeek + 6) % 7));
     const weekStart = monday.toISOString().split("T")[0];
 
-    // Upsert: delete old plan for this week, insert new
     await supabase.from("meal_plans").delete().eq("user_id", userId).eq("week_start", weekStart);
-    await supabase.from("meal_plans").insert({
-      user_id: userId,
-      week_start: weekStart,
-      plan_data: plan,
-    });
+    await supabase.from("meal_plans").insert({ user_id: userId, week_start: weekStart, plan_data: plan });
 
     return new Response(JSON.stringify(plan), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
