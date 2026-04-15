@@ -17,9 +17,30 @@ export default function Profile() {
     if (profile?.display_name) setNameValue(profile.display_name);
   }, [profile?.display_name]);
 
+  const blockedWords = [
+    "idiota", "burro", "merda", "porra", "caralho", "puta", "fdp",
+    "otario", "otária", "cuzao", "cuzão", "viado", "arrombado",
+    "desgraça", "desgraca", "babaca", "imbecil", "retardado",
+    "fuck", "shit", "ass", "bitch", "dick", "damn", "bastard",
+  ];
+
+  const validateName = (name: string): string | null => {
+    if (name.length < 3) return "O nome deve ter pelo menos 3 caracteres";
+    if (name.length > 30) return "O nome deve ter no máximo 30 caracteres";
+    if (!/^[a-zA-ZÀ-ÿ0-9 _.-]+$/.test(name)) return "O nome contém caracteres inválidos";
+    const lower = name.toLowerCase();
+    if (blockedWords.some(w => lower.includes(w))) return "O nome contém palavras inadequadas";
+    return null;
+  };
+
   const saveName = () => {
     const trimmed = nameValue.trim();
     if (!trimmed) return;
+    const error = validateName(trimmed);
+    if (error) {
+      toast.error(error);
+      return;
+    }
     updateProfile.mutate({ display_name: trimmed } as any, {
       onSuccess: () => {
         toast.success("Nome atualizado!");
