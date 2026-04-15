@@ -1,10 +1,15 @@
-import { ReactNode, useMemo } from "react";
+import { ReactNode, useState, useEffect } from "react";
 import { NavLink, useLocation } from "react-router-dom";
-import { Home, Utensils, Dumbbell, Camera, TrendingUp, User, Moon, Sun, Plus, Trophy, Users, Bell } from "lucide-react";
+import { Home, Utensils, Dumbbell, Camera, TrendingUp, User, Moon, Sun, Plus, Trophy, Users, Download } from "lucide-react";
 import { useTheme } from "@/lib/theme-context";
 import { useAuth } from "@/lib/auth-context";
 import { motion } from "framer-motion";
 import { getNotificationPrefs } from "@/lib/use-notifications";
+
+interface BeforeInstallPromptEvent extends Event {
+  prompt(): Promise<void>;
+  userChoice: Promise<{ outcome: "accepted" | "dismissed" }>;
+}
 
 const tabs = [
   { to: "/", icon: Home, label: "Início" },
@@ -18,6 +23,40 @@ export default function AppLayout({ children }: { children: ReactNode }) {
   const { theme, toggle } = useTheme();
   const { user } = useAuth();
   const location = useLocation();
+
+  const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
+  const [isInstalled, setIsInstalled] = useState(false);
+
+  useEffect(() => {
+    const isStandalone = window.matchMedia("(display-mode: standalone)").matches;
+    if (isStandalone) {
+      setIsInstalled(true);
+      return;
+    }
+
+    const handler = (e: Event) => {
+      e.preventDefault();
+      setDeferredPrompt(e as BeforeInstallPromptEvent);
+    };
+    const installedHandler = () => setIsInstalled(true);
+
+    window.addEventListener("beforeinstallprompt", handler);
+    window.addEventListener("appinstalled", installedHandler);
+    return () => {
+      window.removeEventListener("beforeinstallprompt", handler);
+      window.removeEventListener("appinstalled", installedHandler);
+    };
+  }, []);
+
+  const handleInstall = async () => {
+    if (!deferredPrompt) return;
+    deferredPrompt.prompt();
+    const { outcome } = await deferredPrompt.userChoice;
+    if (outcome === "accepted") setIsInstalled(true);
+    setDeferredPrompt(null);
+  };
+
+  const showInstallButton = !isInstalled && deferredPrompt;
 
   return (
     <div className="min-h-screen bg-background flex">
@@ -110,6 +149,15 @@ export default function AppLayout({ children }: { children: ReactNode }) {
               Fit<span className="text-fitflow-primary">Flow</span>
             </h1>
             <div className="flex items-center gap-1.5">
+              {showInstallButton && (
+                <button
+                  onClick={handleInstall}
+                  className="h-9 px-3 rounded-xl bg-fitflow-primary/15 text-fitflow-primary flex items-center gap-1.5 active:scale-90 transition-all text-xs font-semibold"
+                >
+                  <Download size={14} />
+                  Instalar
+                </button>
+              )}
               {[
                 { to: "/achievements", icon: Trophy, label: "Conquistas" },
                 { to: "/leaderboard", icon: Users, label: "Ranking" },
