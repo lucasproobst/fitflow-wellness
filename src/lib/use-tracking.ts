@@ -372,3 +372,77 @@ export function useStreak() {
     },
   });
 }
+
+// ─── Weekly Summary ───
+
+export interface WeeklySummary {
+  totalCalories: number;
+  avgCaloriesPerDay: number;
+  workoutsCompleted: number;
+  weightChange: number | null; // kg, negative = lost
+  daysLogged: number;
+}
+
+export function useWeeklySummary() {
+  const { user } = useAuth();
+  return useQuery({
+    queryKey: ["weekly-summary", user?.id],
+    enabled: !!user,
+    queryFn: async () => {
+      const now = new Date();
+      const dayOfWeek = now.getDay(); // 0=Sun
+      const mondayOffset = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
+      const weekStart = new Date(now);
+      weekStart.setDate(now.getDate() - mondayOffset);
+      const weekStartStr = weekStart.toISOString().split("T")[0];
+      const todayStr = now.toISOString().split("T")[0];
+
+      const [logRes, workoutRes, weightRes] = await Promise.all([
+        supabase
+          .from("daily_log")
+          .select("date, calories_total, meals")
+          .eq("user_id", user!.id)
+          .gte("date", weekStartStr)
+          .lte("date", todayStr),
+        supabase
+          .from("workout_sessions")
+          .select("id")
+          .eq("user_id", user!.id)
+          .gte("date", weekStartStr)
+          .lte("date", todayStr),
+        supabase
+          .from("weight_logs")
+          .select("date, weight_kg")
+          .eq("user_id", user!.id)
+          .gte("date", weekStartStr)
+          .lte("date", todayStr)
+          .order("date", { ascending: true }),
+      ]);
+
+      if (logRes.error) throw logRes.error;
+      if (workoutRes.error) throw workoutRes.error;
+      if (weightRes.error) throw weightRes.error;
+
+      const logs = logRes.data || [];
+      const totalCalories = logs.reduce((s, r) => s + (Number(r.calories_total) || 0), 0);
+      const daysLogged = logs.filter(r => {
+        const meals = r.meals as unknown as any[];
+        return Array.isArray(meals) && meals.length > 0;
+      }).length;
+
+      const weights = (weightRes.data || []).map(r => Number(r.weight_kg));
+      let weightChange: number | null = null;
+      if (weights.length >= 2) {
+        weightChange = weights[weights.length - 1] - weights[0];
+      }
+
+      return {
+        totalCalories,
+        avgCaloriesPerDay: daysLogged > 0 ? Math.round(totalCalories / daysLogged) : 0,
+        workoutsCompleted: (workoutRes.data || []).length,
+        weightChange,
+        daysLogged,
+      } as WeeklySummary;
+    },
+  });
+}
