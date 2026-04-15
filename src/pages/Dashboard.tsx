@@ -10,7 +10,7 @@ import { useTheme } from "@/lib/theme-context";
 import { useDailyLog, useAddWater, useStreak, useWeeklySummary } from "@/lib/use-tracking";
 import { useCheckAchievements } from "@/lib/use-achievements";
 import { useNotificationReminders } from "@/lib/use-notifications";
-import { Flame, Sun, Moon, Dumbbell, ChevronRight, TrendingDown, TrendingUp, Utensils, BarChart3, X, Download, Smartphone } from "lucide-react";
+import { Flame, Dumbbell, ChevronRight, TrendingDown, TrendingUp, Utensils, BarChart3, X, Download, Smartphone } from "lucide-react";
 import { Link } from "react-router-dom";
 
 interface BeforeInstallPromptEvent extends Event {
@@ -21,7 +21,7 @@ interface BeforeInstallPromptEvent extends Event {
 export default function Dashboard() {
   const { user } = useAuth();
   const { data: profile } = useProfile();
-  const { theme, toggle } = useTheme();
+  useTheme(); // keep hook call order
   const { data: dailyLog } = useDailyLog();
   const addWater = useAddWater();
   const { data: streak } = useStreak();
@@ -86,25 +86,17 @@ export default function Dashboard() {
       {/* Barra superior */}
       <div className="flex items-center justify-between mb-8">
         <div className="flex items-center gap-3 min-w-0">
-          <div className="w-10 h-10 rounded-full bg-gradient-to-br from-fitflow-primary to-fitflow-accent flex items-center justify-center text-white text-sm font-semibold shrink-0">
+          <div className="w-10 h-10 rounded-full bg-[#22c55e] flex items-center justify-center text-white text-sm font-semibold shrink-0">
             {initials}
           </div>
           <div className="min-w-0">
-            <p className="text-sm font-semibold text-foreground">Bem-vindo de volta</p>
-            <p className="text-xs text-foreground/50 truncate">{user?.email}</p>
+            <p className="text-sm font-semibold text-white">Bem-vindo de volta</p>
+            <p className="text-xs text-white/40 truncate">{user?.email}</p>
           </div>
         </div>
-        <div className="flex items-center gap-2">
-          <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/5 border border-white/10">
-            <Flame size={14} className="text-orange-400" />
-            <span className="text-xs font-semibold text-foreground">{streakCount}</span>
-          </div>
-          <button
-            onClick={toggle}
-            className="w-9 h-9 rounded-full bg-white/5 flex items-center justify-center hover:bg-white/10 active:scale-95 transition-all lg:hidden"
-          >
-            {theme === "dark" ? <Sun size={16} className="text-foreground/60" /> : <Moon size={16} className="text-foreground/60" />}
-          </button>
+        <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/[0.04] border border-white/[0.06]">
+          <Flame size={14} className="text-orange-400" />
+          <span className="text-xs font-semibold text-white">{streakCount}</span>
         </div>
       </div>
 

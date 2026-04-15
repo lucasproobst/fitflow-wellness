@@ -1,9 +1,9 @@
 import { ReactNode, useState, useEffect } from "react";
 import { NavLink, useLocation } from "react-router-dom";
-import { Home, Utensils, Dumbbell, Camera, TrendingUp, User, Moon, Sun, Plus, Trophy, Users, Download } from "lucide-react";
+import { Home, Utensils, Dumbbell, Camera, TrendingUp, User, Moon, Sun, Plus, Trophy, Users, Download, Menu, X, BedDouble } from "lucide-react";
 import { useTheme } from "@/lib/theme-context";
 import { useAuth } from "@/lib/auth-context";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { getNotificationPrefs } from "@/lib/use-notifications";
 
 interface BeforeInstallPromptEvent extends Event {
@@ -19,10 +19,18 @@ const tabs = [
   { to: "/progress", icon: TrendingUp, label: "Progresso" },
 ];
 
+const menuItems = [
+  { to: "/profile", icon: User, label: "Perfil" },
+  { to: "/sleep", icon: BedDouble, label: "Sono & Recuperação" },
+  { to: "/achievements", icon: Trophy, label: "Conquistas" },
+  { to: "/leaderboard", icon: Users, label: "Ranking" },
+];
+
 export default function AppLayout({ children }: { children: ReactNode }) {
   const { theme, toggle } = useTheme();
   const { user } = useAuth();
   const location = useLocation();
+  const [menuOpen, setMenuOpen] = useState(false);
 
   const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
   const [isInstalled, setIsInstalled] = useState(false);
@@ -33,13 +41,11 @@ export default function AppLayout({ children }: { children: ReactNode }) {
       setIsInstalled(true);
       return;
     }
-
     const handler = (e: Event) => {
       e.preventDefault();
       setDeferredPrompt(e as BeforeInstallPromptEvent);
     };
     const installedHandler = () => setIsInstalled(true);
-
     window.addEventListener("beforeinstallprompt", handler);
     window.addEventListener("appinstalled", installedHandler);
     return () => {
@@ -47,6 +53,11 @@ export default function AppLayout({ children }: { children: ReactNode }) {
       window.removeEventListener("appinstalled", installedHandler);
     };
   }, []);
+
+  // Close menu on route change
+  useEffect(() => {
+    setMenuOpen(false);
+  }, [location.pathname]);
 
   const handleInstall = async () => {
     if (!deferredPrompt) return;
@@ -84,50 +95,20 @@ export default function AppLayout({ children }: { children: ReactNode }) {
             </NavLink>
           ))}
           <div className="h-px bg-white/5 my-4" />
-          <NavLink
-            to="/profile"
-            className={({ isActive }) =>
-              `flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all ${
-                isActive ? "bg-fitflow-primary/10 text-fitflow-primary" : "text-foreground/50 hover:text-foreground/80 hover:bg-white/5"
-              }`
-            }
-          >
-            <User size={20} />
-            Perfil
-          </NavLink>
-          <NavLink
-            to="/sleep"
-            className={({ isActive }) =>
-              `flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all ${
-                isActive ? "bg-fitflow-primary/10 text-fitflow-primary" : "text-foreground/50 hover:text-foreground/80 hover:bg-white/5"
-              }`
-            }
-          >
-            <Moon size={20} />
-            Sono
-          </NavLink>
-          <NavLink
-            to="/achievements"
-            className={({ isActive }) =>
-              `flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all ${
-                isActive ? "bg-fitflow-primary/10 text-fitflow-primary" : "text-foreground/50 hover:text-foreground/80 hover:bg-white/5"
-              }`
-            }
-          >
-            <Trophy size={20} />
-            Conquistas
-          </NavLink>
-          <NavLink
-            to="/leaderboard"
-            className={({ isActive }) =>
-              `flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all ${
-                isActive ? "bg-fitflow-primary/10 text-fitflow-primary" : "text-foreground/50 hover:text-foreground/80 hover:bg-white/5"
-              }`
-            }
-          >
-            <Users size={20} />
-            Ranking
-          </NavLink>
+          {menuItems.map(item => (
+            <NavLink
+              key={item.to}
+              to={item.to}
+              className={({ isActive }) =>
+                `flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all ${
+                  isActive ? "bg-fitflow-primary/10 text-fitflow-primary" : "text-foreground/50 hover:text-foreground/80 hover:bg-white/5"
+                }`
+              }
+            >
+              <item.icon size={20} />
+              {item.label}
+            </NavLink>
+          ))}
         </nav>
         <div className="mt-auto space-y-2">
           <button
@@ -142,55 +123,89 @@ export default function AppLayout({ children }: { children: ReactNode }) {
 
       {/* Área principal */}
       <div className="flex-1 flex flex-col min-h-screen w-0">
-        {/* Mobile header */}
-        <header className="lg:hidden sticky top-0 bg-background/90 backdrop-blur-lg z-40 border-b border-white/5">
+        {/* Mobile header — with safe area for PWA */}
+        <header className="lg:hidden sticky top-0 bg-[#0f1117]/95 backdrop-blur-xl z-40 border-b border-white/[0.06]" style={{ paddingTop: "env(safe-area-inset-top, 0px)" }}>
           <div className="flex items-center justify-between px-4 h-12">
-            <h1 className="text-base font-semibold tracking-tight text-foreground">
-              Fit<span className="text-fitflow-primary">Flow</span>
+            <h1 className="text-base font-semibold tracking-tight text-white">
+              Fit<span className="text-[#22c55e]">Flow</span>
             </h1>
-            <div className="flex items-center gap-1.5">
+            <div className="flex items-center gap-2">
               {showInstallButton && (
                 <button
                   onClick={handleInstall}
-                  className="h-9 px-3 rounded-xl bg-fitflow-primary/15 text-fitflow-primary flex items-center gap-1.5 active:scale-90 transition-all text-xs font-semibold"
+                  className="h-8 px-3 rounded-lg bg-[#22c55e]/15 text-[#22c55e] flex items-center gap-1.5 active:scale-90 transition-all text-xs font-semibold"
                 >
-                  <Download size={14} />
+                  <Download size={13} />
                   Instalar
                 </button>
               )}
-              {[
-                { to: "/achievements", icon: Trophy, label: "Conquistas" },
-                { to: "/leaderboard", icon: Users, label: "Ranking" },
-                { to: "/sleep", icon: Moon, label: "Sono" },
-              ].map(item => {
-                const active = location.pathname === item.to;
-                return (
-                  <NavLink
-                    key={item.to}
-                    to={item.to}
-                    className={`w-9 h-9 rounded-xl flex items-center justify-center active:scale-90 transition-all ${
-                      active ? "bg-fitflow-primary/15 text-fitflow-primary" : "text-foreground/40 hover:bg-white/5"
-                    }`}
-                  >
-                    <item.icon size={18} />
-                  </NavLink>
-                );
-              })}
-              <NavLink
-                to="/profile"
-                className="relative w-9 h-9 rounded-full bg-gradient-to-br from-fitflow-primary to-fitflow-accent flex items-center justify-center active:scale-90 transition-transform ml-1"
+              <button
+                onClick={() => setMenuOpen(!menuOpen)}
+                className="w-9 h-9 rounded-xl flex items-center justify-center text-white/50 hover:bg-white/[0.04] active:scale-90 transition-all"
               >
-                <User size={16} className="text-white" />
-                {typeof window !== "undefined" && "Notification" in window && Notification.permission === "granted" && getNotificationPrefs().enabled && (
-                  <span className="absolute -top-0.5 -right-0.5 flex h-3 w-3">
-                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-fitflow-accent opacity-75" />
-                    <span className="relative inline-flex rounded-full h-3 w-3 bg-fitflow-accent border-2 border-background" />
-                  </span>
-                )}
-              </NavLink>
+                {menuOpen ? <X size={20} /> : <Menu size={20} />}
+              </button>
             </div>
           </div>
         </header>
+
+        {/* Mobile hamburger menu overlay */}
+        <AnimatePresence>
+          {menuOpen && (
+            <>
+              {/* Backdrop */}
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.15 }}
+                className="lg:hidden fixed inset-0 bg-black/60 z-40"
+                onClick={() => setMenuOpen(false)}
+                style={{ top: "calc(3rem + env(safe-area-inset-top, 0px))" }}
+              />
+              {/* Menu panel */}
+              <motion.div
+                initial={{ opacity: 0, y: -8 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -8 }}
+                transition={{ duration: 0.2 }}
+                className="lg:hidden fixed left-0 right-0 z-50 px-4 pt-2"
+                style={{ top: "calc(3rem + env(safe-area-inset-top, 0px))" }}
+              >
+                <div className="rounded-2xl bg-[#16181f] border border-white/[0.06] overflow-hidden shadow-2xl shadow-black/40">
+                  <nav className="p-2 space-y-0.5">
+                    {menuItems.map(item => {
+                      const active = location.pathname === item.to;
+                      return (
+                        <NavLink
+                          key={item.to}
+                          to={item.to}
+                          className={`flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all ${
+                            active
+                              ? "bg-[#22c55e]/10 text-[#22c55e]"
+                              : "text-white/60 hover:bg-white/[0.03] active:bg-white/[0.05]"
+                          }`}
+                        >
+                          <item.icon size={18} />
+                          {item.label}
+                        </NavLink>
+                      );
+                    })}
+                  </nav>
+                  <div className="border-t border-white/[0.04] p-2">
+                    <button
+                      onClick={() => { toggle(); setMenuOpen(false); }}
+                      className="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-white/40 hover:bg-white/[0.03] w-full transition-all"
+                    >
+                      {theme === "dark" ? <Sun size={18} /> : <Moon size={18} />}
+                      {theme === "dark" ? "Modo Claro" : "Modo Escuro"}
+                    </button>
+                  </div>
+                </div>
+              </motion.div>
+            </>
+          )}
+        </AnimatePresence>
 
         <motion.main
           key={location.pathname}
@@ -203,7 +218,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
         </motion.main>
 
         {/* Barra de navegação mobile */}
-        <nav className="lg:hidden fixed bottom-0 left-0 right-0 bg-background/90 backdrop-blur-lg border-t border-white/5 safe-bottom z-50">
+        <nav className="lg:hidden fixed bottom-0 left-0 right-0 bg-[#0f1117]/95 backdrop-blur-xl border-t border-white/[0.06] safe-bottom z-50">
           <div className="flex justify-around items-center h-16">
             {tabs.map(t => {
               const active = t.to === "/" ? location.pathname === "/" : location.pathname.startsWith(t.to);
@@ -213,8 +228,8 @@ export default function AppLayout({ children }: { children: ReactNode }) {
                   to={t.to}
                   className="flex flex-col items-center gap-0.5 min-w-[44px] min-h-[44px] justify-center"
                 >
-                  <t.icon size={20} className={active ? "text-fitflow-primary" : "text-foreground/40"} />
-                  <span className={`text-[10px] font-medium ${active ? "text-fitflow-primary" : "text-foreground/40"}`}>
+                  <t.icon size={20} className={active ? "text-[#22c55e]" : "text-white/30"} />
+                  <span className={`text-[10px] font-medium ${active ? "text-[#22c55e]" : "text-white/30"}`}>
                     {t.label}
                   </span>
                 </NavLink>
@@ -226,7 +241,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
         {/* FAB */}
         <NavLink
           to="/diary"
-          className="lg:hidden fixed bottom-[calc(4.5rem+env(safe-area-inset-bottom,0px))] right-4 w-14 h-14 rounded-full bg-fitflow-primary flex items-center justify-center shadow-lg shadow-fitflow-primary/25 active:scale-95 transition-transform z-50"
+          className="lg:hidden fixed bottom-[calc(4.5rem+env(safe-area-inset-bottom,0px))] right-4 w-14 h-14 rounded-full bg-[#22c55e] flex items-center justify-center shadow-lg shadow-[#22c55e]/25 active:scale-95 transition-transform z-50"
         >
           <Plus size={24} className="text-white" />
         </NavLink>
