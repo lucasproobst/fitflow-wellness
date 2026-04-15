@@ -66,14 +66,15 @@ serve(async (req) => {
     };
 
     const systemPrompt = `You are an elite personal trainer. Create a complete 7-day workout plan.
+All exercise names, focus areas, muscle groups, and difficulty levels MUST be in Brazilian Portuguese.
 Rules:
 - Goal: ${goal.replace("_", " ")} — ${goalDescriptions[goal] || goalDescriptions.maintain}
 - Activity level: ${activity.replace("_", " ")} — ${activityAdjust[activity] || activityAdjust.moderate}
 - Include rest days appropriate for the activity level
 - Each exercise needs: name, sets, reps (or seconds for timed exercises), target muscle group, difficulty level
-- Muscle groups: Chest, Back, Shoulders, Arms, Legs, Core, Full Body, Cardio
-- Difficulty: Beginner, Intermediate, Advanced
-- Rest days should have "Rest" or "Active Recovery" as the focus
+- Muscle groups in Portuguese: Peito, Costas, Ombros, Braços, Pernas, Core, Corpo Inteiro, Cardio
+- Difficulty in Portuguese: Iniciante, Intermediário, Avançado
+- Rest days should have "Descanso" or "Recuperação Ativa" as the focus
 - Use the provided tool to return the structured plan`;
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {

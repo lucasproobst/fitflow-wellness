@@ -83,6 +83,7 @@ serve(async (req) => {
       // --- Swap single meal ---
       const currentMeal = existingPlan.days?.find((d: any) => d.day === swapDay)?.meals?.[swapMealType];
       const swapPrompt = `You are a certified nutritionist. Replace ONLY the ${swapMealType} meal for ${swapDay}.
+All meal names and descriptions MUST be in Brazilian Portuguese.
 Rules:
 - Target ~${calorieTarget / 4} calories for this meal
 - Goal: ${goal.replace("_", " ")}
@@ -161,7 +162,8 @@ Rules:
     }
 
     // --- Full plan generation ---
-    const systemPrompt = `You are a certified nutritionist. Create a complete 7-day meal plan. 
+    const systemPrompt = `You are a certified nutritionist. Create a complete 7-day meal plan.
+All meal names and descriptions MUST be in Brazilian Portuguese.
 Rules:
 - Target ${calorieTarget} calories per day
 - Goal: ${goal.replace("_", " ")}

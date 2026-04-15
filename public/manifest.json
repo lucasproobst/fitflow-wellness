@@ -1,7 +1,7 @@
 {
   "name": "FitFlow",
   "short_name": "FitFlow",
-  "description": "Your personalized wellness companion",
+  "description": "Seu companheiro de bem-estar personalizado",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#0F1117",
