@@ -38,6 +38,7 @@ export default function WorkoutPlan() {
   const [selectedDay, setSelectedDay] = useState(0);
   const [completedSets, setCompletedSets] = useState<Set<string>>(new Set());
   const [isActive, setIsActive] = useState(false);
+  const [videoExercise, setVideoExercise] = useState<string | null>(null);
   const { user } = useAuth();
   const qc = useQueryClient();
 
