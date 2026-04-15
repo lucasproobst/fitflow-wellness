@@ -56,6 +56,9 @@ export default function Profile() {
         </GlassCard>
       )}
 
+
+      <NotificationSettings />
+
       <button
         onClick={signOut}
         className="w-full h-12 rounded-xl border border-destructive/30 text-destructive text-sm font-medium flex items-center justify-center gap-2 hover:bg-destructive/5 active:scale-95 transition-all"
