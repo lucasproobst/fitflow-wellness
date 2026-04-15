@@ -426,10 +426,21 @@ export default function DietPlan() {
                             ))}
                           </ul>
                         )}
-                        <div className="flex gap-4 mt-3">
-                          <span className="text-[11px] font-semibold text-white/50">P {meal.protein}g</span>
-                          <span className="text-[11px] font-semibold text-white/50">C {meal.carbs}g</span>
-                          <span className="text-[11px] font-semibold text-white/50">G {meal.fat}g</span>
+                        {/* Macro bars */}
+                        <div className="mt-3 space-y-1.5">
+                          {[
+                            { label: "Proteína", value: meal.protein, max: 80, color: "bg-white/70" },
+                            { label: "Carboidrato", value: meal.carbs, max: 120, color: "bg-white/40" },
+                            { label: "Gordura", value: meal.fat, max: 60, color: "bg-white/20" },
+                          ].map(m => (
+                            <div key={m.label} className="flex items-center gap-2">
+                              <span className="text-[10px] font-medium text-[#6b7280] w-[70px] shrink-0">{m.label}</span>
+                              <div className="flex-1 h-1 rounded-full bg-white/[0.04] overflow-hidden">
+                                <div className={`h-full rounded-full ${m.color} transition-all duration-500`} style={{ width: `${Math.min((m.value / m.max) * 100, 100)}%` }} />
+                              </div>
+                              <span className="text-[10px] font-bold text-white/60 tabular-nums w-8 text-right">{m.value}g</span>
+                            </div>
+                          ))}
                         </div>
                       </div>
                       <div className="flex flex-col items-end gap-2 shrink-0">
