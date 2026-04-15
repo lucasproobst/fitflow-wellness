@@ -24,6 +24,7 @@ export default function Dashboard() {
   const streakCount = streak ?? 0;
   const initials = user?.email?.slice(0, 2).toUpperCase() || "FF";
   useCheckAchievements();
+  useNotificationReminders();
 
   const [showWeekly, setShowWeekly] = useState(false);
 
