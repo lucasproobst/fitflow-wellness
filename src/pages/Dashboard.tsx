@@ -22,6 +22,7 @@ export default function Dashboard() {
   const { data: weeklySummary } = useWeeklySummary();
   const streakCount = streak ?? 0;
   const initials = user?.email?.slice(0, 2).toUpperCase() || "FF";
+  useCheckAchievements();
 
   const [showWeekly, setShowWeekly] = useState(false);
 
