@@ -298,3 +298,77 @@ export function useLogMeasurements() {
     onSuccess: () => qc.invalidateQueries({ queryKey: ["measurement-logs"] }),
   });
 }
+
+// ─── Streak ───
+
+export function useStreak() {
+  const { user } = useAuth();
+  return useQuery({
+    queryKey: ["streak", user?.id],
+    enabled: !!user,
+    queryFn: async () => {
+      // Fetch last 90 days of daily_log (meals) and workout_sessions
+      const since = new Date();
+      since.setDate(since.getDate() - 90);
+      const sinceStr = since.toISOString().split("T")[0];
+
+      const [logRes, workoutRes] = await Promise.all([
+        supabase
+          .from("daily_log")
+          .select("date, meals")
+          .eq("user_id", user!.id)
+          .gte("date", sinceStr),
+        supabase
+          .from("workout_sessions")
+          .select("date")
+          .eq("user_id", user!.id)
+          .gte("date", sinceStr),
+      ]);
+
+      if (logRes.error) throw logRes.error;
+      if (workoutRes.error) throw workoutRes.error;
+
+      // Days with at least 1 meal
+      const mealDays = new Set(
+        (logRes.data || [])
+          .filter(r => {
+            const meals = r.meals as unknown as any[];
+            return Array.isArray(meals) && meals.length > 0;
+          })
+          .map(r => r.date)
+      );
+
+      // Days with at least 1 workout session
+      const workoutDays = new Set((workoutRes.data || []).map(r => r.date));
+
+      // Count consecutive days going backwards from yesterday
+      // (today might still be in progress, so start from yesterday)
+      let streak = 0;
+      const d = new Date();
+      d.setDate(d.getDate() - 1);
+
+      // But if today already qualifies, check today first
+      const todayStr = today();
+      if (mealDays.has(todayStr) && workoutDays.has(todayStr)) {
+        streak = 1;
+        // still check backwards from yesterday
+      } else {
+        // Check if today is still "in progress" — don't break streak
+        // Start counting from yesterday
+      }
+
+      for (let i = 0; i < 90; i++) {
+        const checkDate = new Date();
+        checkDate.setDate(checkDate.getDate() - 1 - i);
+        const ds = checkDate.toISOString().split("T")[0];
+        if (mealDays.has(ds) && workoutDays.has(ds)) {
+          streak++;
+        } else {
+          break;
+        }
+      }
+
+      return streak;
+    },
+  });
+}
