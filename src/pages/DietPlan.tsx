@@ -1,6 +1,7 @@
 import { useState, useMemo, useEffect, useCallback } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { RefreshCw, Shuffle, Heart, ChevronRight, X, Clock, ChefHat, Lightbulb } from "lucide-react";
+import { RecipeShareCard } from "@/components/RecipeShareCard";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth-context";
 import { toast } from "sonner";
@@ -502,7 +503,7 @@ export default function DietPlan() {
                       onClick={() => setExpandedRecipe(isExpanded ? null : i)}
                       className="w-full p-4 flex items-center justify-between text-left hover:bg-white/[0.02] transition-colors"
                     >
-                      <div className="min-w-0">
+                      <div className="min-w-0 flex-1">
                         <span className="text-[10px] font-bold uppercase tracking-[0.15em] text-[#6b7280]">
                           {recipe.meal_type}
                         </span>
@@ -517,10 +518,15 @@ export default function DietPlan() {
                           </span>
                         </div>
                       </div>
-                      <ChevronRight
-                        size={16}
-                        className={`text-[#6b7280] transition-transform duration-200 shrink-0 ${isExpanded ? "rotate-90" : ""}`}
-                      />
+                      <div className="flex items-center gap-1 shrink-0">
+                        <div onClick={(e) => e.stopPropagation()}>
+                          <RecipeShareCard recipe={recipe} />
+                        </div>
+                        <ChevronRight
+                          size={16}
+                          className={`text-[#6b7280] transition-transform duration-200 ${isExpanded ? "rotate-90" : ""}`}
+                        />
+                      </div>
                     </button>
 
                     {/* Recipe details — expanded */}
