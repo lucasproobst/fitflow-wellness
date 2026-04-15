@@ -2,11 +2,12 @@ import { useState, useRef } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { GlassCard } from "@/components/GlassCard";
 import { LineChart, Line, XAxis, YAxis, ResponsiveContainer, Tooltip } from "recharts";
-import { TrendingDown, TrendingUp, Upload, X, Camera } from "lucide-react";
-import { useWeightLogs, useLogWeight, useMeasurementLogs, useLogMeasurements } from "@/lib/use-tracking";
+import { TrendingDown, TrendingUp, Upload, X, Camera, Share2 } from "lucide-react";
+import { useWeightLogs, useLogWeight, useMeasurementLogs, useLogMeasurements, useStreak } from "@/lib/use-tracking";
 import { useAuth } from "@/lib/auth-context";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { MilestoneShareCard } from "@/components/MilestoneShareCard";
 
 const timeRanges = [
   { label: "30d", days: 30 },
@@ -72,13 +73,49 @@ function useUploadPhoto() {
 
 export default function Progress() {
   const [rangeIdx, setRangeIdx] = useState(0);
+  const [shareOpen, setShareOpen] = useState(false);
   const range = timeRanges[rangeIdx];
+  const { user } = useAuth();
   const { data: weightLogs } = useWeightLogs(range.days);
   const logWeight = useLogWeight();
   const { data: measurementLogs } = useMeasurementLogs();
   const logMeasurements = useLogMeasurements();
   const { data: photos } = useProgressPhotos();
   const uploadPhoto = useUploadPhoto();
+  const { data: streakCount = 0 } = useStreak();
+
+  // Compute workout count from last 90 days
+  const { data: workoutCount = 0 } = useQuery({
+    queryKey: ["workout-count", user?.id],
+    enabled: !!user,
+    queryFn: async () => {
+      const since = new Date();
+      since.setDate(since.getDate() - 90);
+      const { count } = await supabase
+        .from("workout_sessions")
+        .select("*", { count: "exact", head: true })
+        .eq("user_id", user!.id)
+        .gte("date", since.toISOString().split("T")[0]);
+      return count || 0;
+    },
+  });
+
+  // Avg sleep from last 30 days
+  const { data: avgSleep = 0 } = useQuery({
+    queryKey: ["avg-sleep", user?.id],
+    enabled: !!user,
+    queryFn: async () => {
+      const since = new Date();
+      since.setDate(since.getDate() - 30);
+      const { data } = await supabase
+        .from("sleep_logs")
+        .select("hours_slept")
+        .eq("user_id", user!.id)
+        .gte("date", since.toISOString().split("T")[0]);
+      if (!data || data.length === 0) return 0;
+      return data.reduce((s, r) => s + r.hours_slept, 0) / data.length;
+    },
+  });
 
   const [newWeight, setNewWeight] = useState("");
   const [waist, setWaist] = useState("");
@@ -128,6 +165,27 @@ export default function Progress() {
   return (
     <div className="px-4 lg:px-8 py-6 max-w-4xl mx-auto">
       <h1 className="text-2xl font-semibold tracking-tight text-foreground mb-6">Progress</h1>
+
+      {/* Share Milestone */}
+      <button
+        onClick={() => setShareOpen(true)}
+        className="w-full mb-4 h-12 rounded-xl bg-gradient-to-r from-fitflow-primary to-fitflow-accent text-white text-sm font-semibold flex items-center justify-center gap-2 active:scale-95 transition-all"
+      >
+        <Share2 size={16} />
+        Share Your Milestone
+      </button>
+
+      <MilestoneShareCard
+        open={shareOpen}
+        onClose={() => setShareOpen(false)}
+        data={{
+          weightLost: Math.abs(diff),
+          streakDays: streakCount,
+          workoutsCompleted: workoutCount,
+          avgSleep,
+          userName: user?.user_metadata?.full_name || user?.email?.split("@")[0],
+        }}
+      />
 
       {/* Log weight */}
       <GlassCard className="mb-4">
