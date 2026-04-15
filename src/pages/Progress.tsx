@@ -166,6 +166,27 @@ export default function Progress() {
     <div className="px-4 lg:px-8 py-6 max-w-4xl mx-auto">
       <h1 className="text-2xl font-semibold tracking-tight text-foreground mb-6">Progress</h1>
 
+      {/* Share Milestone */}
+      <button
+        onClick={() => setShareOpen(true)}
+        className="w-full mb-4 h-12 rounded-xl bg-gradient-to-r from-fitflow-primary to-fitflow-accent text-white text-sm font-semibold flex items-center justify-center gap-2 active:scale-95 transition-all"
+      >
+        <Share2 size={16} />
+        Share Your Milestone
+      </button>
+
+      <MilestoneShareCard
+        open={shareOpen}
+        onClose={() => setShareOpen(false)}
+        data={{
+          weightLost: Math.abs(diff),
+          streakDays: streakCount,
+          workoutsCompleted: workoutCount,
+          avgSleep,
+          userName: user?.user_metadata?.full_name || user?.email?.split("@")[0],
+        }}
+      />
+
       {/* Log weight */}
       <GlassCard className="mb-4">
         <h2 className="label-style text-[10px] mb-3">LOG TODAY'S WEIGHT</h2>
