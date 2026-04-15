@@ -1,5 +1,4 @@
-import { useRef } from "react";
-import { toPng } from "html-to-image";
+import { useRef, useCallback } from "react";
 import { Share2, Download, Clock, ChefHat, Lightbulb } from "lucide-react";
 import { toast } from "sonner";
 
@@ -16,27 +15,43 @@ interface Recipe {
 export function RecipeShareCard({ recipe }: { recipe: Recipe }) {
   const cardRef = useRef<HTMLDivElement>(null);
 
-  const generateImage = async (): Promise<Blob | null> => {
+  const generateImage = useCallback(async (): Promise<Blob | null> => {
     if (!cardRef.current) return null;
-    // Temporarily show the hidden card for capture
-    cardRef.current.style.position = "fixed";
-    cardRef.current.style.left = "-9999px";
-    cardRef.current.style.display = "block";
+
+    const { toPng } = await import("html-to-image");
+
+    const el = cardRef.current;
+    // Make visible for capture
+    el.style.display = "block";
+    el.style.position = "fixed";
+    el.style.left = "-9999px";
+    el.style.top = "0";
+    el.style.zIndex = "-1";
+
+    // Wait for layout
+    await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)));
 
     try {
-      const dataUrl = await toPng(cardRef.current, {
+      const dataUrl = await toPng(el, {
         pixelRatio: 2,
-        backgroundColor: "#0f1117",
+        width: 420,
+        height: el.scrollHeight,
+        style: {
+          display: "block",
+          background: "#0f1117",
+          color: "#ffffff",
+        },
       });
-      cardRef.current.style.display = "none";
+      el.style.display = "none";
 
       const res = await fetch(dataUrl);
       return await res.blob();
-    } catch {
-      cardRef.current.style.display = "none";
+    } catch (err) {
+      console.error("Image generation failed:", err);
+      el.style.display = "none";
       return null;
     }
-  };
+  }, []);
 
   const handleShare = async () => {
     const blob = await generateImage();
@@ -105,77 +120,85 @@ export function RecipeShareCard({ recipe }: { recipe: Recipe }) {
         </button>
       </div>
 
-      {/* Hidden card for image capture */}
+      {/* Hidden card for image capture — uses inline styles for reliable capture */}
       <div
         ref={cardRef}
-        style={{ display: "none", width: 420 }}
-        className="bg-[#0f1117] text-white p-6 rounded-2xl"
+        style={{
+          display: "none",
+          width: 420,
+          background: "#0f1117",
+          color: "#ffffff",
+          padding: 24,
+          borderRadius: 16,
+          fontFamily: "'Plus Jakarta Sans', sans-serif",
+        }}
       >
         {/* Header */}
-        <div className="mb-4">
-          <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#6b7280]">
+        <div style={{ marginBottom: 16 }}>
+          <span style={{ fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.2em", color: "#6b7280" }}>
             {recipe.meal_type}
           </span>
-          <h2 className="text-lg font-bold mt-1">{recipe.meal_name}</h2>
-          <div className="flex items-center gap-4 mt-2">
-            <span className="flex items-center gap-1.5 text-[11px] text-[#6b7280]">
-              <Clock size={11} />
-              Preparo: {recipe.prep_time} min
+          <h2 style={{ fontSize: 18, fontWeight: 700, marginTop: 4, color: "#ffffff" }}>{recipe.meal_name}</h2>
+          <div style={{ display: "flex", alignItems: "center", gap: 16, marginTop: 8 }}>
+            <span style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 11, color: "#6b7280" }}>
+              ⏱ Preparo: {recipe.prep_time} min
             </span>
-            <span className="flex items-center gap-1.5 text-[11px] text-[#6b7280]">
-              <ChefHat size={11} />
-              Cozimento: {recipe.cook_time} min
+            <span style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 11, color: "#6b7280" }}>
+              👨‍🍳 Cozimento: {recipe.cook_time} min
             </span>
           </div>
         </div>
 
         {/* Divider */}
-        <div className="h-px bg-white/[0.06] mb-4" />
+        <div style={{ height: 1, background: "rgba(255,255,255,0.06)", marginBottom: 16 }} />
 
         {/* Ingredients */}
-        <div className="mb-4">
-          <h3 className="text-[10px] font-bold uppercase tracking-[0.15em] text-[#6b7280] mb-2">
+        <div style={{ marginBottom: 16 }}>
+          <h3 style={{ fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.15em", color: "#6b7280", marginBottom: 8 }}>
             Ingredientes
           </h3>
-          <ul className="space-y-1">
-            {recipe.ingredients.map((ing, j) => (
-              <li key={j} className="flex items-start gap-2 text-[12px] text-white/70">
-                <span className="w-1 h-1 rounded-full bg-[#22c55e] shrink-0 mt-1.5" />
-                {ing}
-              </li>
-            ))}
-          </ul>
+          {recipe.ingredients.map((ing, j) => (
+            <div key={j} style={{ display: "flex", alignItems: "flex-start", gap: 8, fontSize: 12, color: "rgba(255,255,255,0.7)", marginBottom: 4 }}>
+              <span style={{ width: 4, height: 4, borderRadius: "50%", background: "#22c55e", flexShrink: 0, marginTop: 6 }} />
+              <span>{ing}</span>
+            </div>
+          ))}
         </div>
 
         {/* Instructions */}
-        <div className="mb-4">
-          <h3 className="text-[10px] font-bold uppercase tracking-[0.15em] text-[#6b7280] mb-2">
+        <div style={{ marginBottom: 16 }}>
+          <h3 style={{ fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.15em", color: "#6b7280", marginBottom: 8 }}>
             Modo de preparo
           </h3>
-          <ol className="space-y-2">
-            {recipe.instructions.map((step, j) => (
-              <li key={j} className="flex gap-2.5 text-[12px]">
-                <span className="w-5 h-5 rounded-full bg-white/[0.06] flex items-center justify-center text-[10px] font-bold text-white/40 shrink-0">
-                  {j + 1}
-                </span>
-                <span className="text-white/70 leading-relaxed">{step}</span>
-              </li>
-            ))}
-          </ol>
+          {recipe.instructions.map((step, j) => (
+            <div key={j} style={{ display: "flex", gap: 10, fontSize: 12, marginBottom: 8 }}>
+              <span style={{
+                width: 20, height: 20, borderRadius: "50%", background: "rgba(255,255,255,0.06)",
+                display: "flex", alignItems: "center", justifyContent: "center",
+                fontSize: 10, fontWeight: 700, color: "rgba(255,255,255,0.4)", flexShrink: 0,
+              }}>
+                {j + 1}
+              </span>
+              <span style={{ color: "rgba(255,255,255,0.7)", lineHeight: 1.6 }}>{step}</span>
+            </div>
+          ))}
         </div>
 
         {/* Tip */}
         {recipe.tips && (
-          <div className="flex items-start gap-2 p-3 rounded-xl bg-[#22c55e]/[0.06] border border-[#22c55e]/10">
-            <Lightbulb size={13} className="text-[#22c55e] shrink-0 mt-0.5" />
-            <p className="text-[11px] text-white/60 leading-relaxed">{recipe.tips}</p>
+          <div style={{
+            display: "flex", alignItems: "flex-start", gap: 10, padding: 12,
+            borderRadius: 12, background: "rgba(34,197,94,0.06)", border: "1px solid rgba(34,197,94,0.1)",
+          }}>
+            <span style={{ color: "#22c55e", flexShrink: 0, marginTop: 2 }}>💡</span>
+            <p style={{ fontSize: 11, color: "rgba(255,255,255,0.6)", lineHeight: 1.6, margin: 0 }}>{recipe.tips}</p>
           </div>
         )}
 
         {/* Branding */}
-        <div className="mt-4 pt-3 border-t border-white/[0.04] text-center">
-          <span className="text-[10px] font-bold text-[#22c55e] tracking-wider">FITFLOW</span>
-          <span className="text-[10px] text-[#6b7280] ml-2">fitnessnobolso.lovable.app</span>
+        <div style={{ marginTop: 16, paddingTop: 12, borderTop: "1px solid rgba(255,255,255,0.04)", textAlign: "center" }}>
+          <span style={{ fontSize: 10, fontWeight: 700, color: "#22c55e", letterSpacing: "0.1em" }}>FITFLOW</span>
+          <span style={{ fontSize: 10, color: "#6b7280", marginLeft: 8 }}>fitnessnobolso.lovable.app</span>
         </div>
       </div>
     </>
