@@ -196,17 +196,35 @@ export default function DietPlan() {
   }, [user, favorites]);
 
   const handleViewRecipes = async () => {
-    if (!currentDay?.meals) return;
+    if (!currentDay?.meals || !user || !mealPlanId) return;
 
-    // Check cache first
-    const cached = recipesCache.current[selectedDay];
-    if (cached && cached.length > 0) {
+    // Check in-memory cache first
+    const memCached = recipesCache.current[selectedDay];
+    if (memCached && memCached.length > 0) {
+      setRecipes(memCached);
+      setExpandedRecipe(0);
+      setRecipesOpen(true);
+      return;
+    }
+
+    // Check DB cache
+    const { data: dbCached } = await supabase
+      .from("recipe_cache")
+      .select("recipes")
+      .eq("meal_plan_id", mealPlanId)
+      .eq("day_index", selectedDay)
+      .maybeSingle();
+
+    if (dbCached?.recipes && (dbCached.recipes as any[]).length > 0) {
+      const cached = dbCached.recipes as unknown as Recipe[];
+      recipesCache.current[selectedDay] = cached;
       setRecipes(cached);
       setExpandedRecipe(0);
       setRecipesOpen(true);
       return;
     }
 
+    // Generate new recipes
     setRecipesOpen(true);
     setLoadingRecipes(true);
     setRecipes([]);
@@ -231,6 +249,14 @@ export default function DietPlan() {
       recipesCache.current[selectedDay] = result;
       setRecipes(result);
       setExpandedRecipe(0);
+
+      // Save to DB cache
+      await supabase.from("recipe_cache").upsert({
+        user_id: user.id,
+        meal_plan_id: mealPlanId,
+        day_index: selectedDay,
+        recipes: result as any,
+      }, { onConflict: "meal_plan_id,day_index" });
     } catch (err: any) {
       toast.error(err.message || "Falha ao gerar receitas");
       setRecipesOpen(false);
