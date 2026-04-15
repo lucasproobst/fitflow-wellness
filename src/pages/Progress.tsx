@@ -1,8 +1,11 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { GlassCard } from "@/components/GlassCard";
-import { LineChart, Line, BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Tooltip } from "recharts";
-import { TrendingDown, TrendingUp, Upload } from "lucide-react";
+import { LineChart, Line, XAxis, YAxis, ResponsiveContainer, Tooltip } from "recharts";
+import { TrendingDown, TrendingUp, Upload, X, Camera } from "lucide-react";
 import { useWeightLogs, useLogWeight, useMeasurementLogs, useLogMeasurements } from "@/lib/use-tracking";
+import { useAuth } from "@/lib/auth-context";
+import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
 const timeRanges = [
@@ -11,6 +14,62 @@ const timeRanges = [
   { label: "180d", days: 180 },
 ];
 
+type PhotoType = "before" | "after";
+
+function useProgressPhotos() {
+  const { user } = useAuth();
+  return useQuery({
+    queryKey: ["progress-photos", user?.id],
+    enabled: !!user,
+    queryFn: async () => {
+      const results: Record<PhotoType, string | null> = { before: null, after: null };
+      for (const type of ["before", "after"] as PhotoType[]) {
+        const { data } = await supabase.storage
+          .from("progress-photos")
+          .list(`${user!.id}/${type}`, { limit: 1, sortBy: { column: "created_at", order: "desc" } });
+        if (data && data.length > 0) {
+          const { data: urlData } = await supabase.storage
+            .from("progress-photos")
+            .createSignedUrl(`${user!.id}/${type}/${data[0].name}`, 3600);
+          results[type] = urlData?.signedUrl ?? null;
+        }
+      }
+      return results;
+    },
+  });
+}
+
+function useUploadPhoto() {
+  const { user } = useAuth();
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ file, type }: { file: File; type: PhotoType }) => {
+      const ext = file.name.split(".").pop() || "jpg";
+      const path = `${user!.id}/${type}/${Date.now()}.${ext}`;
+
+      // Delete old photos in this folder first
+      const { data: existing } = await supabase.storage
+        .from("progress-photos")
+        .list(`${user!.id}/${type}`);
+      if (existing && existing.length > 0) {
+        await supabase.storage
+          .from("progress-photos")
+          .remove(existing.map(f => `${user!.id}/${type}/${f.name}`));
+      }
+
+      const { error } = await supabase.storage
+        .from("progress-photos")
+        .upload(path, file, { upsert: true });
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["progress-photos"] });
+      toast.success("Photo uploaded!");
+    },
+    onError: (err: any) => toast.error(err.message || "Upload failed"),
+  });
+}
+
 export default function Progress() {
   const [rangeIdx, setRangeIdx] = useState(0);
   const range = timeRanges[rangeIdx];
@@ -18,11 +77,16 @@ export default function Progress() {
   const logWeight = useLogWeight();
   const { data: measurementLogs } = useMeasurementLogs();
   const logMeasurements = useLogMeasurements();
+  const { data: photos } = useProgressPhotos();
+  const uploadPhoto = useUploadPhoto();
 
   const [newWeight, setNewWeight] = useState("");
   const [waist, setWaist] = useState("");
   const [chest, setChest] = useState("");
   const [arms, setArms] = useState("");
+
+  const beforeRef = useRef<HTMLInputElement>(null);
+  const afterRef = useRef<HTMLInputElement>(null);
 
   const chartData = (weightLogs || []).map(l => ({
     date: new Date(l.date).toLocaleDateString("en-US", { month: "short", day: "numeric" }),
@@ -51,6 +115,14 @@ export default function Progress() {
     logMeasurements.mutate(m, {
       onSuccess: () => { toast.success("Measurements saved"); setWaist(""); setChest(""); setArms(""); },
     });
+  };
+
+  const handleFileChange = (type: PhotoType) => (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (!file.type.startsWith("image/")) { toast.error("Please select an image"); return; }
+    if (file.size > 5 * 1024 * 1024) { toast.error("Max 5MB"); return; }
+    uploadPhoto.mutate({ file, type });
   };
 
   return (
@@ -150,19 +222,49 @@ export default function Progress() {
         </button>
       </GlassCard>
 
-      {/* Before/After */}
+      {/* Before/After Photos */}
       <GlassCard className="mb-4">
         <h2 className="label-style text-[10px] mb-4">BEFORE & AFTER</h2>
         <div className="grid grid-cols-2 gap-3">
-          {["Before", "After"].map(label => (
-            <div
-              key={label}
-              className="aspect-[3/4] rounded-xl bg-white/5 border border-dashed border-white/10 flex flex-col items-center justify-center gap-2 cursor-pointer hover:border-fitflow-primary/30 transition-colors"
-            >
-              <Upload size={20} className="text-foreground/20" />
-              <span className="text-xs text-foreground/30">{label}</span>
-            </div>
-          ))}
+          {(["before", "after"] as PhotoType[]).map(type => {
+            const url = photos?.[type];
+            return (
+              <div key={type} className="relative">
+                <input
+                  ref={type === "before" ? beforeRef : afterRef}
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={handleFileChange(type)}
+                />
+                {url ? (
+                  <div
+                    className="aspect-[3/4] rounded-xl overflow-hidden relative group cursor-pointer"
+                    onClick={() => (type === "before" ? beforeRef : afterRef).current?.click()}
+                  >
+                    <img src={url} alt={type} className="w-full h-full object-cover" />
+                    <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                      <Camera size={24} className="text-white" />
+                    </div>
+                    <span className="absolute top-2 left-2 px-2 py-0.5 rounded-full bg-black/60 text-[10px] uppercase tracking-wider font-semibold text-white">
+                      {type}
+                    </span>
+                  </div>
+                ) : (
+                  <div
+                    onClick={() => (type === "before" ? beforeRef : afterRef).current?.click()}
+                    className={`aspect-[3/4] rounded-xl bg-white/5 border border-dashed border-white/10 flex flex-col items-center justify-center gap-2 cursor-pointer hover:border-fitflow-primary/30 transition-colors ${
+                      uploadPhoto.isPending ? "opacity-50 pointer-events-none" : ""
+                    }`}
+                  >
+                    <Upload size={20} className="text-foreground/20" />
+                    <span className="text-xs text-foreground/30 capitalize">{type}</span>
+                    <span className="text-[10px] text-foreground/20">Tap to upload</span>
+                  </div>
+                )}
+              </div>
+            );
+          })}
         </div>
       </GlassCard>
     </div>
