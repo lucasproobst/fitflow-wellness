@@ -192,7 +192,7 @@ export default function WorkoutPlan() {
                       <div className="flex items-center gap-2 mt-2">
                         <span className="text-[10px] uppercase font-bold text-fitflow-primary">{ex.muscle_group}</span>
                         <a
-                          href={`https://www.youtube.com/results?search_query=${encodeURIComponent(ex.name + " proper form tutorial")}`}
+                          href={`https://www.youtube.com/results?search_query=${encodeURIComponent(ex.name + " exercício forma correta")}`}
                           target="_blank"
                           rel="noopener noreferrer"
                           className="flex items-center gap-1 text-fitflow-primary text-[10px] font-medium"

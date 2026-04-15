@@ -49,12 +49,27 @@ export default function Profile() {
     });
   };
 
+  const goalLabels: Record<string, string> = {
+    lose_weight: "Perder Peso",
+    gain_muscle: "Ganhar Músculo",
+    maintain: "Manter",
+    improve_health: "Melhorar Saúde",
+  };
+
+  const activityLabels: Record<string, string> = {
+    sedentary: "Sedentário",
+    light: "Leve",
+    moderate: "Moderado",
+    active: "Ativo",
+    very_active: "Muito Ativo",
+  };
+
   const stats = [
-    { label: "Objetivo", value: profile?.goal?.replace("_", " ") || "—" },
+    { label: "Objetivo", value: goalLabels[profile?.goal || ""] || profile?.goal || "—" },
     { label: "Altura", value: profile?.height_cm ? `${profile.height_cm} cm` : "—" },
     { label: "Peso", value: profile?.weight_kg ? `${profile.weight_kg} kg` : "—" },
     { label: "Meta", value: profile?.target_weight_kg ? `${profile.target_weight_kg} kg` : "—" },
-    { label: "Atividade", value: profile?.activity_level?.replace("_", " ") || "—" },
+    { label: "Atividade", value: activityLabels[profile?.activity_level || ""] || profile?.activity_level || "—" },
     { label: "Idade", value: profile?.age?.toString() || "—" },
   ];
 
