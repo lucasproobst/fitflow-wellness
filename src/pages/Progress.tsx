@@ -73,13 +73,49 @@ function useUploadPhoto() {
 
 export default function Progress() {
   const [rangeIdx, setRangeIdx] = useState(0);
+  const [shareOpen, setShareOpen] = useState(false);
   const range = timeRanges[rangeIdx];
+  const { user } = useAuth();
   const { data: weightLogs } = useWeightLogs(range.days);
   const logWeight = useLogWeight();
   const { data: measurementLogs } = useMeasurementLogs();
   const logMeasurements = useLogMeasurements();
   const { data: photos } = useProgressPhotos();
   const uploadPhoto = useUploadPhoto();
+  const { data: streakCount = 0 } = useStreak();
+
+  // Compute workout count from last 90 days
+  const { data: workoutCount = 0 } = useQuery({
+    queryKey: ["workout-count", user?.id],
+    enabled: !!user,
+    queryFn: async () => {
+      const since = new Date();
+      since.setDate(since.getDate() - 90);
+      const { count } = await supabase
+        .from("workout_sessions")
+        .select("*", { count: "exact", head: true })
+        .eq("user_id", user!.id)
+        .gte("date", since.toISOString().split("T")[0]);
+      return count || 0;
+    },
+  });
+
+  // Avg sleep from last 30 days
+  const { data: avgSleep = 0 } = useQuery({
+    queryKey: ["avg-sleep", user?.id],
+    enabled: !!user,
+    queryFn: async () => {
+      const since = new Date();
+      since.setDate(since.getDate() - 30);
+      const { data } = await supabase
+        .from("sleep_logs")
+        .select("hours_slept")
+        .eq("user_id", user!.id)
+        .gte("date", since.toISOString().split("T")[0]);
+      if (!data || data.length === 0) return 0;
+      return data.reduce((s, r) => s + r.hours_slept, 0) / data.length;
+    },
+  });
 
   const [newWeight, setNewWeight] = useState("");
   const [waist, setWaist] = useState("");
