@@ -3,10 +3,12 @@ import { GlassCard } from "@/components/GlassCard";
 import { CalorieRing } from "@/components/CalorieRing";
 import { MacroBar } from "@/components/MacroBar";
 import { WaterTracker } from "@/components/WaterTracker";
+import { AchievementBadges } from "@/components/AchievementBadges";
 import { useProfile } from "@/lib/use-profile";
 import { useAuth } from "@/lib/auth-context";
 import { useTheme } from "@/lib/theme-context";
 import { useDailyLog, useAddWater, useStreak, useWeeklySummary } from "@/lib/use-tracking";
+import { useCheckAchievements } from "@/lib/use-achievements";
 import { Flame, Sun, Moon, Dumbbell, ChevronRight, TrendingDown, TrendingUp, Utensils, BarChart3, X } from "lucide-react";
 import { Link } from "react-router-dom";
 
