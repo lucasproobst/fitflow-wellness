@@ -517,17 +517,9 @@ export default function DietPlan() {
           className="h-[85vh] rounded-t-3xl bg-[#0f1117] border-t border-white/[0.06] p-0"
         >
           <SheetHeader className="px-5 pt-5 pb-3 border-b border-white/[0.04]">
-            <div className="flex items-center justify-between">
-              <div>
-                <SheetTitle className="text-lg font-bold text-white">Receitas do Dia</SheetTitle>
-                <p className="text-xs text-[#6b7280] mt-0.5">{shortDays[selectedDay]} — {recipes.length} receitas</p>
-              </div>
-              <button
-                onClick={() => setRecipesOpen(false)}
-                className="w-8 h-8 rounded-full bg-white/[0.04] flex items-center justify-center hover:bg-white/[0.08] transition-colors"
-              >
-                <X size={14} className="text-[#6b7280]" />
-              </button>
+            <div>
+              <SheetTitle className="text-lg font-bold text-white">Receitas do Dia</SheetTitle>
+              <p className="text-xs text-[#6b7280] mt-0.5">{shortDays[selectedDay]} — {recipes.length} receitas</p>
             </div>
           </SheetHeader>
 
@@ -546,7 +538,12 @@ export default function DietPlan() {
                 </div>
               )}
 
-              {recipes.map((recipe, i) => {
+              {[...recipes].sort((a, b) => {
+                const mealOrder = ["CAFÉ DA MANHÃ", "ALMOÇO", "LANCHE", "JANTAR", "PRÉ-TREINO"];
+                const aIdx = mealOrder.indexOf(a.meal_type?.toUpperCase?.() || "");
+                const bIdx = mealOrder.indexOf(b.meal_type?.toUpperCase?.() || "");
+                return (aIdx === -1 ? 99 : aIdx) - (bIdx === -1 ? 99 : bIdx);
+              }).map((recipe, i) => {
                 const isExpanded = expandedRecipe === i;
                 return (
                   <motion.div
