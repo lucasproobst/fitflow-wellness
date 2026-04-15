@@ -104,24 +104,43 @@ export default function AppLayout({ children }: { children: ReactNode }) {
       {/* Área principal */}
       <div className="flex-1 flex flex-col min-h-screen w-0">
         {/* Mobile header */}
-        <header className="lg:hidden flex items-center justify-between px-4 h-12 border-b border-white/5 sticky top-0 bg-background/90 backdrop-blur-lg z-40">
-          <h1 className="text-base font-semibold tracking-tight text-foreground">
-            Fit<span className="text-fitflow-primary">Flow</span>
-          </h1>
-          <div className="flex items-center gap-2">
-            <NavLink
-              to="/profile"
-              className="relative w-9 h-9 rounded-full bg-gradient-to-br from-fitflow-primary to-fitflow-accent flex items-center justify-center active:scale-90 transition-transform"
-            >
-              <User size={16} className="text-white" />
-              {/* Notification dot */}
-              {typeof window !== "undefined" && "Notification" in window && Notification.permission === "granted" && getNotificationPrefs().enabled && (
-                <span className="absolute -top-0.5 -right-0.5 flex h-3 w-3">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-fitflow-accent opacity-75" />
-                  <span className="relative inline-flex rounded-full h-3 w-3 bg-fitflow-accent border-2 border-background" />
-                </span>
-              )}
-            </NavLink>
+        <header className="lg:hidden sticky top-0 bg-background/90 backdrop-blur-lg z-40 border-b border-white/5">
+          <div className="flex items-center justify-between px-4 h-12">
+            <h1 className="text-base font-semibold tracking-tight text-foreground">
+              Fit<span className="text-fitflow-primary">Flow</span>
+            </h1>
+            <div className="flex items-center gap-1.5">
+              {[
+                { to: "/achievements", icon: Trophy, label: "Conquistas" },
+                { to: "/leaderboard", icon: Users, label: "Ranking" },
+                { to: "/sleep", icon: Moon, label: "Sono" },
+              ].map(item => {
+                const active = location.pathname === item.to;
+                return (
+                  <NavLink
+                    key={item.to}
+                    to={item.to}
+                    className={`w-9 h-9 rounded-xl flex items-center justify-center active:scale-90 transition-all ${
+                      active ? "bg-fitflow-primary/15 text-fitflow-primary" : "text-foreground/40 hover:bg-white/5"
+                    }`}
+                  >
+                    <item.icon size={18} />
+                  </NavLink>
+                );
+              })}
+              <NavLink
+                to="/profile"
+                className="relative w-9 h-9 rounded-full bg-gradient-to-br from-fitflow-primary to-fitflow-accent flex items-center justify-center active:scale-90 transition-transform ml-1"
+              >
+                <User size={16} className="text-white" />
+                {typeof window !== "undefined" && "Notification" in window && Notification.permission === "granted" && getNotificationPrefs().enabled && (
+                  <span className="absolute -top-0.5 -right-0.5 flex h-3 w-3">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-fitflow-accent opacity-75" />
+                    <span className="relative inline-flex rounded-full h-3 w-3 bg-fitflow-accent border-2 border-background" />
+                  </span>
+                )}
+              </NavLink>
+            </div>
           </div>
         </header>
 
