@@ -32,6 +32,9 @@ export default function Dashboard() {
   useNotificationReminders();
 
   const [showWeekly, setShowWeekly] = useState(false);
+  const [installPrompt, setInstallPrompt] = useState<BeforeInstallPromptEvent | null>(null);
+  const [installDismissed, setInstallDismissed] = useState(() => localStorage.getItem("install-banner-dismissed") === "1");
+  const [isAppInstalled, setIsAppInstalled] = useState(() => window.matchMedia("(display-mode: standalone)").matches);
 
   useEffect(() => {
     if (weeklySummary && weeklySummary.daysLogged > 0) {
@@ -39,6 +42,36 @@ export default function Dashboard() {
       if (!lastDismissed) setShowWeekly(true);
     }
   }, [weeklySummary]);
+
+  useEffect(() => {
+    if (isAppInstalled || installDismissed) return;
+    const handler = (e: Event) => {
+      e.preventDefault();
+      setInstallPrompt(e as BeforeInstallPromptEvent);
+    };
+    const installedHandler = () => setIsAppInstalled(true);
+    window.addEventListener("beforeinstallprompt", handler);
+    window.addEventListener("appinstalled", installedHandler);
+    return () => {
+      window.removeEventListener("beforeinstallprompt", handler);
+      window.removeEventListener("appinstalled", installedHandler);
+    };
+  }, [isAppInstalled, installDismissed]);
+
+  const handleInstallBanner = async () => {
+    if (!installPrompt) return;
+    installPrompt.prompt();
+    const { outcome } = await installPrompt.userChoice;
+    if (outcome === "accepted") setIsAppInstalled(true);
+    setInstallPrompt(null);
+  };
+
+  const dismissInstallBanner = () => {
+    setInstallDismissed(true);
+    localStorage.setItem("install-banner-dismissed", "1");
+  };
+
+  const showInstallBanner = !isAppInstalled && !installDismissed;
 
   const calorieTarget = profile?.goal === "lose_weight" ? 1800 : profile?.goal === "gain_muscle" ? 2600 : 2200;
   const consumed = dailyLog?.calories_total || 0;
