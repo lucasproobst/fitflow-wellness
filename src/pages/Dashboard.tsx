@@ -156,7 +156,47 @@ export default function Dashboard() {
         </GlassCard>
       )}
 
-      {/* Anel de calorias */}
+      {/* Banner de instalação */}
+      {showInstallBanner && (
+        <GlassCard className="mb-4 relative border-fitflow-accent/20 overflow-hidden">
+          <button
+            onClick={dismissInstallBanner}
+            className="absolute top-3 right-3 w-6 h-6 rounded-full bg-white/5 flex items-center justify-center hover:bg-white/10 transition-colors z-10"
+          >
+            <X size={12} className="text-foreground/40" />
+          </button>
+          <div className="flex items-center gap-4">
+            <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-fitflow-primary to-fitflow-accent flex items-center justify-center shrink-0">
+              <Smartphone size={20} className="text-white" />
+            </div>
+            <div className="flex-1 min-w-0 pr-6">
+              <p className="text-sm font-semibold text-foreground mb-0.5">Instale o FitFlow</p>
+              <p className="text-xs text-foreground/50 leading-relaxed">
+                Adicione à sua tela inicial para acesso rápido e experiência completa.
+              </p>
+            </div>
+          </div>
+          {installPrompt ? (
+            <button
+              onClick={handleInstallBanner}
+              className="mt-3 w-full h-10 rounded-xl bg-gradient-to-r from-fitflow-primary to-fitflow-accent text-white text-xs font-semibold flex items-center justify-center gap-2 active:scale-[0.98] transition-transform"
+            >
+              <Download size={14} />
+              Instalar Agora
+            </button>
+          ) : (
+            <Link
+              to="/install"
+              className="mt-3 w-full h-10 rounded-xl bg-fitflow-primary/10 text-fitflow-primary text-xs font-semibold flex items-center justify-center gap-2 active:scale-[0.98] transition-transform"
+            >
+              <Download size={14} />
+              Como instalar
+            </Link>
+          )}
+        </GlassCard>
+      )}
+
+
       <div className="flex justify-center mb-8">
         <CalorieRing consumed={consumed} target={calorieTarget} />
       </div>
