@@ -12,7 +12,7 @@ export function MacroBar({ label, current, target, unit = "g" }: MacroBarProps) 
       <div className="flex justify-between items-center">
         <span className="label-style text-[10px]">{label}</span>
         <span className="text-xs font-medium text-foreground/80">
-          {current}{unit} / {target}{unit}
+          {Number(current.toFixed(1))}{unit} / {target}{unit}
         </span>
       </div>
       <div className="h-1.5 bg-white/5 rounded-full overflow-hidden">
