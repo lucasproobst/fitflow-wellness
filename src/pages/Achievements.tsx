@@ -172,6 +172,20 @@ export default function Achievements() {
           );
         })}
       </div>
+
+      {shareAchievement && (() => {
+        const def = ACHIEVEMENTS.find(a => a.key === shareAchievement.key);
+        if (!def) return null;
+        return (
+          <AchievementShareCard
+            achievement={def}
+            unlockedAt={shareAchievement.unlockedAt}
+            userName={profile?.display_name ?? undefined}
+            open
+            onClose={() => setShareAchievement(null)}
+          />
+        );
+      })()}
     </div>
   );
 }
