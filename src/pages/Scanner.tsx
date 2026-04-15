@@ -1,7 +1,7 @@
 import { useState, useRef } from "react";
 import { GlassCard } from "@/components/GlassCard";
 import { MacroBar } from "@/components/MacroBar";
-import { Camera, Plus } from "lucide-react";
+import { Camera, Plus, AlertTriangle, RotateCcw } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth-context";
@@ -19,6 +19,7 @@ export default function Scanner() {
   const [image, setImage] = useState<string | null>(null);
   const [scanning, setScanning] = useState(false);
   const [result, setResult] = useState<ScanResult | null>(null);
+  const [notFound, setNotFound] = useState(false);
   const [history, setHistory] = useState<ScanResult[]>([]);
   const fileRef = useRef<HTMLInputElement>(null);
   const { user } = useAuth();
@@ -39,17 +40,30 @@ export default function Scanner() {
     reader.readAsDataURL(file);
   };
 
+  const resetScanner = () => {
+    setImage(null);
+    setResult(null);
+    setNotFound(false);
+    if (fileRef.current) fileRef.current.value = "";
+  };
+
   const scanFood = async (base64: string) => {
     setScanning(true);
     setResult(null);
+    setNotFound(false);
     try {
       const { data, error } = await supabase.functions.invoke("scan-food", {
         body: { image_base64: base64 },
       });
       if (error) throw error;
       if (data?.error) throw new Error(data.error);
+      if (!data || !data.name || data.calories === 0) {
+        setNotFound(true);
+        return;
+      }
       setResult(data as ScanResult);
     } catch (err: any) {
+      setNotFound(true);
       toast.error(err.message || "Falha ao analisar alimento");
     } finally {
       setScanning(false);
