@@ -5,7 +5,7 @@ import { WaterTracker } from "@/components/WaterTracker";
 import { useProfile } from "@/lib/use-profile";
 import { useAuth } from "@/lib/auth-context";
 import { useTheme } from "@/lib/theme-context";
-import { useDailyLog, useAddWater } from "@/lib/use-tracking";
+import { useDailyLog, useAddWater, useStreak } from "@/lib/use-tracking";
 import { Flame, Sun, Moon, Dumbbell, ChevronRight } from "lucide-react";
 import { Link } from "react-router-dom";
 
