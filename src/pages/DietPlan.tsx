@@ -101,18 +101,19 @@ export default function DietPlan() {
 
   return (
     <div className="px-4 lg:px-8 py-6 max-w-4xl mx-auto">
-      <div className="flex items-center justify-between mb-6">
-        <div>
+      <div className="flex items-start justify-between gap-3 mb-6">
+        <div className="min-w-0">
           <h1 className="text-2xl font-semibold tracking-tight text-foreground">Meal Plan</h1>
           <p className="text-sm text-foreground/50">Your personalized weekly plan</p>
         </div>
         <button
           onClick={() => generate.mutate()}
           disabled={generate.isPending}
-          className="flex items-center gap-2 px-4 py-2 rounded-full bg-fitflow-primary text-white text-xs font-semibold active:scale-95 transition-all disabled:opacity-50"
+          className="flex items-center gap-2 px-4 py-2 rounded-full bg-fitflow-primary text-white text-xs font-semibold active:scale-95 transition-all disabled:opacity-50 shrink-0"
         >
           <RefreshCw size={14} className={generate.isPending ? "animate-spin" : ""} />
-          {generate.isPending ? "Generating..." : planData ? "Regenerate" : "Generate Plan"}
+          <span className="hidden sm:inline">{generate.isPending ? "Generating..." : planData ? "Regenerate" : "Generate Plan"}</span>
+          <span className="sm:hidden">{generate.isPending ? "..." : planData ? "New" : "Generate"}</span>
         </button>
       </div>
 
