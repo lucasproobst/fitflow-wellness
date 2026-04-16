@@ -229,7 +229,7 @@ export default function Landing() {
                 </Button>
               </motion.div>
               <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.97 }}>
-                <Button variant="outline" onClick={() => document.getElementById("como-funciona")?.scrollIntoView({ behavior: "smooth" })} className="border-white/10 text-white hover:bg-white/5 rounded-lg text-base h-12 px-8">
+                <Button variant="outline" onClick={() => document.getElementById("como-funciona")?.scrollIntoView({ behavior: "smooth" })} className="border-white/20 bg-white/5 text-white hover:bg-white/15 hover:border-white/30 hover:text-white rounded-lg text-base h-12 px-8">
                   Ver como funciona
                 </Button>
               </motion.div>
