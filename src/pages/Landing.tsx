@@ -277,8 +277,8 @@ export default function Landing() {
             <p className="text-[#6b7280] text-lg">Comece grátis. Evolua no seu ritmo.</p>
           </div>
 
-          <StaggerCards className="grid md:grid-cols-3 gap-6 items-start">
-            <StaggerCard>
+          <StaggerCards className="grid md:grid-cols-3 gap-6 items-stretch">
+            <StaggerCard className="h-full">
               <PricingCard badge="GRÁTIS" name="" price="R$ 0" period="por 7 dias" subtitle="" features={[
                 { ok: true, t: "Scanner de alimentos (1 scan/dia)" },
                 { ok: true, t: "1 geração de treino" },
@@ -287,7 +287,7 @@ export default function Landing() {
                 { ok: false, t: "Gerações limitadas" },
               ]} cta="Começar Grátis" ctaVariant="outline" footnote="Sem cartão de crédito" onCta={go} />
             </StaggerCard>
-            <StaggerCard>
+            <StaggerCard className="h-full">
               <PricingCard highlighted badge="⭐ MAIS POPULAR" name="FitFlow" price="R$ 29,90" period="/mês" subtitle="Cobrado mensalmente • Cancele quando quiser" features={[
                 { ok: true, t: "Tudo do plano grátis" },
                 { ok: true, t: "5 gerações de treino por mês" },
@@ -297,7 +297,7 @@ export default function Landing() {
                 { ok: true, t: "Suporte por email" },
               ]} cta="Assinar FitFlow →" ctaVariant="primary" onCta={go} />
             </StaggerCard>
-            <StaggerCard>
+            <StaggerCard className="h-full">
               <PricingCard badge="VITALÍCIO" name="FitFlow+" originalPrice="R$ 197,00" price="R$ 97,00" period="" subtitle="Pagamento único — para sempre" subtitleGreen features={[
                 { ok: true, t: "Tudo do plano FitFlow" },
                 { ok: true, t: "Gerações ILIMITADAS de treino" },
@@ -424,9 +424,9 @@ interface PricingCardProps {
 
 function PricingCard({ highlighted, badge, name, originalPrice, price, period, subtitle, subtitleGreen, features, cta, ctaVariant, footnote, footnoteGreen, onCta }: PricingCardProps) {
   return (
-    <div className={`relative bg-[#16181f] rounded-xl p-7 space-y-6 border ${
+    <div className={`relative bg-[#16181f] rounded-xl p-7 flex flex-col border h-full ${
       highlighted
-        ? "border-primary/40 shadow-[0_0_40px_-10px_hsl(var(--primary)/0.25)] md:scale-[1.04] z-10"
+        ? "border-primary/40 shadow-[0_0_60px_-10px_hsl(var(--primary)/0.3)] ring-1 ring-primary/20 z-10"
         : "border-white/[0.06]"
     }`}>
       {/* green glow pulse for highlighted */}
@@ -442,7 +442,7 @@ function PricingCard({ highlighted, badge, name, originalPrice, price, period, s
         highlighted ? "bg-primary/15 text-primary" : "bg-white/5 text-[#6b7280]"
       }`}>{badge}</span>
 
-      <div>
+      <div className="mt-4">
         {name && <p className="text-white font-semibold text-lg mb-1">{name}</p>}
         {originalPrice && <p className="text-[#6b7280] line-through text-sm mb-1">{originalPrice}</p>}
         <div className="flex items-baseline gap-1">
@@ -452,9 +452,9 @@ function PricingCard({ highlighted, badge, name, originalPrice, price, period, s
         {subtitle && <p className={`text-xs mt-2 ${subtitleGreen ? "text-primary" : "text-[#6b7280]"}`}>{subtitle}</p>}
       </div>
 
-      <hr className="border-white/[0.06]" />
+      <hr className="border-white/[0.06] my-4" />
 
-      <ul className="space-y-3">
+      <ul className="space-y-3 flex-1">
         {features.map(({ ok, t }, i) => (
           <motion.li
             key={t}
@@ -473,6 +473,7 @@ function PricingCard({ highlighted, badge, name, originalPrice, price, period, s
         ))}
       </ul>
 
+      <div className="mt-6">
       <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}>
         <Button
           onClick={onCta}
@@ -489,8 +490,9 @@ function PricingCard({ highlighted, badge, name, originalPrice, price, period, s
       </motion.div>
 
       {footnote && (
-        <p className={`text-xs text-center ${footnoteGreen ? "text-primary" : "text-[#6b7280]"}`}>{footnote}</p>
+        <p className={`text-xs text-center mt-3 ${footnoteGreen ? "text-primary" : "text-[#6b7280]"}`}>{footnote}</p>
       )}
+      </div>
     </div>
   );
 }
