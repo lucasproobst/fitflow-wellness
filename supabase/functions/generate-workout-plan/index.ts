@@ -170,11 +170,12 @@ Regras:
 
     const plan = JSON.parse(toolCall.function.arguments);
 
-    // Calculate Monday of current week (must match frontend getWeekStart)
+    // Calculate Monday using local-style date math (matches frontend)
     const now = new Date();
-    const dow = now.getUTCDay(); // 0=Sun
-    const mondayDate = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() - ((dow + 6) % 7)));
-    const weekStart = mondayDate.toISOString().split("T")[0];
+    const dow = now.getDay(); // 0=Sun
+    const mondayDate = new Date(now);
+    mondayDate.setDate(now.getDate() - ((dow + 6) % 7));
+    const weekStart = `${mondayDate.getFullYear()}-${String(mondayDate.getMonth() + 1).padStart(2, "0")}-${String(mondayDate.getDate()).padStart(2, "0")}`;
 
     // Use service role for mutations to bypass RLS
     const adminClient = createClient(
