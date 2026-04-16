@@ -91,6 +91,27 @@ export default function Scanner() {
     if (!result || !user) return;
     try {
       const today = new Date().toISOString().split("T")[0];
+
+      // Save scan to food_scans table
+      const { data: savedScan } = await supabase
+        .from("food_scans" as any)
+        .insert({
+          user_id: user.id,
+          name: result.name,
+          serving: result.serving,
+          calories: result.calories,
+          protein: result.protein,
+          carbs: result.carbs,
+          fat: result.fat,
+        } as any)
+        .select()
+        .single();
+
+      if (savedScan) {
+        setHistory(prev => [savedScan as any, ...prev].slice(0, 20));
+      }
+
+      // Also add to daily_log
       const { data: existing } = await supabase
         .from("daily_log")
         .select("*")
@@ -116,7 +137,6 @@ export default function Scanner() {
         });
       }
 
-      setHistory(prev => [result, ...prev].slice(0, 10));
       toast.success(`${result.name} adicionado ao diário!`);
       setResult(null);
       setImage(null);
