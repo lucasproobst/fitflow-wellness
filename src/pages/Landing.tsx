@@ -369,7 +369,9 @@ export default function Landing() {
       </Reveal>
 
       {/* ─── FINAL CTA ─── */}
-      <Reveal className="py-24 md:py-32 border-t border-primary/20">
+      <Reveal className="py-24 md:py-32 relative z-[2]">
+        {/* Glowing green horizontal line divider */}
+        <div className="absolute top-0 left-0 right-0 h-[1px]" style={{ background: "linear-gradient(90deg, transparent 0%, #22c55e 50%, transparent 100%)" }} />
         <div className="max-w-3xl mx-auto px-5 md:px-8 text-center space-y-6">
           <h2 className="text-3xl md:text-[40px] md:leading-[1.15] font-bold">
             Pronto para transformar<br />seu corpo com IA?
