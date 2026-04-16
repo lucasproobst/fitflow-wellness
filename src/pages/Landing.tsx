@@ -454,7 +454,7 @@ function PricingCard({ highlighted, badge, name, originalPrice, price, period, s
 
       <hr className="border-white/[0.06] my-4" />
 
-      <ul className="space-y-3">
+      <ul className="space-y-3 flex-1">
         {features.map(({ ok, t }, i) => (
           <motion.li
             key={t}
