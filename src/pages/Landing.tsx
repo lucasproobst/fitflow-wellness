@@ -281,9 +281,13 @@ export default function Landing() {
       </Reveal>
 
       {/* ─── PRICING ─── */}
-      <Reveal className="py-24 md:py-32 relative z-[2]">
+      <Reveal className="py-24 md:py-32 relative z-[2] bg-[#12151c] border-t border-white/[0.04]">
         <div className="max-w-7xl mx-auto px-5 md:px-8 relative">
-          <div className="text-center mb-14">
+          {/* Pricing ambient glow */}
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[400px] rounded-full pointer-events-none" style={{ background: "rgba(34,197,94,0.05)", filter: "blur(150px)" }} />
+          {/* Decorative dots bottom-left */}
+          <div className="absolute bottom-0 left-0 w-[200px] h-[200px] pointer-events-none opacity-[0.03]" style={{ backgroundImage: "radial-gradient(circle, white 1px, transparent 1px)", backgroundSize: "16px 16px" }} />
+          <div className="text-center mb-14 relative">
             <h2 className="text-3xl md:text-4xl font-bold mb-3">Escolha seu plano</h2>
             <p className="text-[#6b7280] text-lg">Comece grátis. Evolua no seu ritmo.</p>
           </div>
