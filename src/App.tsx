@@ -20,6 +20,7 @@ import NotFound from "@/pages/NotFound";
 import Install from "@/pages/Install";
 import Achievements from "@/pages/Achievements";
 import Leaderboard from "@/pages/Leaderboard";
+import Landing from "@/pages/Landing";
 
 const queryClient = new QueryClient();
 
