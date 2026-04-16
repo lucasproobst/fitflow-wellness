@@ -278,7 +278,7 @@ export default function Landing() {
           </div>
 
           <StaggerCards className="grid md:grid-cols-3 gap-6 items-stretch">
-            <StaggerCard>
+            <StaggerCard className="h-full">
               <PricingCard badge="GRÁTIS" name="" price="R$ 0" period="por 7 dias" subtitle="" features={[
                 { ok: true, t: "Scanner de alimentos (1 scan/dia)" },
                 { ok: true, t: "1 geração de treino" },
@@ -287,7 +287,7 @@ export default function Landing() {
                 { ok: false, t: "Gerações limitadas" },
               ]} cta="Começar Grátis" ctaVariant="outline" footnote="Sem cartão de crédito" onCta={go} />
             </StaggerCard>
-            <StaggerCard>
+            <StaggerCard className="h-full">
               <PricingCard highlighted badge="⭐ MAIS POPULAR" name="FitFlow" price="R$ 29,90" period="/mês" subtitle="Cobrado mensalmente • Cancele quando quiser" features={[
                 { ok: true, t: "Tudo do plano grátis" },
                 { ok: true, t: "5 gerações de treino por mês" },
@@ -297,7 +297,7 @@ export default function Landing() {
                 { ok: true, t: "Suporte por email" },
               ]} cta="Assinar FitFlow →" ctaVariant="primary" onCta={go} />
             </StaggerCard>
-            <StaggerCard>
+            <StaggerCard className="h-full">
               <PricingCard badge="VITALÍCIO" name="FitFlow+" originalPrice="R$ 197,00" price="R$ 97,00" period="" subtitle="Pagamento único — para sempre" subtitleGreen features={[
                 { ok: true, t: "Tudo do plano FitFlow" },
                 { ok: true, t: "Gerações ILIMITADAS de treino" },
