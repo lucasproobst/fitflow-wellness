@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { Camera, Utensils, Dumbbell, Shield, Lock, RefreshCw, Star, ChevronDown, Leaf, Check, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import scannerMockup from "@/assets/scanner-mockup.jpg";
 
 /* ─── fade-in-on-scroll hook ─── */
 function useReveal() {
