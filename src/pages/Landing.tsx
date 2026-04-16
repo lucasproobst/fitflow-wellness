@@ -441,10 +441,10 @@ interface PricingCardProps {
 
 function PricingCard({ highlighted, badge, name, originalPrice, price, period, subtitle, subtitleGreen, features, cta, ctaVariant, footnote, footnoteGreen, onCta }: PricingCardProps) {
   return (
-    <div className={`relative bg-[#16181f] rounded-xl p-7 flex flex-col border h-full ${
+    <div className={`relative rounded-xl p-7 flex flex-col border h-full shadow-[inset_0_1px_0_rgba(255,255,255,0.08)] ${
       highlighted
-        ? "border-primary/40 shadow-[0_0_60px_-10px_hsl(var(--primary)/0.3)] ring-1 ring-primary/20 z-10"
-        : "border-white/[0.06]"
+        ? "bg-gradient-to-b from-[#1c2028] to-[#16181f] border-primary/40 shadow-[0_0_60px_-10px_hsl(var(--primary)/0.3),inset_0_1px_0_rgba(255,255,255,0.08)] ring-1 ring-primary/20 z-10"
+        : "bg-gradient-to-b from-[#1a1d27] to-[#16181f] border-white/[0.06]"
     }`}>
       {/* green glow pulse for highlighted */}
       {highlighted && (
