@@ -143,7 +143,10 @@ export default function Landing() {
   const go = () => navigate("/auth");
 
   return (
-    <div className="min-h-screen bg-[#0f1117] text-white font-sans overflow-x-hidden">
+    <div className="min-h-screen bg-[#0f1117] text-white font-sans overflow-x-hidden relative">
+      {/* Global subtle green radial from top + noise overlay */}
+      <div className="pointer-events-none fixed inset-0 z-0" style={{ background: "radial-gradient(ellipse 80% 50% at 50% 0%, rgba(34,197,94,0.04) 0%, transparent 70%)" }} />
+      <svg className="pointer-events-none fixed inset-0 z-[1] w-full h-full opacity-[0.015]" xmlns="http://www.w3.org/2000/svg"><filter id="grain"><feTurbulence type="fractalNoise" baseFrequency="0.65" numOctaves="3" stitchTiles="stitch" /><feColorMatrix type="saturate" values="0" /></filter><rect width="100%" height="100%" filter="url(#grain)" /></svg>
       {/* ─── NAV ─── */}
       <motion.nav
         className={`fixed top-0 inset-x-0 z-50 transition-colors duration-300 ${scrolled ? "bg-[#0f1117]/90 backdrop-blur-lg border-b border-white/[0.06]" : ""}`}
@@ -166,8 +169,16 @@ export default function Landing() {
       </motion.nav>
 
       {/* ─── HERO ─── */}
-      <section className="min-h-screen flex items-center pt-16">
-        <div className="max-w-7xl mx-auto px-5 md:px-8 w-full grid md:grid-cols-2 gap-12 items-center">
+      <section className="min-h-screen flex items-center pt-16 relative z-[2]">
+        {/* Hero subtle grid texture */}
+        <div className="absolute inset-0 pointer-events-none" style={{ backgroundImage: "linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px)", backgroundSize: "40px 40px" }} />
+        {/* Glow behind headline (top-left) */}
+        <div className="absolute top-[15%] left-[5%] w-[400px] h-[400px] rounded-full pointer-events-none" style={{ background: "rgba(34,197,94,0.05)", filter: "blur(120px)" }} />
+        {/* Glow behind phone (right) */}
+        <div className="absolute top-[20%] right-[10%] w-[600px] h-[600px] rounded-full pointer-events-none" style={{ background: "rgba(34,197,94,0.08)", filter: "blur(150px)" }} />
+        {/* Decorative dots top-right */}
+        <div className="absolute top-24 right-8 w-[200px] h-[200px] pointer-events-none opacity-[0.03]" style={{ backgroundImage: "radial-gradient(circle, white 1px, transparent 1px)", backgroundSize: "16px 16px" }} />
+        <div className="max-w-7xl mx-auto px-5 md:px-8 w-full grid md:grid-cols-2 gap-12 items-center relative">
           {/* left */}
           <div className="space-y-8">
             <motion.span
@@ -244,7 +255,7 @@ export default function Landing() {
       </section>
 
       {/* ─── HOW IT WORKS ─── */}
-      <Reveal id="como-funciona" className="py-24 md:py-32">
+      <Reveal id="como-funciona" className="py-24 md:py-32 relative z-[2] bg-[#12151c] border-t border-white/[0.04]">
         <div className="max-w-7xl mx-auto px-5 md:px-8">
           <h2 className="text-3xl md:text-4xl font-bold text-center mb-14">Como funciona</h2>
           <StaggerCards className="grid md:grid-cols-3 gap-6">
@@ -253,7 +264,7 @@ export default function Landing() {
               { icon: Utensils, title: "Receba sua dieta", text: "O app gera um plano alimentar completo baseado no seu objetivo, peso e preferências." },
               { icon: Dumbbell, title: "Treine com seu plano", text: "Treinos gerados automaticamente para o seu nível, com exercícios e séries definidos por IA." },
             ].map(({ icon: Icon, title, text }) => (
-              <StaggerCard key={title} className="bg-[#16181f] border border-white/[0.06] rounded-xl p-7 space-y-4">
+              <StaggerCard key={title} className="bg-gradient-to-b from-[#1a1d27] to-[#16181f] border border-white/[0.06] rounded-xl p-7 space-y-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]">
                 <motion.div
                   className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center"
                   whileHover={{ rotate: 10, scale: 1.1 }}
@@ -270,9 +281,13 @@ export default function Landing() {
       </Reveal>
 
       {/* ─── PRICING ─── */}
-      <Reveal className="py-24 md:py-32">
-        <div className="max-w-7xl mx-auto px-5 md:px-8">
-          <div className="text-center mb-14">
+      <Reveal className="py-24 md:py-32 relative z-[2] bg-[#12151c] border-t border-white/[0.04]">
+        <div className="max-w-7xl mx-auto px-5 md:px-8 relative">
+          {/* Pricing ambient glow */}
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[400px] rounded-full pointer-events-none" style={{ background: "rgba(34,197,94,0.05)", filter: "blur(150px)" }} />
+          {/* Decorative dots bottom-left */}
+          <div className="absolute bottom-0 left-0 w-[200px] h-[200px] pointer-events-none opacity-[0.03]" style={{ backgroundImage: "radial-gradient(circle, white 1px, transparent 1px)", backgroundSize: "16px 16px" }} />
+          <div className="text-center mb-14 relative">
             <h2 className="text-3xl md:text-4xl font-bold mb-3">Escolha seu plano</h2>
             <p className="text-[#6b7280] text-lg">Comece grátis. Evolua no seu ritmo.</p>
           </div>
@@ -313,7 +328,7 @@ export default function Landing() {
       </Reveal>
 
       {/* ─── TRUST ─── */}
-      <Reveal className="py-24 md:py-32">
+      <Reveal className="py-24 md:py-32 relative z-[2]">
         <div className="max-w-7xl mx-auto px-5 md:px-8">
           <h2 className="text-3xl md:text-4xl font-bold text-center mb-14">Sua segurança é nossa prioridade</h2>
           <StaggerCards className="grid sm:grid-cols-2 gap-6">
@@ -323,7 +338,7 @@ export default function Landing() {
               { icon: RefreshCw, title: "Garantia de 7 dias", text: "Não ficou satisfeito? Devolvemos 100% do seu dinheiro sem perguntas." },
               { icon: Star, title: "+10.000 usuários ativos", text: "Pessoas reais usando o FitFlow todos os dias para emagrecer com saúde." },
             ].map(({ icon: Icon, title, text }) => (
-              <StaggerCard key={title} className="bg-[#16181f] border border-white/[0.06] rounded-xl p-7 space-y-4">
+              <StaggerCard key={title} className="bg-gradient-to-b from-[#1a1d27] to-[#16181f] border border-white/[0.06] rounded-xl p-7 space-y-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]">
                 <motion.div
                   className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center"
                   whileHover={{ rotate: 10, scale: 1.1 }}
@@ -340,7 +355,7 @@ export default function Landing() {
       </Reveal>
 
       {/* ─── FAQ ─── */}
-      <Reveal className="py-24 md:py-32">
+      <Reveal className="py-24 md:py-32 relative z-[2] bg-[#12151c] border-t border-white/[0.04]">
         <div className="max-w-3xl mx-auto px-5 md:px-8">
           <h2 className="text-3xl md:text-4xl font-bold text-center mb-14">Dúvidas frequentes</h2>
           <div>
@@ -354,7 +369,9 @@ export default function Landing() {
       </Reveal>
 
       {/* ─── FINAL CTA ─── */}
-      <Reveal className="py-24 md:py-32 border-t border-primary/20">
+      <Reveal className="py-24 md:py-32 relative z-[2]">
+        {/* Glowing green horizontal line divider */}
+        <div className="absolute top-0 left-0 right-0 h-[1px]" style={{ background: "linear-gradient(90deg, transparent 0%, #22c55e 50%, transparent 100%)" }} />
         <div className="max-w-3xl mx-auto px-5 md:px-8 text-center space-y-6">
           <h2 className="text-3xl md:text-[40px] md:leading-[1.15] font-bold">
             Pronto para transformar<br />seu corpo com IA?
@@ -424,10 +441,10 @@ interface PricingCardProps {
 
 function PricingCard({ highlighted, badge, name, originalPrice, price, period, subtitle, subtitleGreen, features, cta, ctaVariant, footnote, footnoteGreen, onCta }: PricingCardProps) {
   return (
-    <div className={`relative bg-[#16181f] rounded-xl p-7 flex flex-col border h-full ${
+    <div className={`relative rounded-xl p-7 flex flex-col border h-full shadow-[inset_0_1px_0_rgba(255,255,255,0.08)] ${
       highlighted
-        ? "border-primary/40 shadow-[0_0_60px_-10px_hsl(var(--primary)/0.3)] ring-1 ring-primary/20 z-10"
-        : "border-white/[0.06]"
+        ? "bg-gradient-to-b from-[#1c2028] to-[#16181f] border-primary/40 shadow-[0_0_60px_-10px_hsl(var(--primary)/0.3),inset_0_1px_0_rgba(255,255,255,0.08)] ring-1 ring-primary/20 z-10"
+        : "bg-gradient-to-b from-[#1a1d27] to-[#16181f] border-white/[0.06]"
     }`}>
       {/* green glow pulse for highlighted */}
       {highlighted && (
