@@ -158,15 +158,14 @@ export default function Scanner() {
         initial={{ opacity: 0, scale: 0.96 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ duration: 0.35, delay: 0.05 }}
-        onClick={() => fileRef.current?.click()}
-        className="relative aspect-square max-w-sm mx-auto rounded-2xl bg-[#16181f] border border-white/[0.06] flex items-center justify-center cursor-pointer overflow-hidden mb-6 hover:border-white/[0.1] transition-colors"
+        className="relative aspect-square max-w-sm mx-auto rounded-2xl bg-[#16181f] border border-white/[0.06] flex items-center justify-center overflow-hidden mb-4"
       >
         {image ? (
           <img src={image} alt="Alimento" className="w-full h-full object-cover" />
         ) : (
           <div className="flex flex-col items-center gap-3 text-white/20">
             <Camera size={40} />
-            <span className="text-xs font-medium tracking-wide">Toque para escanear</span>
+            <span className="text-xs font-medium tracking-wide">Escaneie um alimento</span>
           </div>
         )}
         {/* Corner brackets */}
@@ -179,8 +178,29 @@ export default function Scanner() {
             <div className="w-10 h-10 border-2 border-[#22c55e] border-t-transparent rounded-full animate-spin" />
           </div>
         )}
-        <input ref={fileRef} type="file" accept="image/*" onChange={handleFile} className="hidden" />
       </motion.div>
+
+      {/* Action buttons */}
+      <div className="flex gap-3 max-w-sm mx-auto mb-6">
+        <button
+          onClick={() => cameraRef.current?.click()}
+          className="flex-1 h-11 rounded-full bg-[#22c55e] text-white text-xs font-bold flex items-center justify-center gap-2 active:scale-95 transition-all"
+        >
+          <Camera size={16} />
+          Tirar Foto
+        </button>
+        <button
+          onClick={() => fileRef.current?.click()}
+          className="flex-1 h-11 rounded-full bg-white/[0.06] border border-white/[0.08] text-white text-xs font-bold flex items-center justify-center gap-2 active:scale-95 transition-all hover:bg-white/[0.1]"
+        >
+          <Plus size={16} />
+          Galeria
+        </button>
+      </div>
+
+      {/* Hidden inputs — camera capture MUST be separate to preserve gesture chain */}
+      <input ref={cameraRef} type="file" accept="image/*" capture="environment" onChange={handleFile} className="hidden" />
+      <input ref={fileRef} type="file" accept="image/*" onChange={handleFile} className="hidden" />
 
       {/* Alimento não encontrado */}
       <AnimatePresence>
