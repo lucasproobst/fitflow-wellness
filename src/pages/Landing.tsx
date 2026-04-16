@@ -191,7 +191,7 @@ export default function Landing() {
             </motion.span>
 
             <motion.h1
-              className="text-4xl md:text-[52px] md:leading-[1.12] font-bold tracking-tight"
+              className="text-[34px] leading-[1.15] sm:text-4xl md:text-[52px] md:leading-[1.12] font-bold tracking-tight"
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.7, delay: 0.2, ease: [0.22, 1, 0.36, 1] }}
