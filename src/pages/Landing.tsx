@@ -442,7 +442,7 @@ function PricingCard({ highlighted, badge, name, originalPrice, price, period, s
         highlighted ? "bg-primary/15 text-primary" : "bg-white/5 text-[#6b7280]"
       }`}>{badge}</span>
 
-      <div>
+      <div className="mt-4">
         {name && <p className="text-white font-semibold text-lg mb-1">{name}</p>}
         {originalPrice && <p className="text-[#6b7280] line-through text-sm mb-1">{originalPrice}</p>}
         <div className="flex items-baseline gap-1">
@@ -452,7 +452,7 @@ function PricingCard({ highlighted, badge, name, originalPrice, price, period, s
         {subtitle && <p className={`text-xs mt-2 ${subtitleGreen ? "text-primary" : "text-[#6b7280]"}`}>{subtitle}</p>}
       </div>
 
-      <hr className="border-white/[0.06]" />
+      <hr className="border-white/[0.06] my-4" />
 
       <ul className="space-y-3">
         {features.map(({ ok, t }, i) => (
