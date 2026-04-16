@@ -4,7 +4,7 @@ import { Camera, Utensils, Dumbbell, Shield, Lock, RefreshCw, Star, ChevronDown,
 import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence, useInView } from "framer-motion";
 import { useRef } from "react";
-import scannerMockup from "@/assets/scanner-mockup.jpg";
+import scannerMockup from "@/assets/scanner-screen.jpg";
 
 /* ─── Reusable scroll-triggered wrapper ─── */
 function Reveal({ children, className = "", delay = 0, id }: { children: React.ReactNode; className?: string; delay?: number; id?: string }) {
