@@ -20,6 +20,7 @@ import NotFound from "@/pages/NotFound";
 import Install from "@/pages/Install";
 import Achievements from "@/pages/Achievements";
 import Leaderboard from "@/pages/Leaderboard";
+import Landing from "@/pages/Landing";
 
 const queryClient = new QueryClient();
 
@@ -35,7 +36,7 @@ function ProtectedRoutes() {
     );
   }
 
-  if (!user) return <Navigate to="/auth" replace />;
+  if (!user) return <Navigate to="/landing" replace />;
   if (profile && !profile.onboarding_complete) return <Navigate to="/onboarding" replace />;
 
   return (
@@ -70,6 +71,7 @@ function AppRoutes() {
 
   return (
     <Routes>
+      <Route path="/landing" element={user ? <Navigate to="/" replace /> : <Landing />} />
       <Route path="/auth" element={user ? <Navigate to="/" replace /> : <Auth />} />
       <Route path="/install" element={<Install />} />
       <Route path="/onboarding" element={user ? <Onboarding /> : <Navigate to="/auth" replace />} />
