@@ -262,12 +262,28 @@ export default function Scanner() {
       {/* Histórico */}
       {history.length > 0 && (
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.1 }}>
-          <h2 className="text-[10px] font-bold uppercase tracking-[0.15em] text-white/20 mb-3">ESCANEAMENTOS RECENTES</h2>
+          <h2 className="text-[10px] font-bold uppercase tracking-[0.15em] text-white/20 mb-3">ESCANEAMENTOS SALVOS</h2>
           <div className="space-y-2">
-            {history.map((item, i) => (
-              <div key={i} className="rounded-xl bg-[#16181f] border border-white/[0.04] px-4 py-3 flex items-center justify-between">
-                <p className="text-xs text-white/50">{item.name}</p>
-                <span className="text-xs font-bold text-white/70 tabular-nums">{item.calories} kcal</span>
+            {history.map((item) => (
+              <div key={item.id} className="rounded-xl bg-[#16181f] border border-white/[0.04] px-4 py-3 flex items-center justify-between">
+                <div>
+                  <p className="text-xs text-white/50">{item.name}</p>
+                  <p className="text-[10px] text-white/20 mt-0.5">
+                    {new Date(item.created_at).toLocaleDateString("pt-BR")} · P {item.protein}g · C {item.carbs}g · G {item.fat}g
+                  </p>
+                </div>
+                <div className="flex items-center gap-3">
+                  <span className="text-xs font-bold text-white/70 tabular-nums">{item.calories} kcal</span>
+                  <button
+                    onClick={async () => {
+                      await supabase.from("food_scans" as any).delete().eq("id", item.id);
+                      setHistory(prev => prev.filter(s => s.id !== item.id));
+                    }}
+                    className="text-white/20 hover:text-red-400 transition-colors"
+                  >
+                    <Trash2 size={14} />
+                  </button>
+                </div>
               </div>
             ))}
           </div>
