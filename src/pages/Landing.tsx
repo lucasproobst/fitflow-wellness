@@ -490,8 +490,9 @@ function PricingCard({ highlighted, badge, name, originalPrice, price, period, s
       </motion.div>
 
       {footnote && (
-        <p className={`text-xs text-center ${footnoteGreen ? "text-primary" : "text-[#6b7280]"}`}>{footnote}</p>
+        <p className={`text-xs text-center mt-3 ${footnoteGreen ? "text-primary" : "text-[#6b7280]"}`}>{footnote}</p>
       )}
+      </div>
     </div>
   );
 }
