@@ -143,7 +143,10 @@ export default function Landing() {
   const go = () => navigate("/auth");
 
   return (
-    <div className="min-h-screen bg-[#0f1117] text-white font-sans overflow-x-hidden">
+    <div className="min-h-screen bg-[#0f1117] text-white font-sans overflow-x-hidden relative">
+      {/* Global subtle green radial from top + noise overlay */}
+      <div className="pointer-events-none fixed inset-0 z-0" style={{ background: "radial-gradient(ellipse 80% 50% at 50% 0%, rgba(34,197,94,0.04) 0%, transparent 70%)" }} />
+      <svg className="pointer-events-none fixed inset-0 z-[1] w-full h-full opacity-[0.015]" xmlns="http://www.w3.org/2000/svg"><filter id="grain"><feTurbulence type="fractalNoise" baseFrequency="0.65" numOctaves="3" stitchTiles="stitch" /><feColorMatrix type="saturate" values="0" /></filter><rect width="100%" height="100%" filter="url(#grain)" /></svg>
       {/* ─── NAV ─── */}
       <motion.nav
         className={`fixed top-0 inset-x-0 z-50 transition-colors duration-300 ${scrolled ? "bg-[#0f1117]/90 backdrop-blur-lg border-b border-white/[0.06]" : ""}`}
