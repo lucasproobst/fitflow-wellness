@@ -95,18 +95,18 @@ function FloatingPhone() {
     >
       {/* green ambient glow with pulse */}
       <motion.div
-        className="absolute w-72 h-72 bg-primary/20 rounded-full blur-[100px] top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2"
+        className="absolute w-[320px] h-[320px] bg-primary/20 rounded-full blur-[120px] top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2"
         animate={{ scale: [1, 1.15, 1], opacity: [0.2, 0.35, 0.2] }}
         transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
       />
       {/* phone with gentle float */}
       <motion.div
-        className="relative w-[280px] md:w-[300px] bg-[#16181f] rounded-[2.5rem] border border-white/[0.08] p-3 shadow-2xl"
+        className="relative w-[240px] sm:w-[260px] md:w-[280px] lg:w-[300px] bg-[#16181f] rounded-[2.2rem] border border-white/[0.08] p-2.5 shadow-2xl"
         animate={{ y: [0, -10, 0] }}
         transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
       >
-        <div className="bg-[#0f1117] rounded-[2rem] overflow-hidden aspect-[9/19]">
-          <img src={scannerMockup} alt="FitFlow scanner de alimentos" className="w-full h-full object-cover" width={512} height={1024} />
+        <div className="bg-[#0f1117] rounded-[1.8rem] overflow-hidden aspect-[9/19.5]">
+          <img src={scannerMockup} alt="FitFlow scanner de alimentos" className="w-full h-full object-cover" width={512} height={1109} />
         </div>
       </motion.div>
     </motion.div>
