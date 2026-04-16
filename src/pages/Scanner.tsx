@@ -1,5 +1,5 @@
-import { useState, useRef } from "react";
-import { Camera, Plus, AlertTriangle, RotateCcw } from "lucide-react";
+import { useState, useRef, useEffect } from "react";
+import { Camera, Plus, AlertTriangle, RotateCcw, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth-context";
@@ -14,14 +14,32 @@ interface ScanResult {
   fat: number;
 }
 
+interface SavedScan extends ScanResult {
+  id: string;
+  created_at: string;
+}
+
 export default function Scanner() {
   const [image, setImage] = useState<string | null>(null);
   const [scanning, setScanning] = useState(false);
   const [result, setResult] = useState<ScanResult | null>(null);
   const [notFound, setNotFound] = useState(false);
-  const [history, setHistory] = useState<ScanResult[]>([]);
+  const [history, setHistory] = useState<SavedScan[]>([]);
   const fileRef = useRef<HTMLInputElement>(null);
   const { user } = useAuth();
+
+  useEffect(() => {
+    if (!user) return;
+    supabase
+      .from("food_scans" as any)
+      .select("*")
+      .eq("user_id", user.id)
+      .order("created_at", { ascending: false })
+      .limit(20)
+      .then(({ data }) => {
+        if (data) setHistory(data as any);
+      });
+  }, [user]);
 
   const handleFile = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
