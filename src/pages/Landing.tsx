@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { Camera, Utensils, Dumbbell, Shield, Lock, RefreshCw, Star, ChevronDown, Leaf, Check, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import scannerMockup from "@/assets/scanner-mockup.jpg";
 
 /* ─── fade-in-on-scroll hook ─── */
 function useReveal() {
@@ -111,22 +112,8 @@ export default function Landing() {
             <div className="absolute w-72 h-72 bg-primary/20 rounded-full blur-[100px] top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" />
             {/* phone frame */}
             <div className="relative w-[280px] md:w-[300px] bg-[#16181f] rounded-[2.5rem] border border-white/[0.08] p-3 shadow-2xl">
-              <div className="bg-[#0f1117] rounded-[2rem] overflow-hidden aspect-[9/19] flex flex-col items-center justify-center gap-4 p-6">
-                <div className="w-20 h-20 rounded-full bg-primary/10 flex items-center justify-center">
-                  <Camera className="w-10 h-10 text-primary" />
-                </div>
-                <div className="text-center space-y-1">
-                  <p className="text-3xl font-bold text-white">410 kcal</p>
-                  <p className="text-[#6b7280] text-sm">Frango grelhado + arroz</p>
-                </div>
-                <div className="flex gap-4 text-xs text-[#6b7280]">
-                  <span className="text-center"><span className="block text-white font-semibold text-sm">32g</span>Proteína</span>
-                  <span className="text-center"><span className="block text-white font-semibold text-sm">48g</span>Carbos</span>
-                  <span className="text-center"><span className="block text-white font-semibold text-sm">12g</span>Gordura</span>
-                </div>
-                <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center mt-2">
-                  <Check className="w-5 h-5 text-white" />
-                </div>
+              <div className="bg-[#0f1117] rounded-[2rem] overflow-hidden aspect-[9/19]">
+                <img src={scannerMockup} alt="FitFlow scanner de alimentos" className="w-full h-full object-cover" width={512} height={1024} />
               </div>
             </div>
           </div>
