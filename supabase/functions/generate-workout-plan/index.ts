@@ -170,14 +170,21 @@ Regras:
 
     const plan = JSON.parse(toolCall.function.arguments);
 
-    const today = new Date();
-    const dayOfWeek = today.getDay();
-    const monday = new Date(today);
-    monday.setDate(today.getDate() - ((dayOfWeek + 6) % 7));
-    const weekStart = monday.toISOString().split("T")[0];
+    // Calculate Monday using local-style date math (matches frontend)
+    const now = new Date();
+    const dow = now.getDay(); // 0=Sun
+    const mondayDate = new Date(now);
+    mondayDate.setDate(now.getDate() - ((dow + 6) % 7));
+    const weekStart = `${mondayDate.getFullYear()}-${String(mondayDate.getMonth() + 1).padStart(2, "0")}-${String(mondayDate.getDate()).padStart(2, "0")}`;
 
-    await supabase.from("workout_plans").delete().eq("user_id", userId).eq("week_start", weekStart);
-    await supabase.from("workout_plans").insert({
+    // Use service role for mutations to bypass RLS
+    const adminClient = createClient(
+      Deno.env.get("SUPABASE_URL")!,
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
+    );
+
+    await adminClient.from("workout_plans").delete().eq("user_id", userId).eq("week_start", weekStart);
+    await adminClient.from("workout_plans").insert({
       user_id: userId,
       week_start: weekStart,
       plan_data: plan,
