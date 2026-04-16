@@ -328,7 +328,7 @@ export default function Landing() {
       </Reveal>
 
       {/* ─── TRUST ─── */}
-      <Reveal className="py-24 md:py-32">
+      <Reveal className="py-24 md:py-32 relative z-[2]">
         <div className="max-w-7xl mx-auto px-5 md:px-8">
           <h2 className="text-3xl md:text-4xl font-bold text-center mb-14">Sua segurança é nossa prioridade</h2>
           <StaggerCards className="grid sm:grid-cols-2 gap-6">
@@ -338,7 +338,7 @@ export default function Landing() {
               { icon: RefreshCw, title: "Garantia de 7 dias", text: "Não ficou satisfeito? Devolvemos 100% do seu dinheiro sem perguntas." },
               { icon: Star, title: "+10.000 usuários ativos", text: "Pessoas reais usando o FitFlow todos os dias para emagrecer com saúde." },
             ].map(({ icon: Icon, title, text }) => (
-              <StaggerCard key={title} className="bg-[#16181f] border border-white/[0.06] rounded-xl p-7 space-y-4">
+              <StaggerCard key={title} className="bg-gradient-to-b from-[#1a1d27] to-[#16181f] border border-white/[0.06] rounded-xl p-7 space-y-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]">
                 <motion.div
                   className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center"
                   whileHover={{ rotate: 10, scale: 1.1 }}
@@ -355,7 +355,7 @@ export default function Landing() {
       </Reveal>
 
       {/* ─── FAQ ─── */}
-      <Reveal className="py-24 md:py-32">
+      <Reveal className="py-24 md:py-32 relative z-[2] bg-[#12151c] border-t border-white/[0.04]">
         <div className="max-w-3xl mx-auto px-5 md:px-8">
           <h2 className="text-3xl md:text-4xl font-bold text-center mb-14">Dúvidas frequentes</h2>
           <div>
