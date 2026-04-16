@@ -473,6 +473,7 @@ function PricingCard({ highlighted, badge, name, originalPrice, price, period, s
         ))}
       </ul>
 
+      <div className="mt-6">
       <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}>
         <Button
           onClick={onCta}
