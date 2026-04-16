@@ -277,7 +277,7 @@ export default function Landing() {
             <p className="text-[#6b7280] text-lg">Comece grátis. Evolua no seu ritmo.</p>
           </div>
 
-          <StaggerCards className="grid md:grid-cols-3 gap-6 items-start">
+          <StaggerCards className="grid md:grid-cols-3 gap-6 items-stretch">
             <StaggerCard>
               <PricingCard badge="GRÁTIS" name="" price="R$ 0" period="por 7 dias" subtitle="" features={[
                 { ok: true, t: "Scanner de alimentos (1 scan/dia)" },
@@ -424,9 +424,9 @@ interface PricingCardProps {
 
 function PricingCard({ highlighted, badge, name, originalPrice, price, period, subtitle, subtitleGreen, features, cta, ctaVariant, footnote, footnoteGreen, onCta }: PricingCardProps) {
   return (
-    <div className={`relative bg-[#16181f] rounded-xl p-7 space-y-6 border ${
+    <div className={`relative bg-[#16181f] rounded-xl p-7 flex flex-col border h-full ${
       highlighted
-        ? "border-primary/40 shadow-[0_0_40px_-10px_hsl(var(--primary)/0.25)] md:scale-[1.04] z-10"
+        ? "border-primary/40 shadow-[0_0_60px_-10px_hsl(var(--primary)/0.3)] ring-1 ring-primary/20 z-10"
         : "border-white/[0.06]"
     }`}>
       {/* green glow pulse for highlighted */}
