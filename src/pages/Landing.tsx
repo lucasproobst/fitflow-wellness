@@ -255,7 +255,7 @@ export default function Landing() {
       </section>
 
       {/* ─── HOW IT WORKS ─── */}
-      <Reveal id="como-funciona" className="py-24 md:py-32">
+      <Reveal id="como-funciona" className="py-24 md:py-32 relative z-[2] bg-[#12151c] border-t border-white/[0.04]">
         <div className="max-w-7xl mx-auto px-5 md:px-8">
           <h2 className="text-3xl md:text-4xl font-bold text-center mb-14">Como funciona</h2>
           <StaggerCards className="grid md:grid-cols-3 gap-6">
@@ -264,7 +264,7 @@ export default function Landing() {
               { icon: Utensils, title: "Receba sua dieta", text: "O app gera um plano alimentar completo baseado no seu objetivo, peso e preferências." },
               { icon: Dumbbell, title: "Treine com seu plano", text: "Treinos gerados automaticamente para o seu nível, com exercícios e séries definidos por IA." },
             ].map(({ icon: Icon, title, text }) => (
-              <StaggerCard key={title} className="bg-[#16181f] border border-white/[0.06] rounded-xl p-7 space-y-4">
+              <StaggerCard key={title} className="bg-gradient-to-b from-[#1a1d27] to-[#16181f] border border-white/[0.06] rounded-xl p-7 space-y-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]">
                 <motion.div
                   className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center"
                   whileHover={{ rotate: 10, scale: 1.1 }}
@@ -281,8 +281,8 @@ export default function Landing() {
       </Reveal>
 
       {/* ─── PRICING ─── */}
-      <Reveal className="py-24 md:py-32">
-        <div className="max-w-7xl mx-auto px-5 md:px-8">
+      <Reveal className="py-24 md:py-32 relative z-[2]">
+        <div className="max-w-7xl mx-auto px-5 md:px-8 relative">
           <div className="text-center mb-14">
             <h2 className="text-3xl md:text-4xl font-bold mb-3">Escolha seu plano</h2>
             <p className="text-[#6b7280] text-lg">Comece grátis. Evolua no seu ritmo.</p>
