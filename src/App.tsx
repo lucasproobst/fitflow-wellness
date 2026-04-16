@@ -36,7 +36,7 @@ function ProtectedRoutes() {
     );
   }
 
-  if (!user) return <Navigate to="/auth" replace />;
+  if (!user) return <Navigate to="/landing" replace />;
   if (profile && !profile.onboarding_complete) return <Navigate to="/onboarding" replace />;
 
   return (
