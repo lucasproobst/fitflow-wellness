@@ -209,7 +209,7 @@ export default function Landing() {
             </motion.h1>
 
             <motion.p
-              className="text-[#6b7280] text-lg max-w-md"
+              className="text-[#6b7280] text-base md:text-lg max-w-md mx-auto md:mx-0"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.4 }}
@@ -218,7 +218,7 @@ export default function Landing() {
             </motion.p>
 
             <motion.div
-              className="flex flex-col sm:flex-row gap-3"
+              className="flex flex-col sm:flex-row gap-3 justify-center md:justify-start"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.55 }}
