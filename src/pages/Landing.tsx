@@ -236,7 +236,7 @@ export default function Landing() {
             </motion.div>
 
             <motion.div
-              className="flex flex-wrap gap-x-6 gap-y-2 text-sm text-[#6b7280]"
+              className="flex flex-wrap justify-center md:justify-start gap-x-6 gap-y-2 text-sm text-[#6b7280]"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ duration: 0.6, delay: 0.7 }}
@@ -250,7 +250,9 @@ export default function Landing() {
           </div>
 
           {/* right — phone mockup */}
-          <FloatingPhone />
+          <div className="order-1 md:order-2">
+            <FloatingPhone />
+          </div>
         </div>
       </section>
 
