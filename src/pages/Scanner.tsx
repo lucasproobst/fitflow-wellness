@@ -1,5 +1,5 @@
-import { useState, useRef } from "react";
-import { Camera, Plus, AlertTriangle, RotateCcw } from "lucide-react";
+import { useState, useRef, useEffect } from "react";
+import { Camera, Plus, AlertTriangle, RotateCcw, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth-context";
@@ -14,14 +14,32 @@ interface ScanResult {
   fat: number;
 }
 
+interface SavedScan extends ScanResult {
+  id: string;
+  created_at: string;
+}
+
 export default function Scanner() {
   const [image, setImage] = useState<string | null>(null);
   const [scanning, setScanning] = useState(false);
   const [result, setResult] = useState<ScanResult | null>(null);
   const [notFound, setNotFound] = useState(false);
-  const [history, setHistory] = useState<ScanResult[]>([]);
+  const [history, setHistory] = useState<SavedScan[]>([]);
   const fileRef = useRef<HTMLInputElement>(null);
   const { user } = useAuth();
+
+  useEffect(() => {
+    if (!user) return;
+    supabase
+      .from("food_scans" as any)
+      .select("*")
+      .eq("user_id", user.id)
+      .order("created_at", { ascending: false })
+      .limit(20)
+      .then(({ data }) => {
+        if (data) setHistory(data as any);
+      });
+  }, [user]);
 
   const handleFile = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -73,6 +91,27 @@ export default function Scanner() {
     if (!result || !user) return;
     try {
       const today = new Date().toISOString().split("T")[0];
+
+      // Save scan to food_scans table
+      const { data: savedScan } = await supabase
+        .from("food_scans" as any)
+        .insert({
+          user_id: user.id,
+          name: result.name,
+          serving: result.serving,
+          calories: result.calories,
+          protein: result.protein,
+          carbs: result.carbs,
+          fat: result.fat,
+        } as any)
+        .select()
+        .single();
+
+      if (savedScan) {
+        setHistory(prev => [savedScan as any, ...prev].slice(0, 20));
+      }
+
+      // Also add to daily_log
       const { data: existing } = await supabase
         .from("daily_log")
         .select("*")
@@ -98,7 +137,6 @@ export default function Scanner() {
         });
       }
 
-      setHistory(prev => [result, ...prev].slice(0, 10));
       toast.success(`${result.name} adicionado ao diário!`);
       setResult(null);
       setImage(null);
@@ -224,12 +262,28 @@ export default function Scanner() {
       {/* Histórico */}
       {history.length > 0 && (
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.1 }}>
-          <h2 className="text-[10px] font-bold uppercase tracking-[0.15em] text-white/20 mb-3">ESCANEAMENTOS RECENTES</h2>
+          <h2 className="text-[10px] font-bold uppercase tracking-[0.15em] text-white/20 mb-3">ESCANEAMENTOS SALVOS</h2>
           <div className="space-y-2">
-            {history.map((item, i) => (
-              <div key={i} className="rounded-xl bg-[#16181f] border border-white/[0.04] px-4 py-3 flex items-center justify-between">
-                <p className="text-xs text-white/50">{item.name}</p>
-                <span className="text-xs font-bold text-white/70 tabular-nums">{item.calories} kcal</span>
+            {history.map((item) => (
+              <div key={item.id} className="rounded-xl bg-[#16181f] border border-white/[0.04] px-4 py-3 flex items-center justify-between">
+                <div>
+                  <p className="text-xs text-white/50">{item.name}</p>
+                  <p className="text-[10px] text-white/20 mt-0.5">
+                    {new Date(item.created_at).toLocaleDateString("pt-BR")} · P {item.protein}g · C {item.carbs}g · G {item.fat}g
+                  </p>
+                </div>
+                <div className="flex items-center gap-3">
+                  <span className="text-xs font-bold text-white/70 tabular-nums">{item.calories} kcal</span>
+                  <button
+                    onClick={async () => {
+                      await supabase.from("food_scans" as any).delete().eq("id", item.id);
+                      setHistory(prev => prev.filter(s => s.id !== item.id));
+                    }}
+                    className="text-white/20 hover:text-red-400 transition-colors"
+                  >
+                    <Trash2 size={14} />
+                  </button>
+                </div>
               </div>
             ))}
           </div>
