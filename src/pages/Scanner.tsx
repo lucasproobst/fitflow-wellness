@@ -220,7 +220,7 @@ export default function Scanner() {
                 Não conseguimos reconhecer o alimento na foto. Tente tirar outra foto com melhor iluminação e ângulo.
               </p>
               <button
-                onClick={() => { resetScanner(); fileRef.current?.click(); }}
+                onClick={() => { resetScanner(); cameraRef.current?.click(); }}
                 className="h-10 px-5 rounded-full bg-white/[0.06] border border-white/[0.08] text-white text-xs font-bold flex items-center gap-2 active:scale-95 transition-all hover:bg-white/[0.1]"
               >
                 <RotateCcw size={14} />
