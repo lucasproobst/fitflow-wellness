@@ -26,6 +26,7 @@ export default function Scanner() {
   const [notFound, setNotFound] = useState(false);
   const [history, setHistory] = useState<SavedScan[]>([]);
   const fileRef = useRef<HTMLInputElement>(null);
+  const cameraRef = useRef<HTMLInputElement>(null);
   const { user } = useAuth();
 
   useEffect(() => {
