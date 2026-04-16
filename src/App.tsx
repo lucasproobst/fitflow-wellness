@@ -71,6 +71,7 @@ function AppRoutes() {
 
   return (
     <Routes>
+      <Route path="/landing" element={user ? <Navigate to="/" replace /> : <Landing />} />
       <Route path="/auth" element={user ? <Navigate to="/" replace /> : <Auth />} />
       <Route path="/install" element={<Install />} />
       <Route path="/onboarding" element={user ? <Onboarding /> : <Navigate to="/auth" replace />} />
