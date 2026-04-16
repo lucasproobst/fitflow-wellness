@@ -169,18 +169,18 @@ export default function Landing() {
       </motion.nav>
 
       {/* ─── HERO ─── */}
-      <section className="min-h-screen flex items-center pt-16 relative z-[2]">
+      <section className="min-h-screen flex items-center pt-20 md:pt-16 pb-12 md:pb-0 relative z-[2]">
         {/* Hero subtle grid texture */}
         <div className="absolute inset-0 pointer-events-none" style={{ backgroundImage: "linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px)", backgroundSize: "40px 40px" }} />
         {/* Glow behind headline (top-left) */}
-        <div className="absolute top-[15%] left-[5%] w-[400px] h-[400px] rounded-full pointer-events-none" style={{ background: "rgba(34,197,94,0.05)", filter: "blur(120px)" }} />
+        <div className="absolute top-[15%] left-[5%] w-[300px] md:w-[400px] h-[300px] md:h-[400px] rounded-full pointer-events-none" style={{ background: "rgba(34,197,94,0.05)", filter: "blur(120px)" }} />
         {/* Glow behind phone (right) */}
-        <div className="absolute top-[20%] right-[10%] w-[600px] h-[600px] rounded-full pointer-events-none" style={{ background: "rgba(34,197,94,0.08)", filter: "blur(150px)" }} />
+        <div className="absolute top-[20%] right-[10%] w-[400px] md:w-[600px] h-[400px] md:h-[600px] rounded-full pointer-events-none" style={{ background: "rgba(34,197,94,0.08)", filter: "blur(150px)" }} />
         {/* Decorative dots top-right */}
-        <div className="absolute top-24 right-8 w-[200px] h-[200px] pointer-events-none opacity-[0.03]" style={{ backgroundImage: "radial-gradient(circle, white 1px, transparent 1px)", backgroundSize: "16px 16px" }} />
-        <div className="max-w-7xl mx-auto px-5 md:px-8 w-full grid md:grid-cols-2 gap-12 items-center relative">
+        <div className="hidden md:block absolute top-24 right-8 w-[200px] h-[200px] pointer-events-none opacity-[0.03]" style={{ backgroundImage: "radial-gradient(circle, white 1px, transparent 1px)", backgroundSize: "16px 16px" }} />
+        <div className="max-w-7xl mx-auto px-5 md:px-8 w-full grid md:grid-cols-2 gap-10 md:gap-12 items-center relative">
           {/* left */}
-          <div className="space-y-8">
+          <div className="space-y-6 md:space-y-8 text-center md:text-left order-2 md:order-1">
             <motion.span
               initial={{ opacity: 0, x: -30 }}
               animate={{ opacity: 1, x: 0 }}
