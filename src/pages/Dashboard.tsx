@@ -36,8 +36,8 @@ function AnimCard({
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3, delay }}
       whileHover={hoverable ? { y: -2, transition: { duration: 0.2 } } : undefined}
-      className={`rounded-2xl bg-[#16181f] border border-white/[0.06] ${
-        hoverable ? "hover:border-white/[0.1] hover:shadow-[0_4px_24px_rgba(34,197,94,0.04)] cursor-pointer" : ""
+      className={`rounded-2xl bg-[#141414] border border-white/[0.07] ${
+        hoverable ? "hover:border-white/[0.12] hover:shadow-[0_4px_24px_rgba(34,197,94,0.05)] cursor-pointer" : ""
       } transition-[border-color,box-shadow] duration-300 ${className}`}
     >
       {children}
