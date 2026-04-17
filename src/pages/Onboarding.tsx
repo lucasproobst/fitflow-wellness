@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { useUpdateProfile } from "@/lib/use-profile";
 import { useAuth } from "@/lib/auth-context";
+import { supabase } from "@/integrations/supabase/client";
 import { Target, Dumbbell, Scale, Heart, ChevronRight, ChevronLeft } from "lucide-react";
 import { toast } from "sonner";
 
@@ -56,6 +57,8 @@ export default function Onboarding() {
     return false;
   };
 
+  const [generating, setGenerating] = useState(false);
+
   const handleFinish = async () => {
     try {
       await updateProfile.mutateAsync({
@@ -68,7 +71,18 @@ export default function Onboarding() {
         target_weight_kg: Number(targetWeight),
         onboarding_complete: true,
       } as any);
-      navigate("/");
+
+      // Fire off plan generation in background; don't block navigation if it fails
+      setGenerating(true);
+      void Promise.allSettled([
+        supabase.functions.invoke("generate-meal-plan", { body: {} }),
+        supabase.functions.invoke("generate-workout-plan", { body: {} }),
+      ]).finally(() => {
+        setGenerating(false);
+      });
+
+      // Small delay so the user sees the "preparando seus planos" message
+      setTimeout(() => navigate("/"), 800);
     } catch {
       toast.error("Falha ao salvar perfil");
     }
@@ -78,7 +92,7 @@ export default function Onboarding() {
     <div className="min-h-screen bg-[#0f1117] flex flex-col">
       {/* Full-screen saving overlay */}
       <AnimatePresence>
-        {updateProfile.isPending && (
+        {(updateProfile.isPending || generating) && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -91,8 +105,14 @@ export default function Onboarding() {
               className="w-14 h-14 rounded-full border-2 border-white/[0.06] border-t-[#22c55e]"
             />
             <div className="text-center px-6">
-              <p className="text-sm font-bold text-white">Personalizando sua experiência</p>
-              <p className="text-[11px] text-white/40 mt-1.5">Estamos preparando tudo para você...</p>
+              <p className="text-sm font-bold text-white">
+                {generating ? "Preparando seus planos" : "Salvando seu perfil"}
+              </p>
+              <p className="text-[11px] text-white/40 mt-1.5">
+                {generating
+                  ? "Estamos criando sua dieta e treino personalizados..."
+                  : "Estamos preparando tudo para você..."}
+              </p>
             </div>
           </motion.div>
         )}
