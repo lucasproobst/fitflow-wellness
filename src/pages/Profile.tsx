@@ -155,6 +155,12 @@ export default function Profile() {
         <LogOut size={16} />
         Sair
       </button>
+
+      <EditProfileSheet
+        open={editInfoOpen}
+        onOpenChange={setEditInfoOpen}
+        profile={profile ?? null}
+      />
     </div>
   );
 }
