@@ -6,6 +6,7 @@ import { useProfile } from "@/lib/use-profile";
 import { motion, AnimatePresence } from "framer-motion";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/AppSidebar";
+import { NotificationsPopover } from "@/components/NotificationsPopover";
 
 interface BeforeInstallPromptEvent extends Event {
   prompt(): Promise<void>;
@@ -137,6 +138,8 @@ export default function AppLayout({ children }: { children: ReactNode }) {
                   <Plus size={16} strokeWidth={2.5} />
                   Novo
                 </button>
+                {/* Notifications */}
+                <NotificationsPopover />
                 {/* Avatar — both mobile and desktop */}
                 <button
                   onClick={() => navigate("/profile")}
