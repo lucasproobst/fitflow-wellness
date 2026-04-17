@@ -291,52 +291,8 @@ export default function Progress() {
         </button>
       </motion.div>
 
-      {/* Fotos Antes/Depois */}
-      <motion.div {...fadeIn(0.2)} className="rounded-2xl bg-[#141414] border border-white/[0.07] p-4 mb-4">
-        <h2 className="text-[10px] font-bold uppercase tracking-[0.15em] text-white/30 mb-4">ANTES & DEPOIS</h2>
-        <div className="grid grid-cols-2 gap-3">
-          {(["before", "after"] as PhotoType[]).map(type => {
-            const url = photos?.[type];
-            const label = type === "before" ? "Antes" : "Depois";
-            return (
-              <div key={type} className="relative">
-                <input
-                  ref={type === "before" ? beforeRef : afterRef}
-                  type="file"
-                  accept="image/*"
-                  className="hidden"
-                  onChange={handleFileChange(type)}
-                />
-                {url ? (
-                  <div
-                    className="aspect-[3/4] rounded-xl overflow-hidden relative group cursor-pointer"
-                    onClick={() => (type === "before" ? beforeRef : afterRef).current?.click()}
-                  >
-                    <img src={url} alt={label} className="w-full h-full object-cover" />
-                    <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                      <Camera size={24} className="text-white" />
-                    </div>
-                    <span className="absolute top-2 left-2 px-2 py-0.5 rounded-full bg-black/60 text-[10px] uppercase tracking-wider font-semibold text-white">
-                      {label}
-                    </span>
-                  </div>
-                ) : (
-                  <div
-                    onClick={() => (type === "before" ? beforeRef : afterRef).current?.click()}
-                    className={`aspect-[3/4] rounded-xl bg-white/[0.02] border border-dashed border-white/[0.08] flex flex-col items-center justify-center gap-2 cursor-pointer hover:border-[#22c55e]/20 transition-colors ${
-                      uploadPhoto.isPending ? "opacity-50 pointer-events-none" : ""
-                    }`}
-                  >
-                    <Upload size={20} className="text-white/15" />
-                    <span className="text-xs text-white/25">{label}</span>
-                    <span className="text-[10px] text-white/15">Toque para enviar</span>
-                  </div>
-                )}
-              </div>
-            );
-          })}
-        </div>
-      </motion.div>
+      {/* Fotos Antes/Depois — timeline + comparador */}
+      <ProgressPhotosTimeline />
 
       {/* Histórico de Treinos */}
       <WorkoutHistory userId={user?.id} fadeIn={fadeIn} />
