@@ -199,6 +199,7 @@ export default function Leaderboard() {
                       <p className="text-xs font-bold text-white truncate">
                         {isMe ? "Você" : name}
                       </p>
+                      {entry.is_pro && <ProBadge size={10} />}
                       {isMe && (
                         <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-[#22c55e]/20 text-[#22c55e] font-extrabold uppercase tracking-wider">
                           Eu
