@@ -1,5 +1,6 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useSearchParams } from "react-router-dom";
 import { PlayCircle, Check, RefreshCw, X, Lock, CheckCircle2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth-context";
@@ -62,7 +63,7 @@ export default function WorkoutPlan() {
   const [videoExercise, setVideoExercise] = useState<string | null>(null);
   const { user } = useAuth();
   const qc = useQueryClient();
-
+  const [searchParams, setSearchParams] = useSearchParams();
   const weekDates = useMemo(() => getWeekDates(), []);
 
   // Fetch workout sessions for this week
@@ -131,6 +132,16 @@ export default function WorkoutPlan() {
     },
     onError: (err: any) => toast.error(err.message || "Falha ao gerar plano"),
   });
+
+  // Auto-trigger generation from FAB ?generate=1
+  useEffect(() => {
+    if (searchParams.get("generate") === "1" && !generate.isPending) {
+      generate.mutate();
+      searchParams.delete("generate");
+      setSearchParams(searchParams, { replace: true });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const toggleSet = (key: string) => {
     setCompletedSets((prev) => {

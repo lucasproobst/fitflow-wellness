@@ -1,10 +1,9 @@
 import { ReactNode, useState, useEffect } from "react";
-import { NavLink, useLocation } from "react-router-dom";
-import { Home, Utensils, Dumbbell, Camera, TrendingUp, User, Moon, Sun, Plus, Trophy, Users, Download, Menu, X, BedDouble } from "lucide-react";
-import { useTheme } from "@/lib/theme-context";
+import { NavLink, useLocation, useNavigate } from "react-router-dom";
+import { Home, Utensils, Dumbbell, BarChart3, Plus, X, Camera, Salad, Download } from "lucide-react";
 import { useAuth } from "@/lib/auth-context";
+import { useProfile } from "@/lib/use-profile";
 import { motion, AnimatePresence } from "framer-motion";
-import { getNotificationPrefs } from "@/lib/use-notifications";
 
 interface BeforeInstallPromptEvent extends Event {
   prompt(): Promise<void>;
@@ -15,36 +14,25 @@ const tabs = [
   { to: "/", icon: Home, label: "Início" },
   { to: "/diet", icon: Utensils, label: "Dieta" },
   { to: "/workout", icon: Dumbbell, label: "Treino" },
-  { to: "/scanner", icon: Camera, label: "Scanner" },
-  { to: "/progress", icon: TrendingUp, label: "Progresso" },
-];
+  { to: "/progress", icon: BarChart3, label: "Stats" },
+] as const;
 
-const menuItems = [
-  { to: "/profile", icon: User, label: "Perfil" },
-  { to: "/sleep", icon: BedDouble, label: "Sono & Recuperação" },
-  { to: "/achievements", icon: Trophy, label: "Conquistas" },
-  { to: "/leaderboard", icon: Users, label: "Ranking" },
-];
+const HIDE_HEADER_ROUTES = ["/onboarding", "/auth", "/landing"];
 
 export default function AppLayout({ children }: { children: ReactNode }) {
-  const { theme, toggle } = useTheme();
   const { user } = useAuth();
+  const { data: profile } = useProfile();
   const location = useLocation();
-  const [menuOpen, setMenuOpen] = useState(false);
+  const navigate = useNavigate();
+  const [fabOpen, setFabOpen] = useState(false);
 
   const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
   const [isInstalled, setIsInstalled] = useState(false);
 
   useEffect(() => {
     const isStandalone = window.matchMedia("(display-mode: standalone)").matches;
-    if (isStandalone) {
-      setIsInstalled(true);
-      return;
-    }
-    const handler = (e: Event) => {
-      e.preventDefault();
-      setDeferredPrompt(e as BeforeInstallPromptEvent);
-    };
+    if (isStandalone) { setIsInstalled(true); return; }
+    const handler = (e: Event) => { e.preventDefault(); setDeferredPrompt(e as BeforeInstallPromptEvent); };
     const installedHandler = () => setIsInstalled(true);
     window.addEventListener("beforeinstallprompt", handler);
     window.addEventListener("appinstalled", installedHandler);
@@ -54,10 +42,8 @@ export default function AppLayout({ children }: { children: ReactNode }) {
     };
   }, []);
 
-  // Close menu on route change
-  useEffect(() => {
-    setMenuOpen(false);
-  }, [location.pathname]);
+  // Close FAB on route change
+  useEffect(() => { setFabOpen(false); }, [location.pathname]);
 
   const handleInstall = async () => {
     if (!deferredPrompt) return;
@@ -68,145 +54,81 @@ export default function AppLayout({ children }: { children: ReactNode }) {
   };
 
   const showInstallButton = !isInstalled && deferredPrompt;
+  const hideHeader = HIDE_HEADER_ROUTES.some(r => location.pathname.startsWith(r));
+
+  const initials = (profile?.display_name || user?.email || "?")
+    .replace(/[^a-zA-ZÀ-ÿ0-9]/g, " ")
+    .split(/\s+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map(w => w[0])
+    .join("")
+    .toUpperCase();
+
+  const fabActions = [
+    {
+      icon: Camera,
+      title: "Escanear Alimento",
+      subtitle: "Aponte a câmera para qualquer comida",
+      onClick: () => navigate("/scanner"),
+    },
+    {
+      icon: Salad,
+      title: "Gerar Dieta",
+      subtitle: "Nova dieta personalizada",
+      onClick: () => navigate("/diet?generate=1"),
+    },
+    {
+      icon: Dumbbell,
+      title: "Gerar Treino",
+      subtitle: "Novo treino na medida",
+      onClick: () => navigate("/workout?generate=1"),
+    },
+  ];
 
   return (
-    <div className="min-h-screen bg-background flex">
-      {/* Sidebar desktop */}
-      <aside className="hidden lg:flex w-64 flex-col border-r border-white/5 p-4 sticky top-0 h-screen">
-        <div className="mb-8">
-          <h1 className="text-xl font-semibold tracking-tight text-foreground">
-            Fit<span className="text-fitflow-primary">Flow</span>
-          </h1>
-        </div>
-        <nav className="flex-1 space-y-1">
-          {tabs.map(t => (
-            <NavLink
-              key={t.to}
-              to={t.to}
-              end={t.to === "/"}
-              className={({ isActive }) =>
-                `flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all ${
-                  isActive ? "bg-fitflow-primary/10 text-fitflow-primary" : "text-foreground/50 hover:text-foreground/80 hover:bg-white/5"
-                }`
-              }
-            >
-              <t.icon size={20} />
-              {t.label}
-            </NavLink>
-          ))}
-          <div className="h-px bg-white/5 my-4" />
-          {menuItems.map(item => (
-            <NavLink
-              key={item.to}
-              to={item.to}
-              className={({ isActive }) =>
-                `flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all ${
-                  isActive ? "bg-fitflow-primary/10 text-fitflow-primary" : "text-foreground/50 hover:text-foreground/80 hover:bg-white/5"
-                }`
-              }
-            >
-              <item.icon size={20} />
-              {item.label}
-            </NavLink>
-          ))}
-        </nav>
-        <div className="mt-auto space-y-2">
-          <button
-            onClick={toggle}
-            className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-foreground/50 hover:text-foreground/80 hover:bg-white/5 w-full transition-all"
+    <div className="min-h-screen bg-[#0a0a0a]">
+      <div className="mobile-shell relative min-h-screen flex flex-col">
+        {/* Header */}
+        {!hideHeader && (
+          <header
+            className="sticky top-0 bg-[#0a0a0a]/95 backdrop-blur-xl z-40 border-b border-white/[0.06]"
+            style={{ paddingTop: "env(safe-area-inset-top, 0px)" }}
           >
-            {theme === "dark" ? <Sun size={20} /> : <Moon size={20} />}
-            {theme === "dark" ? "Modo Claro" : "Modo Escuro"}
-          </button>
-        </div>
-      </aside>
-
-      {/* Área principal */}
-      <div className="flex-1 flex flex-col min-h-screen w-0">
-        {/* Mobile header — with safe area for PWA */}
-        <header className="lg:hidden sticky top-0 bg-[#0f1117]/95 backdrop-blur-xl z-40 border-b border-white/[0.06]" style={{ paddingTop: "env(safe-area-inset-top, 0px)" }}>
-          <div className="flex items-center justify-between px-4 h-12">
-            <h1 className="text-base font-semibold tracking-tight text-white">
-              Fit<span className="text-[#22c55e]">Flow</span>
-            </h1>
-            <div className="flex items-center gap-2">
-              {showInstallButton && (
+            <div className="flex items-center justify-between px-5 h-14">
+              <div className="min-w-0">
+                <p className="text-[11px] text-[#6b7280] font-medium">Olá,</p>
+                <h1 className="text-[15px] font-bold text-white truncate max-w-[180px]">
+                  {profile?.display_name || user?.email?.split("@")[0] || "Atleta"}
+                </h1>
+              </div>
+              <div className="flex items-center gap-2">
+                {showInstallButton && (
+                  <button
+                    onClick={handleInstall}
+                    className="h-8 px-3 rounded-full bg-[#22c55e]/15 text-[#22c55e] flex items-center gap-1.5 active:scale-90 transition-all text-[11px] font-bold"
+                  >
+                    <Download size={12} />
+                    Instalar
+                  </button>
+                )}
                 <button
-                  onClick={handleInstall}
-                  className="h-8 px-3 rounded-lg bg-[#22c55e]/15 text-[#22c55e] flex items-center gap-1.5 active:scale-90 transition-all text-xs font-semibold"
+                  onClick={() => navigate("/profile")}
+                  aria-label="Abrir perfil"
+                  className="w-9 h-9 rounded-full overflow-hidden bg-[#141414] border border-white/[0.08] flex items-center justify-center text-[12px] font-bold text-white active:scale-90 transition-all"
                 >
-                  <Download size={13} />
-                  Instalar
+                  {profile?.avatar_url ? (
+                    <img src={profile.avatar_url} alt="Avatar" className="w-full h-full object-cover" />
+                  ) : (
+                    initials
+                  )}
                 </button>
-              )}
-              <button
-                onClick={() => setMenuOpen(!menuOpen)}
-                className="w-9 h-9 rounded-xl flex items-center justify-center text-white/50 hover:bg-white/[0.04] active:scale-90 transition-all"
-              >
-                {menuOpen ? <X size={20} /> : <Menu size={20} />}
-              </button>
+              </div>
             </div>
-          </div>
-        </header>
+          </header>
+        )}
 
-        {/* Mobile hamburger menu overlay */}
-        <AnimatePresence>
-          {menuOpen && (
-            <>
-              {/* Backdrop */}
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: 0.15 }}
-                className="lg:hidden fixed inset-0 bg-black/60 z-40"
-                onClick={() => setMenuOpen(false)}
-                style={{ top: "calc(3rem + env(safe-area-inset-top, 0px))" }}
-              />
-              {/* Menu panel */}
-              <motion.div
-                initial={{ opacity: 0, y: -8 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -8 }}
-                transition={{ duration: 0.2 }}
-                className="lg:hidden fixed left-0 right-0 z-50 px-4 pt-2"
-                style={{ top: "calc(3rem + env(safe-area-inset-top, 0px))" }}
-              >
-                <div className="rounded-2xl bg-[#16181f] border border-white/[0.06] overflow-hidden shadow-2xl shadow-black/40">
-                  <nav className="p-2 space-y-0.5">
-                    {menuItems.map(item => {
-                      const active = location.pathname === item.to;
-                      return (
-                        <NavLink
-                          key={item.to}
-                          to={item.to}
-                          className={`flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all ${
-                            active
-                              ? "bg-[#22c55e]/10 text-[#22c55e]"
-                              : "text-white/60 hover:bg-white/[0.03] active:bg-white/[0.05]"
-                          }`}
-                        >
-                          <item.icon size={18} />
-                          {item.label}
-                        </NavLink>
-                      );
-                    })}
-                  </nav>
-                  <div className="border-t border-white/[0.04] p-2">
-                    <button
-                      onClick={() => { toggle(); setMenuOpen(false); }}
-                      className="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-white/40 hover:bg-white/[0.03] w-full transition-all"
-                    >
-                      {theme === "dark" ? <Sun size={18} /> : <Moon size={18} />}
-                      {theme === "dark" ? "Modo Claro" : "Modo Escuro"}
-                    </button>
-                  </div>
-                </div>
-              </motion.div>
-            </>
-          )}
-        </AnimatePresence>
-
+        {/* Main content */}
         <AnimatePresence mode="wait">
           <motion.main
             key={location.pathname}
@@ -214,41 +136,107 @@ export default function AppLayout({ children }: { children: ReactNode }) {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -6 }}
             transition={{ duration: 0.2, ease: "easeInOut" }}
-            className="flex-1 pb-28 lg:pb-6"
+            className="flex-1 pb-32"
           >
             {children}
           </motion.main>
         </AnimatePresence>
 
-        {/* Barra de navegação mobile */}
-        <nav className="lg:hidden fixed bottom-0 left-0 right-0 bg-[#0f1117]/95 backdrop-blur-xl border-t border-white/[0.06] safe-bottom z-50">
-          <div className="flex justify-around items-center h-16">
-            {tabs.map(t => {
-              const active = t.to === "/" ? location.pathname === "/" : location.pathname.startsWith(t.to);
-              return (
-                <NavLink
-                  key={t.to}
-                  to={t.to}
-                  className="flex flex-col items-center gap-0.5 min-w-[44px] min-h-[44px] justify-center"
+        {/* FAB menu overlay */}
+        <AnimatePresence>
+          {fabOpen && (
+            <>
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.2 }}
+                onClick={() => setFabOpen(false)}
+                className="fixed inset-0 bg-black/70 backdrop-blur-sm z-40"
+              />
+              <div
+                className="fixed left-1/2 -translate-x-1/2 z-50 w-full max-w-[480px] px-5 pointer-events-none"
+                style={{ bottom: `calc(100px + env(safe-area-inset-bottom, 0px))` }}
+              >
+                <div className="space-y-2.5 pointer-events-auto">
+                  {fabActions.map((a, i) => (
+                    <motion.button
+                      key={a.title}
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: 10 }}
+                      transition={{ duration: 0.25, delay: (fabActions.length - 1 - i) * 0.05, ease: "easeOut" }}
+                      onClick={() => { a.onClick(); setFabOpen(false); }}
+                      className="w-full flex items-center gap-3 p-3.5 rounded-2xl bg-[#1a1a1a] border border-white/[0.08] active:scale-[0.98] transition-transform"
+                    >
+                      <div className="w-9 h-9 rounded-full bg-[#22c55e]/15 flex items-center justify-center shrink-0">
+                        <a.icon size={18} className="text-[#22c55e]" />
+                      </div>
+                      <div className="flex-1 text-left min-w-0">
+                        <p className="text-[15px] font-bold text-white leading-tight">{a.title}</p>
+                        <p className="text-[12px] text-[#6b7280] mt-0.5 truncate">{a.subtitle}</p>
+                      </div>
+                      <span className="text-[#6b7280] text-lg">→</span>
+                    </motion.button>
+                  ))}
+                </div>
+              </div>
+            </>
+          )}
+        </AnimatePresence>
+
+        {/* Bottom Nav */}
+        <nav
+          className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[480px] bg-[#0a0a0a] border-t border-white/[0.06] z-50 safe-bottom"
+        >
+          <div className="relative h-[72px] grid grid-cols-5 items-center px-2">
+            {tabs.slice(0, 2).map(t => <BottomTab key={t.to} {...t} />)}
+
+            {/* Center FAB */}
+            <div className="flex items-center justify-center">
+              <button
+                onClick={() => setFabOpen(o => !o)}
+                aria-label="Ações rápidas"
+                className="w-14 h-14 rounded-full bg-[#22c55e] flex items-center justify-center -mt-7 active:scale-95 transition-transform"
+                style={{ boxShadow: "0 4px 20px rgba(34,197,94,0.4)" }}
+              >
+                <motion.div
+                  animate={{ rotate: fabOpen ? 45 : 0 }}
+                  transition={{ duration: 0.2 }}
                 >
-                  <t.icon size={20} className={active ? "text-[#22c55e]" : "text-white/30"} />
-                  <span className={`text-[10px] font-medium ${active ? "text-[#22c55e]" : "text-white/30"}`}>
-                    {t.label}
-                  </span>
-                </NavLink>
-              );
-            })}
+                  {fabOpen ? <X size={26} className="text-white" strokeWidth={2.5} /> : <Plus size={26} className="text-white" strokeWidth={2.5} />}
+                </motion.div>
+              </button>
+            </div>
+
+            {tabs.slice(2).map(t => <BottomTab key={t.to} {...t} />)}
           </div>
         </nav>
-
-        {/* FAB */}
-        <NavLink
-          to="/diary"
-          className="lg:hidden fixed bottom-[calc(4.5rem+env(safe-area-inset-bottom,0px))] right-4 w-14 h-14 rounded-full bg-[#22c55e] flex items-center justify-center shadow-lg shadow-[#22c55e]/25 active:scale-95 transition-transform z-50"
-        >
-          <Plus size={24} className="text-white" />
-        </NavLink>
       </div>
     </div>
+  );
+}
+
+function BottomTab({ to, icon: Icon, label }: { to: string; icon: any; label: string }) {
+  return (
+    <NavLink
+      to={to}
+      end={to === "/"}
+      className="flex flex-col items-center justify-center gap-1 min-h-[44px]"
+    >
+      {({ isActive }) => (
+        <>
+          <Icon
+            size={22}
+            className={isActive ? "text-[#22c55e]" : "text-[#6b7280]"}
+            strokeWidth={isActive ? 2.5 : 2}
+            fill={isActive ? "rgba(34,197,94,0.15)" : "none"}
+          />
+          <span className={`text-[10px] font-medium ${isActive ? "text-[#22c55e]" : "text-[#6b7280]"}`}>
+            {label}
+          </span>
+        </>
+      )}
+    </NavLink>
   );
 }

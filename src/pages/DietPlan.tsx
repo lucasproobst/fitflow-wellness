@@ -1,6 +1,7 @@
 import { useState, useMemo, useEffect, useCallback, useRef } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { RefreshCw, Shuffle, Heart, ChevronRight, X, Clock, ChefHat, Lightbulb } from "lucide-react";
+import { useSearchParams, useNavigate } from "react-router-dom";
+import { RefreshCw, Shuffle, Heart, ChevronRight, X, Clock, ChefHat, Lightbulb, ArrowLeft, SlidersHorizontal, Coffee, UtensilsCrossed, Moon, Apple } from "lucide-react";
 import { RecipeShareCard } from "@/components/RecipeShareCard";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth-context";
@@ -11,7 +12,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { GenerationProgress } from "@/components/GenerationProgress";
 
 const dayNames = ["Segunda", "Terça", "Quarta", "Quinta", "Sexta", "Sábado", "Domingo"];
-const shortDays = ["Seg", "Ter", "Qua", "Qui", "Sex", "Sáb", "Dom"];
+const shortDays = ["SEG", "TER", "QUA", "QUI", "SEX", "SÁB", "DOM"];
 const mealTypes = ["breakfast", "lunch", "snack", "dinner", "preworkout"] as const;
 const mealTypeLabels: Record<string, string> = {
   breakfast: "CAFÉ DA MANHÃ",
@@ -21,7 +22,15 @@ const mealTypeLabels: Record<string, string> = {
   preworkout: "PRÉ-TREINO",
 };
 
-const filters = ["TODOS", "VEGETARIANO", "LOW-CARB", "ALTA PROTEÍNA"];
+const mealIcons: Record<string, any> = {
+  breakfast: Coffee,
+  lunch: UtensilsCrossed,
+  snack: Apple,
+  dinner: Moon,
+  preworkout: Coffee,
+};
+
+const filters = ["Todos", "Vegetariano", "Low-carb", "Alta proteína"];
 
 interface Meal {
   name: string;
@@ -79,8 +88,9 @@ function parseIngredients(meal: Meal): string[] {
 }
 
 export default function DietPlan() {
-  const [selectedDay, setSelectedDay] = useState(0);
-  const [activeFilter, setActiveFilter] = useState("TODOS");
+  const todayIdx = (() => { const d = new Date().getDay(); return (d + 6) % 7; })();
+  const [selectedDay, setSelectedDay] = useState(todayIdx);
+  const [activeFilter, setActiveFilter] = useState("Todos");
   const [swappingMeal, setSwappingMeal] = useState<string | null>(null);
   const [favorites, setFavorites] = useState<Set<string>>(new Set());
   const [favoritesLoaded, setFavoritesLoaded] = useState(false);
@@ -91,6 +101,8 @@ export default function DietPlan() {
   const recipesCache = useRef<Record<number, Recipe[]>>({});
   const { user } = useAuth();
   const qc = useQueryClient();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const navigate = useNavigate();
 
   const { data: planRow, isLoading } = useQuery({
     queryKey: ["meal-plan", user?.id],
@@ -282,73 +294,48 @@ export default function DietPlan() {
   const carbsPct = macroTotal > 0 ? (dayTotals.carbs / macroTotal) * 100 : 33;
   const fatPct = macroTotal > 0 ? (dayTotals.fat / macroTotal) * 100 : 34;
 
+  // Auto-trigger generation from FAB ?generate=1
+  useEffect(() => {
+    if (searchParams.get("generate") === "1" && !generate.isPending) {
+      generate.mutate();
+      searchParams.delete("generate");
+      setSearchParams(searchParams, { replace: true });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   return (
-    <div className="px-4 lg:px-8 py-6 max-w-4xl mx-auto pb-36 lg:pb-28">
-      {/* Header */}
-      <div className="flex items-start justify-between gap-3 mb-6">
-        <div className="min-w-0">
-          <h1 className="text-2xl font-bold tracking-tight text-white">Plano Alimentar</h1>
-          <p className="text-sm text-[#6b7280] mt-0.5">Seu plano semanal personalizado</p>
-        </div>
+    <div className="px-5 pt-4 pb-32">
+      {/* Top bar: back / title / filter */}
+      <div className="flex items-center justify-between h-10 mb-4">
+        <button
+          onClick={() => navigate("/")}
+          className="w-9 h-9 -ml-2 rounded-full flex items-center justify-center text-[#6b7280] active:scale-90 transition-transform"
+          aria-label="Voltar"
+        >
+          <ArrowLeft size={20} />
+        </button>
+        <h1 className="text-[18px] font-bold text-white">Diet Plan</h1>
         <button
           onClick={() => generate.mutate()}
           disabled={generate.isPending}
-          className="flex items-center gap-2 px-5 py-2.5 rounded-full bg-[#22c55e] text-white text-xs font-bold active:scale-95 transition-all disabled:opacity-50 shrink-0"
+          className="w-9 h-9 -mr-2 rounded-full flex items-center justify-center text-[#6b7280] active:scale-90 transition-transform disabled:opacity-40"
+          aria-label="Atualizar"
         >
-          <RefreshCw size={14} className={generate.isPending ? "animate-spin" : ""} />
-          {generate.isPending ? "Gerando..." : planData ? "Regenerar" : "Gerar Plano"}
+          <RefreshCw size={18} className={generate.isPending ? "animate-spin" : ""} />
         </button>
       </div>
 
-      {/* Daily calories + macro bar */}
-      {currentDay && (
-        <div className="mb-6">
-          <div className="flex items-baseline gap-2 mb-3">
-            <span className="text-3xl font-extrabold text-white tabular-nums">
-              {dayTotals.calories.toLocaleString("pt-BR")}
-            </span>
-            <span className="text-sm font-medium text-[#6b7280]">kcal hoje</span>
-          </div>
-          <div className="h-1.5 rounded-full overflow-hidden bg-white/[0.06] flex">
-            <div className="h-full bg-white/60 transition-all duration-500" style={{ width: `${proteinPct}%` }} />
-            <div className="h-full bg-white/30 transition-all duration-500" style={{ width: `${carbsPct}%` }} />
-            <div className="h-full bg-white/15 transition-all duration-500" style={{ width: `${fatPct}%` }} />
-          </div>
-          <div className="flex gap-5 mt-2">
-            <span className="text-[11px] font-medium text-[#6b7280]">P {dayTotals.protein}g</span>
-            <span className="text-[11px] font-medium text-[#6b7280]">C {dayTotals.carbs}g</span>
-            <span className="text-[11px] font-medium text-[#6b7280]">G {dayTotals.fat}g</span>
-          </div>
-        </div>
-      )}
-
-      {/* Day selector */}
-      <div className="flex gap-2 mb-4 overflow-x-auto pb-2 no-scrollbar">
-        {shortDays.map((d, i) => (
-          <button
-            key={d}
-            onClick={() => setSelectedDay(i)}
-            className={`px-4 py-2 rounded-full text-xs font-bold whitespace-nowrap transition-all active:scale-95 ${
-              selectedDay === i
-                ? "bg-[#22c55e] text-white"
-                : "border border-white/[0.08] text-[#6b7280] hover:border-white/[0.15] hover:text-white/60"
-            }`}
-          >
-            {d}
-          </button>
-        ))}
-      </div>
-
-      {/* Filter chips */}
-      <div className="flex gap-2 mb-6 overflow-x-auto pb-2 no-scrollbar">
+      {/* Filter pills */}
+      <div className="flex gap-2 mb-5 overflow-x-auto no-scrollbar -mx-1 px-1">
         {filters.map(f => (
           <button
             key={f}
             onClick={() => setActiveFilter(f)}
-            className={`px-3 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-wider transition-all active:scale-95 ${
+            className={`shrink-0 px-[18px] py-2 rounded-full text-[13px] font-semibold whitespace-nowrap transition-all active:scale-95 ${
               activeFilter === f
-                ? "bg-white/[0.08] text-white border border-white/[0.12]"
-                : "border border-white/[0.06] text-[#6b7280]/60 hover:text-[#6b7280]"
+                ? "bg-[#22c55e] text-white"
+                : "border border-white/[0.12] text-[#6b7280]"
             }`}
           >
             {f}
@@ -356,7 +343,76 @@ export default function DietPlan() {
         ))}
       </div>
 
+      {/* Day selector — circles */}
+      <div className="flex items-center justify-between mb-5">
+        {shortDays.map((d, i) => {
+          const isActive = selectedDay === i;
+          const isToday = todayIdx === i;
+          const isPast = i < todayIdx;
+          return (
+            <button
+              key={d}
+              onClick={() => setSelectedDay(i)}
+              className="flex flex-col items-center gap-1.5 active:scale-95 transition-transform"
+            >
+              <span className="text-[10px] font-bold uppercase tracking-wider text-[#6b7280]">
+                {d}
+              </span>
+              <div
+                className={`w-9 h-9 rounded-full flex items-center justify-center text-[14px] font-bold transition-all ${
+                  isActive
+                    ? "bg-[#22c55e] text-white"
+                    : isPast
+                      ? "border border-[#22c55e]/40 text-[#22c55e]"
+                      : isToday
+                        ? "border border-white/20 text-white"
+                        : "text-[#6b7280]"
+                }`}
+              >
+                {i + 1}
+              </div>
+            </button>
+          );
+        })}
+      </div>
+
+      {/* Calorie summary */}
+      {currentDay && (
+        <div className="rounded-2xl bg-[#141414] border border-white/[0.07] p-4 mb-5">
+          <div className="flex items-baseline justify-between mb-2.5">
+            <div>
+              <p className="text-[11px] uppercase tracking-wider text-[#6b7280] font-semibold">Calorias do dia</p>
+              <p className="text-[26px] font-extrabold text-white tabular-nums leading-none mt-1">
+                {dayTotals.calories.toLocaleString("pt-BR")}
+                <span className="text-[12px] font-medium text-[#6b7280] ml-1.5">kcal</span>
+              </p>
+            </div>
+            <div className="flex gap-3 text-right">
+              <div><p className="text-[10px] text-[#6b7280] uppercase">P</p><p className="text-[13px] font-bold text-white">{dayTotals.protein}g</p></div>
+              <div><p className="text-[10px] text-[#6b7280] uppercase">C</p><p className="text-[13px] font-bold text-white">{dayTotals.carbs}g</p></div>
+              <div><p className="text-[10px] text-[#6b7280] uppercase">G</p><p className="text-[13px] font-bold text-white">{dayTotals.fat}g</p></div>
+            </div>
+          </div>
+          <div className="h-1.5 rounded-full overflow-hidden bg-white/[0.06] flex">
+            <div className="h-full bg-[#22c55e] transition-all duration-500" style={{ width: `${proteinPct}%` }} />
+            <div className="h-full bg-[#22c55e]/60 transition-all duration-500" style={{ width: `${carbsPct}%` }} />
+            <div className="h-full bg-[#22c55e]/30 transition-all duration-500" style={{ width: `${fatPct}%` }} />
+          </div>
+        </div>
+      )}
+
       {/* Generation progress */}
+      <GenerationProgress
+        active={generate.isPending}
+        steps={[
+          "Analisando seu perfil e objetivos...",
+          "Calculando calorias e macros ideais...",
+          "Selecionando refeições balanceadas...",
+          "Montando o plano semanal...",
+          "Finalizando os detalhes...",
+        ]}
+      />
+
       <GenerationProgress
         active={generate.isPending}
         steps={[
@@ -398,7 +454,7 @@ export default function DietPlan() {
         </div>
       )}
 
-      {/* Meal cards */}
+      {/* Meal sections */}
       {currentDay && (
         <AnimatePresence mode="wait">
           <motion.div
@@ -407,15 +463,15 @@ export default function DietPlan() {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -6 }}
             transition={{ duration: 0.2, ease: "easeOut" }}
-            className="space-y-3"
+            className="space-y-5"
           >
-            {mealTypes.map((type, index) => {
+            {(["breakfast", "lunch", "dinner", "snack"] as const).map((type, index) => {
               const meal = currentDay.meals?.[type];
               if (!meal) return null;
               const isSwapping = swappingMeal === `${dayNames[selectedDay]}-${type}`;
               const favKey = `${selectedDay}-${type}`;
               const isFav = favorites.has(favKey);
-              const ingredients = parseIngredients(meal);
+              const Icon = mealIcons[type] || UtensilsCrossed;
 
               return (
                 <motion.div
@@ -423,72 +479,66 @@ export default function DietPlan() {
                   initial={{ opacity: 0, y: 12 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.25, delay: index * 0.05, ease: "easeOut" }}
-                  className={`group rounded-2xl bg-[#16181f] border border-white/[0.04] overflow-hidden hover:-translate-y-px hover:border-white/[0.08] transition-all duration-300 ${
-                    isSwapping ? "opacity-40" : ""
-                  }`}
                 >
-                  <div className="p-5">
-                    <div className="flex items-start justify-between gap-4">
-                      <div className="flex-1 min-w-0">
-                        <span className="text-[10px] font-bold uppercase tracking-[0.15em] text-[#6b7280]">
-                          {mealTypeLabels[type] || type.toUpperCase()}
-                        </span>
-                        <p className="text-[15px] font-bold text-white mt-1.5 leading-snug">
-                          {meal.name}
-                        </p>
-                        {ingredients.length > 0 && (
-                          <ul className="mt-2.5 space-y-1">
-                            {ingredients.map((ing, i) => (
-                              <li key={i} className="flex items-center gap-2 text-[12px] text-[#6b7280]">
-                                <span className="w-1 h-1 rounded-full bg-white/20 shrink-0" />
-                                {ing}
-                              </li>
-                            ))}
-                          </ul>
-                        )}
-                        {/* Macro bars */}
-                        <div className="mt-3 space-y-1.5">
-                          {[
-                            { label: "Proteína", value: meal.protein, max: 80, color: "bg-white/70" },
-                            { label: "Carboidrato", value: meal.carbs, max: 120, color: "bg-white/40" },
-                            { label: "Gordura", value: meal.fat, max: 60, color: "bg-white/20" },
-                          ].map(m => (
-                            <div key={m.label} className="flex items-center gap-2">
-                              <span className="text-[10px] font-medium text-[#6b7280] w-[70px] shrink-0">{m.label}</span>
-                              <div className="flex-1 h-1 rounded-full bg-white/[0.04] overflow-hidden">
-                                <div className={`h-full rounded-full ${m.color} transition-all duration-500`} style={{ width: `${Math.min((m.value / m.max) * 100, 100)}%` }} />
-                              </div>
-                              <span className="text-[10px] font-bold text-white/60 tabular-nums w-8 text-right">{m.value}g</span>
-                            </div>
-                          ))}
-                        </div>
+                  {/* Section header */}
+                  <div className="flex items-center gap-2 mb-2.5 px-1">
+                    <Icon size={12} className="text-[#6b7280]" />
+                    <span className="text-[11px] font-bold uppercase tracking-[0.18em] text-[#6b7280]">
+                      {mealTypeLabels[type]}
+                    </span>
+                  </div>
+
+                  {/* Meal card */}
+                  <div
+                    className={`rounded-2xl bg-[#141414] border border-white/[0.07] p-4 active:scale-[0.99] transition-transform ${
+                      isSwapping ? "opacity-40" : ""
+                    }`}
+                  >
+                    <div className="flex items-start justify-between gap-3 mb-2">
+                      <p className="text-[17px] font-bold text-white leading-tight flex-1 min-w-0">
+                        {meal.name}
+                      </p>
+                      <span className="text-[15px] font-bold text-[#22c55e] tabular-nums shrink-0">
+                        {meal.calories} kcal
+                      </span>
+                    </div>
+
+                    {meal.description && (
+                      <p className="text-[13px] text-[#6b7280] leading-snug line-clamp-2 mb-3">
+                        {meal.description}
+                      </p>
+                    )}
+
+                    <div className="flex items-center justify-between gap-3">
+                      <div className="flex items-center gap-4">
+                        {[
+                          { letter: "P", value: meal.protein },
+                          { letter: "C", value: meal.carbs },
+                          { letter: "G", value: meal.fat },
+                        ].map(m => (
+                          <div key={m.letter} className="flex items-baseline gap-1">
+                            <span className="text-[11px] font-medium text-[#6b7280] uppercase">{m.letter}</span>
+                            <span className="text-[13px] font-bold text-white tabular-nums">{m.value}g</span>
+                          </div>
+                        ))}
                       </div>
-                      <div className="flex flex-col items-end gap-2 shrink-0">
-                        <div className="text-right">
-                          <span className="text-xl font-extrabold text-white tabular-nums">
-                            {meal.calories}
-                          </span>
-                          <p className="text-[10px] font-medium text-[#6b7280] -mt-0.5">kcal</p>
-                        </div>
-                        <div className="flex items-center gap-1.5 mt-auto pt-2">
-                          <button
-                            onClick={() => toggleFavorite(favKey)}
-                            className="w-8 h-8 rounded-full flex items-center justify-center hover:bg-white/[0.04] active:scale-90 transition-all"
-                          >
-                            <Heart
-                              size={14}
-                              className={isFav ? "text-white fill-white" : "text-white/20"}
-                            />
-                          </button>
-                          <button
-                            onClick={() => swapMeal.mutate({ day: dayNames[selectedDay], mealType: type })}
-                            disabled={isSwapping || swapMeal.isPending}
-                            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-white/[0.08] text-[10px] uppercase tracking-wider font-bold text-[#6b7280] hover:bg-white/[0.04] hover:text-white/60 active:scale-95 transition-all disabled:opacity-30"
-                          >
-                            <Shuffle size={10} className={isSwapping ? "animate-spin" : ""} />
-                            TROCAR
-                          </button>
-                        </div>
+
+                      <div className="flex items-center gap-1.5 shrink-0">
+                        <button
+                          onClick={() => toggleFavorite(favKey)}
+                          aria-label="Favoritar"
+                          className="w-8 h-8 rounded-lg flex items-center justify-center active:scale-90 transition-transform"
+                        >
+                          <Heart size={14} className={isFav ? "text-[#22c55e] fill-[#22c55e]" : "text-[#6b7280]"} />
+                        </button>
+                        <button
+                          onClick={() => swapMeal.mutate({ day: dayNames[selectedDay], mealType: type })}
+                          disabled={isSwapping || swapMeal.isPending}
+                          className="flex items-center gap-1.5 px-3.5 py-2 rounded-lg bg-white/[0.06] border border-white/[0.1] text-[11px] uppercase tracking-wider font-bold text-white active:scale-95 transition-all disabled:opacity-40"
+                        >
+                          <Shuffle size={10} className={isSwapping ? "animate-spin" : ""} />
+                          Swap meal
+                        </button>
                       </div>
                     </div>
                   </div>
@@ -499,34 +549,24 @@ export default function DietPlan() {
         </AnimatePresence>
       )}
 
-      {/* Bottom summary bar */}
+      {/* "View recipes" floating button — sits above bottom nav */}
       {currentDay && (
-        <div className="fixed bottom-16 lg:bottom-0 left-0 right-0 z-40 bg-[#0f1117]/95 backdrop-blur-xl border-t border-white/[0.04]">
-          <div className="max-w-4xl mx-auto px-4 lg:px-8 py-3 flex items-center justify-between">
-            <div className="flex items-center gap-5">
-              <span className="text-xs font-semibold text-[#6b7280]">P {dayTotals.protein}g</span>
-              <span className="text-xs font-semibold text-[#6b7280]">C {dayTotals.carbs}g</span>
-              <span className="text-xs font-semibold text-[#6b7280]">G {dayTotals.fat}g</span>
-              <span className="text-xs font-extrabold text-white ml-1">{dayTotals.calories.toLocaleString("pt-BR")} kcal</span>
-            </div>
-            <button
-              onClick={handleViewRecipes}
-              disabled={loadingRecipes}
-              className="flex items-center gap-1.5 px-4 py-2 rounded-full bg-[#22c55e] text-white text-xs font-bold active:scale-95 transition-all disabled:opacity-60"
-            >
-              {loadingRecipes ? (
-                <>
-                  <RefreshCw size={14} className="animate-spin" />
-                  Gerando...
-                </>
-              ) : (
-                <>
-                  Ver receitas
-                  <ChevronRight size={14} />
-                </>
-              )}
-            </button>
-          </div>
+        <div
+          className="fixed left-1/2 -translate-x-1/2 z-40 w-full max-w-[480px] px-5 pointer-events-none"
+          style={{ bottom: `calc(80px + env(safe-area-inset-bottom, 0px))` }}
+        >
+          <button
+            onClick={handleViewRecipes}
+            disabled={loadingRecipes}
+            className="pointer-events-auto w-full flex items-center justify-center gap-2 h-12 rounded-2xl bg-[#22c55e] text-white text-[13px] font-bold active:scale-[0.98] transition-transform disabled:opacity-60"
+            style={{ boxShadow: "0 8px 24px rgba(34,197,94,0.25)" }}
+          >
+            {loadingRecipes ? (
+              <><RefreshCw size={14} className="animate-spin" /> Gerando receitas...</>
+            ) : (
+              <>Ver receitas do dia <ChevronRight size={14} /></>
+            )}
+          </button>
         </div>
       )}
 

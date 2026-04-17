@@ -14,6 +14,7 @@ export interface UserProfile {
   activity_level: string | null;
   target_weight_kg: number | null;
   onboarding_complete: boolean;
+  avatar_url: string | null;
 }
 
 export function useProfile() {
@@ -28,7 +29,7 @@ export function useProfile() {
         .eq("user_id", user!.id)
         .maybeSingle();
       if (error) throw error;
-      return data as UserProfile | null;
+      return data as unknown as UserProfile | null;
     },
   });
 }
@@ -42,6 +43,30 @@ export function useUpdateProfile() {
         .from("user_profile")
         .upsert({ ...(updates as any), user_id: user!.id }, { onConflict: "user_id" });
       if (error) throw error;
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["profile"] }),
+  });
+}
+
+export function useUploadAvatar() {
+  const { user } = useAuth();
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (file: File) => {
+      if (!user) throw new Error("Não autenticado");
+      const ext = file.name.split(".").pop()?.toLowerCase() || "jpg";
+      const path = `${user.id}/avatar-${Date.now()}.${ext}`;
+      const { error: upErr } = await supabase.storage
+        .from("avatars")
+        .upload(path, file, { upsert: true, cacheControl: "3600" });
+      if (upErr) throw upErr;
+      const { data: pub } = supabase.storage.from("avatars").getPublicUrl(path);
+      const url = pub.publicUrl;
+      const { error: dbErr } = await supabase
+        .from("user_profile")
+        .upsert({ user_id: user.id, avatar_url: url } as any, { onConflict: "user_id" });
+      if (dbErr) throw dbErr;
+      return url;
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ["profile"] }),
   });

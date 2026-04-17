@@ -1,160 +1,227 @@
-import { useState, useEffect } from "react";
+import { useRef, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/lib/auth-context";
-import { useProfile, useUpdateProfile } from "@/lib/use-profile";
-import { GlassCard } from "@/components/GlassCard";
-import { NotificationSettings } from "@/components/NotificationSettings";
+import { useProfile, useUploadAvatar } from "@/lib/use-profile";
 import { EditProfileSheet } from "@/components/EditProfileSheet";
-import { LogOut, Pencil, Check, X, Settings2 } from "lucide-react";
+import {
+  ArrowLeft, Camera, User, Target, Bell, Lock, CreditCard,
+  HelpCircle, LogOut, ChevronRight, Image as ImageIcon, X,
+} from "lucide-react";
 import { toast } from "sonner";
+import { motion, AnimatePresence } from "framer-motion";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 
 export default function Profile() {
+  const navigate = useNavigate();
   const { user, signOut } = useAuth();
   const { data: profile } = useProfile();
-  const updateProfile = useUpdateProfile();
-  const [editingName, setEditingName] = useState(false);
-  const [nameValue, setNameValue] = useState("");
+  const uploadAvatar = useUploadAvatar();
   const [editInfoOpen, setEditInfoOpen] = useState(false);
+  const [photoSheetOpen, setPhotoSheetOpen] = useState(false);
+  const cameraInput = useRef<HTMLInputElement>(null);
+  const galleryInput = useRef<HTMLInputElement>(null);
 
-  useEffect(() => {
-    if (profile?.display_name) setNameValue(profile.display_name);
-  }, [profile?.display_name]);
+  // Stats: workouts done, meal plans generated, active days
+  const { data: stats } = useQuery({
+    queryKey: ["profile-stats", user?.id],
+    enabled: !!user,
+    queryFn: async () => {
+      const [workouts, plans, days] = await Promise.all([
+        supabase.from("workout_sessions").select("id", { count: "exact", head: true }).eq("user_id", user!.id),
+        supabase.from("meal_plans").select("id", { count: "exact", head: true }).eq("user_id", user!.id),
+        supabase.from("daily_log").select("id", { count: "exact", head: true }).eq("user_id", user!.id),
+      ]);
+      return {
+        workouts: workouts.count ?? 0,
+        plans: plans.count ?? 0,
+        days: days.count ?? 0,
+      };
+    },
+  });
 
-  const blockedWords = [
-    "idiota", "burro", "merda", "porra", "caralho", "puta", "fdp",
-    "otario", "otária", "cuzao", "cuzão", "viado", "arrombado",
-    "desgraça", "desgraca", "babaca", "imbecil", "retardado",
-    "fuck", "shit", "ass", "bitch", "dick", "damn", "bastard",
-  ];
+  const initials = (profile?.display_name || user?.email || "?")
+    .replace(/[^a-zA-ZÀ-ÿ0-9]/g, " ")
+    .split(/\s+/).filter(Boolean).slice(0, 2)
+    .map(w => w[0]).join("").toUpperCase();
 
-  const validateName = (name: string): string | null => {
-    if (name.length < 3) return "O nome deve ter pelo menos 3 caracteres";
-    if (name.length > 30) return "O nome deve ter no máximo 30 caracteres";
-    if (!/^[a-zA-ZÀ-ÿ0-9 _.-]+$/.test(name)) return "O nome contém caracteres inválidos";
-    const lower = name.toLowerCase();
-    if (blockedWords.some(w => lower.includes(w))) return "O nome contém palavras inadequadas";
-    return null;
-  };
-
-  const saveName = () => {
-    const trimmed = nameValue.trim();
-    if (!trimmed) return;
-    const error = validateName(trimmed);
-    if (error) {
-      toast.error(error);
-      return;
+  const handleFile = async (file: File | undefined) => {
+    if (!file) return;
+    if (file.size > 5 * 1024 * 1024) { toast.error("Imagem muito grande (máx 5MB)"); return; }
+    const t = toast.loading("Enviando foto...");
+    try {
+      await uploadAvatar.mutateAsync(file);
+      toast.success("Foto atualizada!", { id: t });
+    } catch (e: any) {
+      toast.error(e?.message || "Falha ao enviar foto", { id: t });
+    } finally {
+      setPhotoSheetOpen(false);
     }
-    updateProfile.mutate({ display_name: trimmed } as any, {
-      onSuccess: () => {
-        toast.success("Nome atualizado!");
-        setEditingName(false);
-      },
-    });
   };
 
-  const goalLabels: Record<string, string> = {
-    lose_weight: "Perder Peso",
-    gain_muscle: "Ganhar Músculo",
-    maintain: "Manter",
-    improve_health: "Melhorar Saúde",
-  };
-
-  const activityLabels: Record<string, string> = {
-    sedentary: "Sedentário",
-    light: "Leve",
-    moderate: "Moderado",
-    active: "Ativo",
-    very_active: "Muito Ativo",
-  };
-
-  const stats = [
-    { label: "Objetivo", value: goalLabels[profile?.goal || ""] || profile?.goal || "—" },
-    { label: "Altura", value: profile?.height_cm ? `${profile.height_cm} cm` : "—" },
-    { label: "Peso", value: profile?.weight_kg ? `${profile.weight_kg} kg` : "—" },
-    { label: "Meta", value: profile?.target_weight_kg ? `${profile.target_weight_kg} kg` : "—" },
-    { label: "Atividade", value: activityLabels[profile?.activity_level || ""] || profile?.activity_level || "—" },
-    { label: "Idade", value: profile?.age?.toString() || "—" },
+  const settingsItems = [
+    { icon: User, label: "Dados pessoais", onClick: () => setEditInfoOpen(true), color: "text-[#6b7280]" },
+    { icon: Target, label: "Meu objetivo", onClick: () => setEditInfoOpen(true), color: "text-[#6b7280]" },
+    { icon: Bell, label: "Notificações", onClick: () => navigate("/profile?tab=notifications"), color: "text-[#6b7280]" },
+    { icon: Lock, label: "Segurança e senha", onClick: () => toast.info("Em breve"), color: "text-[#6b7280]" },
+    { icon: CreditCard, label: "Meu plano", onClick: () => toast.info("Em breve"), color: "text-[#6b7280]" },
+    { icon: HelpCircle, label: "Ajuda e suporte", onClick: () => toast.info("Em breve"), color: "text-[#6b7280]" },
   ];
 
   return (
-    <div className="px-4 lg:px-8 py-6 max-w-4xl mx-auto">
-      <h1 className="text-2xl font-semibold tracking-tight text-foreground mb-6">Perfil</h1>
-
-      <div className="flex items-center gap-4 mb-8">
-        <div className="w-16 h-16 rounded-full bg-gradient-to-br from-fitflow-primary to-fitflow-accent flex items-center justify-center text-white text-xl font-semibold shrink-0">
-          {(profile?.display_name || user?.email)?.slice(0, 2).toUpperCase()}
-        </div>
-        <div className="min-w-0 flex-1">
-          {editingName ? (
-            <div className="flex items-center gap-2">
-              <input
-                autoFocus
-                value={nameValue}
-                onChange={e => setNameValue(e.target.value)}
-                onKeyDown={e => e.key === "Enter" && saveName()}
-                maxLength={30}
-                className="h-9 flex-1 rounded-lg bg-white/5 border border-white/10 px-3 text-sm text-foreground outline-none focus:border-fitflow-primary"
-                placeholder="Seu nome"
-              />
-              <button onClick={saveName} className="text-fitflow-primary hover:opacity-80"><Check size={18} /></button>
-              <button onClick={() => setEditingName(false)} className="text-foreground/40 hover:opacity-80"><X size={18} /></button>
-            </div>
-          ) : (
-            <div className="flex items-center gap-2">
-              <p className="text-lg font-semibold text-foreground truncate">
-                {profile?.display_name || user?.email}
-              </p>
-              <button onClick={() => { setNameValue(profile?.display_name || ""); setEditingName(true); }} className="text-foreground/40 hover:text-foreground/60">
-                <Pencil size={14} />
-              </button>
-            </div>
-          )}
-          <p className="text-sm text-foreground/40">Membro</p>
-        </div>
-      </div>
-
-      <GlassCard className="mb-4">
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="label-style text-[10px]">SUAS INFORMAÇÕES</h2>
+    <div className="min-h-screen bg-[#0a0a0a]">
+      {/* Header */}
+      <header
+        className="sticky top-0 bg-[#0a0a0a]/95 backdrop-blur-xl z-30 border-b border-white/[0.06]"
+        style={{ paddingTop: "env(safe-area-inset-top, 0px)" }}
+      >
+        <div className="flex items-center justify-between h-14 px-5">
           <button
-            onClick={() => setEditInfoOpen(true)}
-            className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-[0.12em] text-fitflow-primary hover:opacity-80 transition-opacity"
+            onClick={() => navigate(-1)}
+            className="w-9 h-9 rounded-full flex items-center justify-center text-[#6b7280] active:scale-90 transition-transform"
+            aria-label="Voltar"
           >
-            <Settings2 size={12} />
-            Editar
+            <ArrowLeft size={20} />
           </button>
+          <h1 className="text-[16px] font-bold text-white">Perfil</h1>
+          <div className="w-9" />
         </div>
-        <div className="grid grid-cols-2 gap-4">
-          {stats.map(s => (
-            <div key={s.label}>
-              <p className="text-[10px] text-foreground/40 uppercase">{s.label}</p>
-              <p className="text-sm font-semibold text-foreground capitalize">{s.value}</p>
+      </header>
+
+      <div className="px-5 pt-6 pb-10">
+        {/* Avatar */}
+        <div className="flex flex-col items-center mb-6">
+          <button
+            onClick={() => setPhotoSheetOpen(true)}
+            className="relative active:scale-95 transition-transform"
+          >
+            <div className="w-24 h-24 rounded-full overflow-hidden bg-[#141414] border border-white/[0.08] flex items-center justify-center text-[28px] font-bold text-white">
+              {profile?.avatar_url ? (
+                <img src={profile.avatar_url} alt="Avatar" className="w-full h-full object-cover" />
+              ) : initials}
+            </div>
+            <div
+              className="absolute bottom-0 right-0 w-8 h-8 rounded-full bg-[#22c55e] border-2 border-[#0a0a0a] flex items-center justify-center"
+              style={{ boxShadow: "0 4px 12px rgba(34,197,94,0.4)" }}
+            >
+              <Camera size={14} className="text-white" />
+            </div>
+          </button>
+          <h2 className="text-[20px] font-bold text-white mt-4">
+            {profile?.display_name || "Atleta"}
+          </h2>
+          <p className="text-[14px] text-[#6b7280] mt-0.5 truncate max-w-full">
+            {user?.email}
+          </p>
+          <span className="mt-2 px-3 py-1 rounded-full bg-[#22c55e]/15 text-[#22c55e] text-[11px] font-bold uppercase tracking-wider">
+            FitFlow Grátis
+          </span>
+        </div>
+
+        {/* Stats */}
+        <div className="flex items-stretch justify-between rounded-2xl bg-[#141414] border border-white/[0.07] py-4 px-2 mb-6">
+          {[
+            { label: "Treinos", value: stats?.workouts ?? 0 },
+            { label: "Dietas", value: stats?.plans ?? 0 },
+            { label: "Dias ativos", value: stats?.days ?? 0 },
+          ].map((s, i) => (
+            <div key={s.label} className={`flex-1 flex flex-col items-center ${i > 0 ? "border-l border-white/[0.07]" : ""}`}>
+              <p className="text-[22px] font-bold text-white tabular-nums">{s.value}</p>
+              <p className="text-[12px] text-[#6b7280] mt-0.5">{s.label}</p>
             </div>
           ))}
         </div>
-      </GlassCard>
 
-      {profile?.food_restrictions && (profile.food_restrictions as string[]).length > 0 && (
-        <GlassCard className="mb-4">
-          <h2 className="label-style text-[10px] mb-3">RESTRIÇÕES ALIMENTARES</h2>
-          <div className="flex flex-wrap gap-2">
-            {(profile.food_restrictions as string[]).map(r => (
-              <span key={r} className="px-3 py-1 rounded-full bg-fitflow-primary/10 text-fitflow-primary text-xs font-medium">
-                {r}
-              </span>
-            ))}
-          </div>
-        </GlassCard>
-      )}
+        {/* Settings list */}
+        <div className="rounded-2xl bg-[#141414] border border-white/[0.07] overflow-hidden mb-6">
+          {settingsItems.map((item, i) => (
+            <button
+              key={item.label}
+              onClick={item.onClick}
+              className={`w-full flex items-center gap-3 px-4 h-14 active:bg-white/[0.03] transition-colors ${
+                i < settingsItems.length - 1 ? "border-b border-white/[0.04]" : ""
+              }`}
+            >
+              <item.icon size={18} className={item.color} />
+              <span className="flex-1 text-left text-[14px] text-white font-medium">{item.label}</span>
+              <ChevronRight size={16} className="text-[#6b7280]" />
+            </button>
+          ))}
+        </div>
 
-      <NotificationSettings />
+        {/* Sign out */}
+        <button
+          onClick={signOut}
+          className="w-full flex items-center justify-center gap-2 h-14 rounded-2xl bg-[#141414] border border-white/[0.07] active:bg-white/[0.03] transition-colors"
+        >
+          <LogOut size={18} className="text-destructive" />
+          <span className="text-[14px] font-bold text-destructive">Sair da conta</span>
+        </button>
+      </div>
 
-      <button
-        onClick={signOut}
-        className="w-full h-12 rounded-xl border border-destructive/30 text-destructive text-sm font-medium flex items-center justify-center gap-2 hover:bg-destructive/5 active:scale-95 transition-all"
-      >
-        <LogOut size={16} />
-        Sair
-      </button>
+      {/* Photo source sheet */}
+      <AnimatePresence>
+        {photoSheetOpen && (
+          <>
+            <motion.div
+              initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+              transition={{ duration: 0.2 }}
+              onClick={() => setPhotoSheetOpen(false)}
+              className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50"
+            />
+            <motion.div
+              initial={{ y: "100%" }} animate={{ y: 0 }} exit={{ y: "100%" }}
+              transition={{ type: "spring", stiffness: 320, damping: 32 }}
+              className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[480px] z-50 px-4 pb-4 safe-bottom"
+            >
+              <div className="bg-[#141414] border border-white/[0.08] rounded-2xl overflow-hidden">
+                <div className="flex items-center justify-between px-5 h-12 border-b border-white/[0.06]">
+                  <p className="text-[14px] font-bold text-white">Foto de perfil</p>
+                  <button onClick={() => setPhotoSheetOpen(false)} className="text-[#6b7280] active:scale-90 transition-transform">
+                    <X size={18} />
+                  </button>
+                </div>
+                <button
+                  onClick={() => cameraInput.current?.click()}
+                  className="w-full flex items-center gap-3 px-5 h-14 active:bg-white/[0.03] transition-colors border-b border-white/[0.04]"
+                >
+                  <Camera size={18} className="text-[#22c55e]" />
+                  <span className="text-[14px] text-white font-medium">Tirar foto</span>
+                </button>
+                <button
+                  onClick={() => galleryInput.current?.click()}
+                  className="w-full flex items-center gap-3 px-5 h-14 active:bg-white/[0.03] transition-colors"
+                >
+                  <ImageIcon size={18} className="text-[#22c55e]" />
+                  <span className="text-[14px] text-white font-medium">Escolher da galeria</span>
+                </button>
+              </div>
+              <button
+                onClick={() => setPhotoSheetOpen(false)}
+                className="mt-2 w-full h-12 rounded-2xl bg-[#141414] border border-white/[0.08] text-[14px] font-bold text-white active:bg-white/[0.03] transition-colors"
+              >
+                Cancelar
+              </button>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
+
+      <input
+        ref={cameraInput}
+        type="file"
+        accept="image/*"
+        capture="user"
+        className="hidden"
+        onChange={e => handleFile(e.target.files?.[0])}
+      />
+      <input
+        ref={galleryInput}
+        type="file"
+        accept="image/*"
+        className="hidden"
+        onChange={e => handleFile(e.target.files?.[0])}
+      />
 
       <EditProfileSheet
         open={editInfoOpen}
