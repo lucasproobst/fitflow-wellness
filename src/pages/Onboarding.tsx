@@ -33,6 +33,7 @@ const activityLevels = [
 
 export default function Onboarding() {
   const [step, setStep] = useState(0);
+  const [displayName, setDisplayName] = useState("");
   const [goal, setGoal] = useState("");
   const [restrictions, setRestrictions] = useState<string[]>([]);
   const [height, setHeight] = useState("");
@@ -51,9 +52,18 @@ export default function Onboarding() {
   };
 
   const canProceed = () => {
-    if (step === 0) return !!goal;
+    if (step === 0) return displayName.trim().length >= 3 && !!goal;
     if (step === 1) return true;
-    if (step === 2) return !!height && !!weight && !!age && !!activity && !!targetWeight;
+    if (step === 2) {
+      const h = Number(height), w = Number(weight), a = Number(age), tw = Number(targetWeight);
+      return (
+        h >= 100 && h <= 250 &&
+        w >= 30 && w <= 300 &&
+        a >= 10 && a <= 100 &&
+        tw >= 30 && tw <= 300 &&
+        !!activity
+      );
+    }
     return false;
   };
 
@@ -62,6 +72,7 @@ export default function Onboarding() {
   const handleFinish = async () => {
     try {
       await updateProfile.mutateAsync({
+        display_name: displayName.trim(),
         goal,
         food_restrictions: restrictions as any,
         height_cm: Number(height),
@@ -72,7 +83,6 @@ export default function Onboarding() {
         onboarding_complete: true,
       } as any);
 
-      // Fire off plan generation in background; don't block navigation if it fails
       setGenerating(true);
       void Promise.allSettled([
         supabase.functions.invoke("generate-meal-plan", { body: {} }),
@@ -81,10 +91,9 @@ export default function Onboarding() {
         setGenerating(false);
       });
 
-      // Small delay so the user sees the "preparando seus planos" message
       setTimeout(() => navigate("/"), 800);
-    } catch {
-      toast.error("Falha ao salvar perfil");
+    } catch (err: any) {
+      toast.error(err?.message || "Falha ao salvar perfil");
     }
   };
 
