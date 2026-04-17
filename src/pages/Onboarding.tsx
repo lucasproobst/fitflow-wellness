@@ -164,21 +164,44 @@ export default function Onboarding() {
             transition={{ duration: 0.2 }}
           >
             {step === 0 && (
-              <div className="grid grid-cols-2 gap-3">
-                {goals.map(g => (
-                  <button
-                    key={g.id}
-                    onClick={() => setGoal(g.id)}
-                    className={`rounded-2xl bg-[#16181f] border p-6 flex flex-col items-center justify-center gap-3 transition-all active:scale-95 ${
-                      goal === g.id
-                        ? "border-[#22c55e]/40 bg-[#22c55e]/[0.06]"
-                        : "border-white/[0.06] hover:border-white/[0.1]"
-                    }`}
-                  >
-                    <g.icon size={28} className={goal === g.id ? "text-[#22c55e]" : "text-white/25"} />
-                    <span className="text-xs font-bold text-white/70">{g.label}</span>
-                  </button>
-                ))}
+              <div className="space-y-6">
+                <div>
+                  <label className="text-[10px] font-bold uppercase tracking-[0.12em] text-white/20 mb-1.5 block">
+                    Como podemos te chamar?
+                  </label>
+                  <input
+                    type="text"
+                    value={displayName}
+                    onChange={e => setDisplayName(e.target.value)}
+                    placeholder="Seu nome"
+                    maxLength={30}
+                    className="w-full h-12 px-4 rounded-xl bg-[#16181f] border border-white/[0.06] text-white text-sm focus:outline-none focus:border-white/[0.15] transition-colors placeholder:text-white/20"
+                  />
+                  {displayName.length > 0 && displayName.trim().length < 3 && (
+                    <p className="text-[10px] text-red-400 mt-1.5">Mínimo 3 caracteres</p>
+                  )}
+                </div>
+                <div>
+                  <label className="text-[10px] font-bold uppercase tracking-[0.12em] text-white/20 mb-3 block">
+                    Seu objetivo
+                  </label>
+                  <div className="grid grid-cols-2 gap-3">
+                    {goals.map(g => (
+                      <button
+                        key={g.id}
+                        onClick={() => setGoal(g.id)}
+                        className={`rounded-2xl bg-[#16181f] border p-6 flex flex-col items-center justify-center gap-3 transition-all active:scale-95 ${
+                          goal === g.id
+                            ? "border-[#22c55e]/40 bg-[#22c55e]/[0.06]"
+                            : "border-white/[0.06] hover:border-white/[0.1]"
+                        }`}
+                      >
+                        <g.icon size={28} className={goal === g.id ? "text-[#22c55e]" : "text-white/25"} />
+                        <span className="text-xs font-bold text-white/70">{g.label}</span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
               </div>
             )}
 
