@@ -34,15 +34,13 @@ export default function Auth() {
 
   const handleGoogleLogin = async () => {
     try {
-      const { lovable } = await import("@/integrations/lovable/index");
-      const result = await lovable.auth.signInWithOAuth("google", {
-        redirect_uri: window.location.origin,
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: "google",
+        options: { redirectTo: window.location.origin },
       });
-      if (result.error) {
-        toast.error("Falha ao entrar com Google");
-      }
-    } catch {
-      toast.error("Login com Google indisponível");
+      if (error) throw error;
+    } catch (err: any) {
+      toast.error(err?.message || "Login com Google indisponível");
     }
   };
 
