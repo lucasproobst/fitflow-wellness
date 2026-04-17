@@ -5,6 +5,12 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth-context";
 import { motion, AnimatePresence } from "framer-motion";
 
+interface ScanItem {
+  name: string;
+  grams: number;
+  calories: number;
+}
+
 interface ScanResult {
   name: string;
   serving: string;
@@ -12,6 +18,8 @@ interface ScanResult {
   protein: number;
   carbs: number;
   fat: number;
+  items?: ScanItem[];
+  confidence?: "alta" | "media" | "baixa";
 }
 
 interface SavedScan extends ScanResult {
@@ -240,16 +248,51 @@ export default function Scanner() {
             exit={{ opacity: 0, y: -10 }}
             className="mb-4 rounded-2xl bg-[#16181f] border border-white/[0.06] p-5"
           >
-            <div className="flex items-center justify-between mb-4">
-              <div>
-                <p className="text-sm font-bold text-white">{result.name}</p>
+            <div className="flex items-start justify-between mb-4 gap-3">
+              <div className="min-w-0">
+                <p className="text-sm font-bold text-white truncate">{result.name}</p>
                 <p className="text-[11px] text-white/30 mt-0.5">{result.serving}</p>
+                {result.confidence && (
+                  <span
+                    className={`inline-block mt-2 px-2 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-[0.1em] ${
+                      result.confidence === "alta"
+                        ? "bg-[#22c55e]/10 text-[#22c55e]"
+                        : result.confidence === "media"
+                          ? "bg-yellow-500/10 text-yellow-400"
+                          : "bg-orange-500/10 text-orange-400"
+                    }`}
+                  >
+                    Confiança {result.confidence}
+                  </span>
+                )}
               </div>
-              <div className="text-right">
+              <div className="text-right shrink-0">
                 <span className="text-xl font-extrabold text-white tabular-nums">{result.calories}</span>
                 <p className="text-[10px] text-[#6b7280] -mt-0.5">kcal</p>
               </div>
             </div>
+
+            {/* Itens identificados */}
+            {result.items && result.items.length > 0 && (
+              <div className="mb-5">
+                <p className="text-[10px] font-bold uppercase tracking-[0.12em] text-white/30 mb-2">
+                  Itens identificados
+                </p>
+                <div className="rounded-xl bg-white/[0.02] border border-white/[0.04] divide-y divide-white/[0.04]">
+                  {result.items.map((it, i) => (
+                    <div key={i} className="flex items-center justify-between px-3 py-2.5">
+                      <div className="min-w-0 flex-1">
+                        <p className="text-xs font-semibold text-white/80 truncate capitalize">{it.name}</p>
+                        <p className="text-[10px] text-white/30 tabular-nums">{Math.round(it.grams)} g</p>
+                      </div>
+                      <span className="text-[11px] font-bold text-white/60 tabular-nums shrink-0">
+                        {Math.round(it.calories)} kcal
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
 
             <div className="space-y-3 mb-5">
               {[
