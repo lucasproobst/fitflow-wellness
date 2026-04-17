@@ -1,6 +1,7 @@
 import { useState, useMemo, useEffect, useCallback, useRef } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { RefreshCw, Shuffle, Heart, ChevronRight, X, Clock, ChefHat, Lightbulb } from "lucide-react";
+import { useSearchParams, useNavigate } from "react-router-dom";
+import { RefreshCw, Shuffle, Heart, ChevronRight, X, Clock, ChefHat, Lightbulb, ArrowLeft, SlidersHorizontal, Coffee, UtensilsCrossed, Moon, Apple } from "lucide-react";
 import { RecipeShareCard } from "@/components/RecipeShareCard";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth-context";
@@ -11,7 +12,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { GenerationProgress } from "@/components/GenerationProgress";
 
 const dayNames = ["Segunda", "Terça", "Quarta", "Quinta", "Sexta", "Sábado", "Domingo"];
-const shortDays = ["Seg", "Ter", "Qua", "Qui", "Sex", "Sáb", "Dom"];
+const shortDays = ["SEG", "TER", "QUA", "QUI", "SEX", "SÁB", "DOM"];
 const mealTypes = ["breakfast", "lunch", "snack", "dinner", "preworkout"] as const;
 const mealTypeLabels: Record<string, string> = {
   breakfast: "CAFÉ DA MANHÃ",
@@ -21,7 +22,15 @@ const mealTypeLabels: Record<string, string> = {
   preworkout: "PRÉ-TREINO",
 };
 
-const filters = ["TODOS", "VEGETARIANO", "LOW-CARB", "ALTA PROTEÍNA"];
+const mealIcons: Record<string, any> = {
+  breakfast: Coffee,
+  lunch: UtensilsCrossed,
+  snack: Apple,
+  dinner: Moon,
+  preworkout: Coffee,
+};
+
+const filters = ["Todos", "Vegetariano", "Low-carb", "Alta proteína"];
 
 interface Meal {
   name: string;
