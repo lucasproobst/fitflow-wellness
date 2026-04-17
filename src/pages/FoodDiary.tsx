@@ -76,9 +76,27 @@ export default function FoodDiary() {
     setSearch("");
   };
 
+  const deleteFood = (globalIndex: number) => {
+    const removed = meals[globalIndex];
+    if (!removed) return;
+    const newMeals = meals.filter((_, i) => i !== globalIndex);
+    upsert.mutate({ meals: newMeals }, {
+      onSuccess: () => {
+        toast.success(`${removed.name} removido`, {
+          action: {
+            label: "Desfazer",
+            onClick: () => upsert.mutate({ meals }),
+          },
+        });
+      },
+    });
+  };
+
   const mealsByType = MEAL_TYPES.map(t => ({
     ...t,
-    items: meals.filter(m => (m.mealType || "snack") === t.key),
+    items: meals
+      .map((m, idx) => ({ meal: m, idx }))
+      .filter(({ meal }) => (meal.mealType || "snack") === t.key),
   }));
 
   return (
