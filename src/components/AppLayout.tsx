@@ -95,12 +95,34 @@ export default function AppLayout({ children }: { children: ReactNode }) {
             className="sticky top-0 bg-[#0a0a0a]/95 backdrop-blur-xl z-40 border-b border-white/[0.06]"
             style={{ paddingTop: "env(safe-area-inset-top, 0px)" }}
           >
-            <div className="flex items-center justify-between px-5 h-14">
-              <div className="min-w-0">
-                <p className="text-[11px] text-[#6b7280] font-medium">Olá,</p>
-                <h1 className="text-[15px] font-bold text-white truncate max-w-[180px]">
-                  {profile?.display_name || user?.email?.split("@")[0] || "Atleta"}
-                </h1>
+            <div className="flex items-center justify-between px-5 lg:px-8 h-14 lg:h-16">
+              <div className="flex items-center gap-8 min-w-0">
+                <div className="min-w-0">
+                  <p className="text-[11px] text-[#6b7280] font-medium">Olá,</p>
+                  <h1 className="text-[15px] font-bold text-white truncate max-w-[180px]">
+                    {profile?.display_name || user?.email?.split("@")[0] || "Atleta"}
+                  </h1>
+                </div>
+                {/* Desktop top nav */}
+                <nav className="hidden lg:flex items-center gap-1">
+                  {tabs.map(t => (
+                    <NavLink
+                      key={t.to}
+                      to={t.to}
+                      end={t.to === "/"}
+                      className={({ isActive }) =>
+                        `flex items-center gap-2 px-4 h-9 rounded-full text-[13px] font-semibold transition-colors ${
+                          isActive
+                            ? "bg-[#22c55e]/15 text-[#22c55e]"
+                            : "text-[#6b7280] hover:text-white hover:bg-white/[0.04]"
+                        }`
+                      }
+                    >
+                      <t.icon size={16} />
+                      {t.label}
+                    </NavLink>
+                  ))}
+                </nav>
               </div>
               <div className="flex items-center gap-2">
                 {showInstallButton && (
@@ -112,6 +134,15 @@ export default function AppLayout({ children }: { children: ReactNode }) {
                     Instalar
                   </button>
                 )}
+                {/* Desktop quick action */}
+                <button
+                  onClick={() => setFabOpen(o => !o)}
+                  className="hidden lg:flex h-9 px-4 rounded-full bg-[#22c55e] text-white items-center gap-1.5 text-[13px] font-bold active:scale-95 transition-transform"
+                  style={{ boxShadow: "0 4px 14px rgba(34,197,94,0.35)" }}
+                >
+                  <Plus size={16} strokeWidth={2.5} />
+                  Novo
+                </button>
                 <button
                   onClick={() => navigate("/profile")}
                   aria-label="Abrir perfil"
@@ -136,7 +167,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -6 }}
             transition={{ duration: 0.2, ease: "easeInOut" }}
-            className="flex-1 pb-32"
+            className="flex-1 pb-32 lg:pb-12"
           >
             {children}
           </motion.main>
@@ -185,9 +216,9 @@ export default function AppLayout({ children }: { children: ReactNode }) {
           )}
         </AnimatePresence>
 
-        {/* Bottom Nav */}
+        {/* Bottom Nav — mobile only */}
         <nav
-          className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[480px] bg-[#0a0a0a] border-t border-white/[0.06] z-50 safe-bottom"
+          className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[480px] bg-[#0a0a0a] border-t border-white/[0.06] z-50 safe-bottom lg:hidden"
         >
           <div className="relative h-[72px] grid grid-cols-5 items-center px-2">
             {tabs.slice(0, 2).map(t => <BottomTab key={t.to} {...t} />)}
