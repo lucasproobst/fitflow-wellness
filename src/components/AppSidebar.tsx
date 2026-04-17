@@ -15,6 +15,7 @@ import {
 } from "@/components/ui/sidebar";
 import { useAuth } from "@/lib/auth-context";
 import { useProfile } from "@/lib/use-profile";
+import { ProBadge } from "@/components/ProBadge";
 
 const mainItems = [
   { to: "/", icon: Home, label: "Início" },
@@ -154,10 +155,11 @@ export function AppSidebar({ onNewClick }: { onNewClick: () => void }) {
           </div>
           {!collapsed && (
             <div className="min-w-0 text-left">
-              <p className="text-[12px] font-bold text-white truncate">
-                {profile?.display_name || user?.email?.split("@")[0] || "Atleta"}
+              <p className="text-[12px] font-bold text-white truncate flex items-center gap-1">
+                <span className="truncate">{profile?.display_name || user?.email?.split("@")[0] || "Atleta"}</span>
+                {profile?.is_pro && <ProBadge size={10} />}
               </p>
-              <p className="text-[10px] text-white/40 truncate">Ver perfil</p>
+              <p className="text-[10px] text-white/40 truncate">{profile?.is_pro ? "FitFlow Pro" : "Ver perfil"}</p>
             </div>
           )}
         </button>

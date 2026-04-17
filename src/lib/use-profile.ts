@@ -15,6 +15,7 @@ export interface UserProfile {
   target_weight_kg: number | null;
   onboarding_complete: boolean;
   avatar_url: string | null;
+  is_pro: boolean;
 }
 
 export function useProfile() {

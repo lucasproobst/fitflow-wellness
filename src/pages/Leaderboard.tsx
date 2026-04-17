@@ -4,10 +4,12 @@ import { useAuth } from "@/lib/auth-context";
 import { supabase } from "@/integrations/supabase/client";
 import { Trophy, Medal, Award, Crown } from "lucide-react";
 import { motion } from "framer-motion";
+import { ProBadge } from "@/components/ProBadge";
 
 interface LeaderboardEntry {
   user_id: string;
   display_name: string | null;
+  is_pro: boolean;
   count: number;
 }
 
@@ -30,15 +32,16 @@ function useLeaderboard() {
       const userIds = Array.from(countMap.keys());
       const { data: profiles } = await supabase
         .from("user_profile")
-        .select("user_id, display_name")
+        .select("user_id, display_name, is_pro")
         .in("user_id", userIds);
 
-      const profileMap = new Map((profiles || []).map(p => [p.user_id, p.display_name]));
+      const profileMap = new Map((profiles || []).map(p => [p.user_id, p]));
 
       return userIds
         .map(uid => ({
           user_id: uid,
-          display_name: profileMap.get(uid) || null,
+          display_name: profileMap.get(uid)?.display_name || null,
+          is_pro: profileMap.get(uid)?.is_pro || false,
           count: countMap.get(uid) || 0,
         }))
         .sort((a, b) => b.count - a.count) as LeaderboardEntry[];
@@ -196,6 +199,7 @@ export default function Leaderboard() {
                       <p className="text-xs font-bold text-white truncate">
                         {isMe ? "Você" : name}
                       </p>
+                      {entry.is_pro && <ProBadge size={10} />}
                       {isMe && (
                         <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-[#22c55e]/20 text-[#22c55e] font-extrabold uppercase tracking-wider">
                           Eu
@@ -251,9 +255,12 @@ function PodiumSlot({
       >
         {initials}
       </div>
-      <p className="text-[11px] font-bold text-white truncate w-full text-center">
-        {me ? "Você" : (entry.display_name || `Atleta`)}
-      </p>
+      <div className="flex items-center gap-1 w-full justify-center">
+        <p className="text-[11px] font-bold text-white truncate text-center">
+          {me ? "Você" : (entry.display_name || `Atleta`)}
+        </p>
+        {entry.is_pro && <ProBadge size={9} />}
+      </div>
       <p className={`text-[10px] font-extrabold tabular-nums ${cfg.color}`}>
         {entry.count} 🏅
       </p>
