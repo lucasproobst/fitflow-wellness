@@ -357,6 +357,26 @@ export default function Scanner() {
               </div>
             </div>
 
+            {/* Aviso de baixa confiança */}
+            {(scaled || result).confidence === "baixa" && (
+              <div className="mb-4 rounded-xl bg-orange-500/[0.06] border border-orange-500/20 px-3 py-3 flex items-start gap-2.5">
+                <AlertTriangle size={16} className="text-orange-400 shrink-0 mt-0.5" />
+                <div className="flex-1 min-w-0">
+                  <p className="text-[11px] font-bold text-orange-300 mb-0.5">Confiança baixa</p>
+                  <p className="text-[10px] text-white/50 leading-relaxed mb-2">
+                    Os valores podem estar imprecisos. Tente outra foto com melhor iluminação e ângulo.
+                  </p>
+                  <button
+                    onClick={() => { resetScanner(); cameraRef.current?.click(); }}
+                    className="h-8 px-3 rounded-full bg-orange-500/[0.12] border border-orange-500/30 text-orange-300 text-[10px] font-bold flex items-center gap-1.5 active:scale-95 hover:bg-orange-500/[0.18] transition-all"
+                  >
+                    <RotateCcw size={12} />
+                    Reescanear
+                  </button>
+                </div>
+              </div>
+            )}
+
             {/* Ajuste de gramagem */}
             {baseline && baseGrams > 0 && (
               <div className="mb-5 rounded-xl bg-white/[0.02] border border-white/[0.04] px-3 py-3">
