@@ -69,27 +69,23 @@ export default function Achievements() {
   const unlockedCount = unlocked?.size ?? 0;
 
   return (
-    <div className="px-4 lg:px-8 py-6 max-w-4xl mx-auto">
+    <div className="px-4 lg:px-8 py-6 max-w-4xl mx-auto pb-24">
       <motion.div
         initial={{ opacity: 0, y: 8 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.3 }}
-        className="flex items-center justify-between mb-1"
+        className="flex items-start justify-between mb-6"
       >
-        <h1 className="text-2xl font-bold tracking-tight text-white">Conquistas</h1>
-        <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/[0.04] border border-white/[0.06]">
+        <div>
+          <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-white/30 mb-1">Sua jornada</p>
+          <h1 className="text-[28px] font-extrabold tracking-tight text-white leading-tight">Conquistas</h1>
+          <p className="text-xs text-white/40 mt-1">Desbloqueie medalhas registrando seu progresso</p>
+        </div>
+        <div className="flex items-center gap-1.5 px-3 h-8 rounded-full bg-[#22c55e]/10 border border-[#22c55e]/20 shrink-0">
           <Trophy size={12} className="text-[#22c55e]" />
-          <span className="text-[11px] font-bold text-white/50 tabular-nums">{unlockedCount}/{ACHIEVEMENTS.length}</span>
+          <span className="text-[11px] font-extrabold text-[#22c55e] tabular-nums">{unlockedCount}/{ACHIEVEMENTS.length}</span>
         </div>
       </motion.div>
-      <motion.p
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 0.05 }}
-        className="text-xs text-white/30 mb-6"
-      >
-        Acompanhe seus marcos e desbloqueie medalhas
-      </motion.p>
 
       {/* Summary bar */}
       <motion.div
