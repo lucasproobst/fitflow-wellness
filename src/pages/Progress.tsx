@@ -94,14 +94,6 @@ export default function Progress() {
     });
   };
 
-  const handleFileChange = (type: PhotoType) => (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    if (!file.type.startsWith("image/")) { toast.error("Selecione uma imagem"); return; }
-    if (file.size > 5 * 1024 * 1024) { toast.error("Máximo 5MB"); return; }
-    uploadPhoto.mutate({ file, type });
-  };
-
   const fadeIn = (delay: number) => ({
     initial: { opacity: 0, y: 12 },
     animate: { opacity: 1, y: 0 },
