@@ -103,6 +103,9 @@ export default function Scanner() {
   const resetScanner = () => {
     setImage(null);
     setResult(null);
+    setBaseline(null);
+    setBaseGrams(0);
+    setGrams(0);
     setNotFound(false);
     if (fileRef.current) fileRef.current.value = "";
   };
@@ -122,10 +125,10 @@ export default function Scanner() {
         return;
       }
       setResult(data as ScanResult);
-    } catch (err: any) {
-      setNotFound(true);
-      toast.error(err.message || "Falha ao analisar alimento");
-    } finally {
+      const g = extractGrams((data as ScanResult).serving);
+      setBaseline(data as ScanResult);
+      setBaseGrams(g);
+      setGrams(g);
       setScanning(false);
     }
   };
