@@ -60,6 +60,12 @@ export default function Dashboard() {
   const firstName = profile?.display_name?.split(" ")[0] || user?.email?.split("@")[0] || "Atleta";
   const hour = new Date().getHours();
   const greeting = hour < 12 ? "Bom dia" : hour < 18 ? "Boa tarde" : "Boa noite";
+  const greetingEmoji = hour < 12 ? "☀️" : hour < 18 ? "🌤️" : "🌙";
+  const emojiAnim = hour < 12
+    ? { rotate: [0, 12, -8, 0] } // sol balança
+    : hour < 18
+    ? { y: [0, -3, 0], rotate: [0, 4, 0] } // nuvem flutua
+    : { rotate: [-8, 8, -8] }; // lua oscila
 
   const [showWeekly, setShowWeekly] = useState(false);
   const [installPrompt, setInstallPrompt] = useState<BeforeInstallPromptEvent | null>(null);
@@ -129,7 +135,17 @@ export default function Dashboard() {
             {initials}
           </motion.div>
           <div className="min-w-0">
-            <p className="text-sm font-semibold text-white truncate">{greeting}, {firstName}</p>
+            <p className="text-sm font-semibold text-white truncate flex items-center gap-1.5">
+              <span className="truncate">{greeting}, {firstName}</span>
+              <motion.span
+                animate={emojiAnim}
+                transition={{ duration: 2.4, repeat: Infinity, ease: "easeInOut" }}
+                className="inline-block text-base shrink-0"
+                style={{ transformOrigin: "50% 80%" }}
+              >
+                {greetingEmoji}
+              </motion.span>
+            </p>
             <p className="text-xs text-white/40 truncate">{user?.email}</p>
           </div>
         </div>
@@ -151,7 +167,17 @@ export default function Dashboard() {
       >
         <div>
           <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-white/30 mb-1">Hoje</p>
-          <h1 className="text-[32px] font-extrabold tracking-tight text-white leading-tight">{greeting}, {firstName}</h1>
+          <h1 className="text-[32px] font-extrabold tracking-tight text-white leading-tight flex items-center gap-3">
+            <span>{greeting}, {firstName}</span>
+            <motion.span
+              animate={emojiAnim}
+              transition={{ duration: 2.4, repeat: Infinity, ease: "easeInOut" }}
+              className="inline-block"
+              style={{ transformOrigin: "50% 80%" }}
+            >
+              {greetingEmoji}
+            </motion.span>
+          </h1>
           <p className="text-sm text-white/40 mt-1">Seu resumo de saúde, treino e nutrição</p>
         </div>
         <motion.div
