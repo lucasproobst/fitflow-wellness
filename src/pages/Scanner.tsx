@@ -491,7 +491,7 @@ export default function Scanner() {
           </div>
           <div className="space-y-2">
             {favorites.map(fav => (
-              <div key={fav.id} className="rounded-xl bg-[#16181f] border border-white/[0.04] px-4 py-3 flex items-center justify-between gap-3">
+              <div key={fav.id} className="rounded-xl bg-[#141414] border border-white/[0.07] px-4 py-3 flex items-center justify-between gap-3">
                 <button
                   onClick={() => openFavPicker(fav)}
                   className="flex-1 min-w-0 text-left active:opacity-60 transition-opacity"
@@ -520,7 +520,7 @@ export default function Scanner() {
           <h2 className="text-[10px] font-bold uppercase tracking-[0.15em] text-white/20 mb-3">ESCANEAMENTOS SALVOS</h2>
           <div className="space-y-2">
             {history.map((item) => (
-              <div key={item.id} className="rounded-xl bg-[#16181f] border border-white/[0.04] px-4 py-3 flex items-center justify-between">
+              <div key={item.id} className="rounded-xl bg-[#141414] border border-white/[0.07] px-4 py-3 flex items-center justify-between">
                 <div>
                   <p className="text-xs text-white/50">{item.name}</p>
                   <p className="text-[10px] text-white/20 mt-0.5">
@@ -560,7 +560,7 @@ export default function Scanner() {
               animate={{ y: 0, opacity: 1 }}
               exit={{ y: 30, opacity: 0 }}
               onClick={e => e.stopPropagation()}
-              className="w-full max-w-sm rounded-2xl bg-[#16181f] border border-white/[0.08] p-5 max-h-[90vh] overflow-y-auto"
+              className="w-full max-w-sm rounded-2xl bg-[#141414] border border-white/[0.08] p-5 max-h-[90vh] overflow-y-auto"
             >
               <p className="text-sm font-bold text-white mb-1">Adicionar manualmente</p>
               <p className="text-[11px] text-white/30 mb-5">Após adicionar, use a estrela para salvar nos favoritos</p>
@@ -658,7 +658,7 @@ export default function Scanner() {
               animate={{ y: 0, opacity: 1 }}
               exit={{ y: 30, opacity: 0 }}
               onClick={e => e.stopPropagation()}
-              className="w-full max-w-sm rounded-2xl bg-[#16181f] border border-white/[0.08] p-5"
+              className="w-full max-w-sm rounded-2xl bg-[#141414] border border-white/[0.08] p-5"
             >
               <p className="text-sm font-bold text-white mb-1 truncate">{pickedFav.name}</p>
               <p className="text-[11px] text-white/30 mb-5">
