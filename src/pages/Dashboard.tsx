@@ -60,6 +60,12 @@ export default function Dashboard() {
   const firstName = profile?.display_name?.split(" ")[0] || user?.email?.split("@")[0] || "Atleta";
   const hour = new Date().getHours();
   const greeting = hour < 12 ? "Bom dia" : hour < 18 ? "Boa tarde" : "Boa noite";
+  const greetingEmoji = hour < 12 ? "☀️" : hour < 18 ? "🌤️" : "🌙";
+  const emojiAnim = hour < 12
+    ? { rotate: [0, 12, -8, 0] } // sol balança
+    : hour < 18
+    ? { y: [0, -3, 0], rotate: [0, 4, 0] } // nuvem flutua
+    : { rotate: [-8, 8, -8] }; // lua oscila
 
   const [showWeekly, setShowWeekly] = useState(false);
   const [installPrompt, setInstallPrompt] = useState<BeforeInstallPromptEvent | null>(null);
