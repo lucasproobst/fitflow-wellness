@@ -1,6 +1,6 @@
 import { ReactNode, useState, useEffect } from "react";
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
-import { Home, Utensils, Dumbbell, BarChart3, Plus, X, Camera, Salad, Download } from "lucide-react";
+import { Home, Utensils, Dumbbell, BarChart3, Plus, X, Camera, Salad, Download, Trophy } from "lucide-react";
 import { useAuth } from "@/lib/auth-context";
 import { useProfile } from "@/lib/use-profile";
 import { motion, AnimatePresence } from "framer-motion";
