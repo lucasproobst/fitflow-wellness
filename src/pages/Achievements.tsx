@@ -96,7 +96,7 @@ export default function Achievements() {
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.1 }}
-        className="rounded-2xl bg-[#16181f] border border-white/[0.06] p-5 mb-6"
+        className="rounded-2xl bg-[#141414] border border-white/[0.07] p-5 mb-6"
       >
         <div className="flex items-center gap-3 mb-3">
           <div className="text-2xl">🏅</div>
@@ -137,7 +137,7 @@ export default function Achievements() {
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.05 + idx * 0.03 }}
-              className={`rounded-2xl bg-[#16181f] border p-4 transition-all ${
+              className={`rounded-2xl bg-[#141414] border p-4 transition-all ${
                 isUnlocked ? "border-[#22c55e]/10" : "border-white/[0.04] opacity-60"
               }`}
             >
