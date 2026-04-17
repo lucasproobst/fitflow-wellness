@@ -62,8 +62,15 @@ export default function FoodDiary() {
 
   return (
     <div className="px-4 lg:px-8 py-6 max-w-4xl mx-auto">
-      <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }}>
-        <h1 className="text-2xl font-bold tracking-tight text-white mb-6">Diário Alimentar</h1>
+      <motion.div
+        initial={{ opacity: 0, y: 8 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.3 }}
+        className="mb-6"
+      >
+        <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-white/30 mb-1">Hoje</p>
+        <h1 className="text-[28px] font-extrabold tracking-tight text-white leading-tight">Diário alimentar</h1>
+        <p className="text-xs text-white/40 mt-1">Acompanhe calorias, macros e hidratação</p>
       </motion.div>
 
       <motion.div
@@ -79,7 +86,7 @@ export default function FoodDiary() {
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.1 }}
-        className="rounded-2xl bg-[#16181f] border border-white/[0.06] p-5 mb-4 space-y-3"
+        className="rounded-2xl bg-[#141414] border border-white/[0.07] p-5 mb-4 space-y-3"
       >
         <MacroBar label="Proteína" current={totalProtein} target={150} />
         <MacroBar label="Carboidratos" current={totalCarbs} target={200} />
@@ -90,7 +97,7 @@ export default function FoodDiary() {
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.15 }}
-        className="rounded-2xl bg-[#16181f] border border-white/[0.06] p-5 mb-4"
+        className="rounded-2xl bg-[#141414] border border-white/[0.07] p-5 mb-4"
       >
         <h3 className="text-[10px] font-bold uppercase tracking-[0.15em] text-white/20 mb-3">HIDRATAÇÃO</h3>
         <WaterTracker glasses={waterGlasses} onAdd={() => addWater.mutate()} />
@@ -109,10 +116,10 @@ export default function FoodDiary() {
           value={search}
           onChange={e => setSearch(e.target.value)}
           placeholder="Buscar alimentos para adicionar..."
-          className="w-full h-11 pl-10 pr-4 rounded-xl bg-[#16181f] border border-white/[0.06] text-white text-xs focus:outline-none focus:border-white/[0.15] transition-colors placeholder:text-white/20"
+          className="w-full h-11 pl-10 pr-4 rounded-xl bg-[#141414] border border-white/[0.07] text-white text-xs focus:outline-none focus:border-white/[0.15] transition-colors placeholder:text-white/20"
         />
         {search && (
-          <div className="absolute top-full left-0 right-0 mt-1 bg-[#16181f] border border-white/[0.08] rounded-xl overflow-hidden z-10 max-h-60 overflow-y-auto">
+          <div className="absolute top-full left-0 right-0 mt-1 bg-[#141414] border border-white/[0.08] rounded-xl overflow-hidden z-10 max-h-60 overflow-y-auto">
             {filtered.length === 0 ? (
               <p className="p-4 text-xs text-white/30">Nenhum alimento encontrado</p>
             ) : (
@@ -141,14 +148,14 @@ export default function FoodDiary() {
       >
         <h2 className="text-[10px] font-bold uppercase tracking-[0.15em] text-white/20 mb-3">REFEIÇÕES DE HOJE</h2>
         {meals.length === 0 ? (
-          <div className="rounded-2xl bg-[#16181f] border border-white/[0.04] py-10 text-center">
+          <div className="rounded-2xl bg-[#141414] border border-white/[0.05] py-10 text-center">
             <p className="text-xs text-white/30">Nenhuma refeição registrada hoje</p>
             <p className="text-[10px] text-white/15 mt-1">Busque acima ou use o scanner</p>
           </div>
         ) : (
           <div className="space-y-2">
             {meals.map((meal, i) => (
-              <div key={i} className="rounded-xl bg-[#16181f] border border-white/[0.04] px-4 py-3 flex items-center justify-between">
+              <div key={i} className="rounded-xl bg-[#141414] border border-white/[0.05] px-4 py-3 flex items-center justify-between">
                 <div>
                   <p className="text-xs font-bold text-white">{meal.name}</p>
                   <p className="text-[10px] text-white/30 mt-0.5">P:{meal.protein}g · C:{meal.carbs}g · G:{meal.fat}g</p>
