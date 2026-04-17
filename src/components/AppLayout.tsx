@@ -138,6 +138,8 @@ export default function AppLayout({ children }: { children: ReactNode }) {
                   <Plus size={16} strokeWidth={2.5} />
                   Novo
                 </button>
+                {/* Notifications */}
+                <NotificationsPopover />
                 {/* Avatar — both mobile and desktop */}
                 <button
                   onClick={() => navigate("/profile")}
