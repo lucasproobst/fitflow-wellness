@@ -108,14 +108,17 @@ export default function Profile() {
               <Camera size={14} className="text-white" />
             </div>
           </button>
-          <h2 className="text-[20px] font-bold text-white mt-4">
+          <h2 className="text-[20px] font-bold text-white mt-4 flex items-center gap-1.5">
             {profile?.display_name || "Atleta"}
+            {profile?.is_pro && <ProBadge size={14} />}
           </h2>
           <p className="text-[14px] text-[#6b7280] mt-0.5 truncate max-w-full">
             {user?.email}
           </p>
-          <span className="mt-2 px-3 py-1 rounded-full bg-[#22c55e]/15 text-[#22c55e] text-[11px] font-bold uppercase tracking-wider">
-            FitFlow Grátis
+          <span className={`mt-2 px-3 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider ${
+            profile?.is_pro ? "bg-[#22c55e] text-black" : "bg-[#22c55e]/15 text-[#22c55e]"
+          }`}>
+            {profile?.is_pro ? "FitFlow Pro ⚡" : "FitFlow Grátis"}
           </span>
         </div>
 
