@@ -113,7 +113,16 @@ export default function Profile() {
       </div>
 
       <GlassCard className="mb-4">
-        <h2 className="label-style text-[10px] mb-4">SUAS INFORMAÇÕES</h2>
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="label-style text-[10px]">SUAS INFORMAÇÕES</h2>
+          <button
+            onClick={() => setEditInfoOpen(true)}
+            className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-[0.12em] text-fitflow-primary hover:opacity-80 transition-opacity"
+          >
+            <Settings2 size={12} />
+            Editar
+          </button>
+        </div>
         <div className="grid grid-cols-2 gap-4">
           {stats.map(s => (
             <div key={s.label}>
