@@ -142,12 +142,12 @@ export default function Onboarding() {
           ))}
         </div>
         <h1 className="text-2xl font-bold tracking-tight mt-6 text-white">
-          {step === 0 && "Qual é seu objetivo?"}
+          {step === 0 && "Vamos começar"}
           {step === 1 && "Alguma restrição alimentar?"}
           {step === 2 && "Suas informações"}
         </h1>
         <p className="text-xs text-white/30 mt-1">
-          {step === 0 && "Escolha o que melhor descreve seu objetivo fitness"}
+          {step === 0 && "Conte um pouco sobre você e seu objetivo"}
           {step === 1 && "Selecione alimentos que você NÃO come"}
           {step === 2 && "Nos ajude a personalizar seu plano"}
         </p>
