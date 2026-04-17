@@ -2,10 +2,25 @@ import { useState } from "react";
 import { CalorieRing } from "@/components/CalorieRing";
 import { MacroBar } from "@/components/MacroBar";
 import { WaterTracker } from "@/components/WaterTracker";
-import { useDailyLog, useUpsertDailyLog, useAddWater, DailyLogMeal } from "@/lib/use-tracking";
-import { Search, Plus } from "lucide-react";
+import { useDailyLog, useUpsertDailyLog, useAddWater, DailyLogMeal, MealType } from "@/lib/use-tracking";
+import { Search, Plus, Coffee, UtensilsCrossed, Cookie, Moon } from "lucide-react";
 import { toast } from "sonner";
 import { motion } from "framer-motion";
+
+const MEAL_TYPES: { key: MealType; label: string; icon: typeof Coffee }[] = [
+  { key: "breakfast", label: "Café", icon: Coffee },
+  { key: "lunch", label: "Almoço", icon: UtensilsCrossed },
+  { key: "snack", label: "Lanche", icon: Cookie },
+  { key: "dinner", label: "Jantar", icon: Moon },
+];
+
+function guessMealTypeByTime(): MealType {
+  const h = new Date().getHours();
+  if (h < 11) return "breakfast";
+  if (h < 15) return "lunch";
+  if (h < 18) return "snack";
+  return "dinner";
+}
 
 const commonFoods: DailyLogMeal[] = [
   { name: "Peito de Frango (100g)", calories: 165, protein: 31, carbs: 0, fat: 3.6 },
