@@ -12,7 +12,7 @@ export default {
     },
     extend: {
       fontFamily: {
-        sans: ['"Plus Jakarta Sans"', "system-ui", "sans-serif"],
+        sans: ['Inter', "system-ui", "-apple-system", "sans-serif"],
       },
       colors: {
         border: "hsl(var(--border))",
@@ -59,10 +59,12 @@ export default {
           ring: "hsl(var(--sidebar-ring))",
         },
         fitflow: {
-          primary: "#0D9E75",
-          accent: "#A8E063",
-          dark: "#0F1117",
-          light: "#F8FAF7",
+          primary: "#22c55e",
+          accent: "#22c55e",
+          dark: "#0a0a0a",
+          surface: "#141414",
+          light: "#ffffff",
+          muted: "#6b7280",
         },
       },
       borderRadius: {
