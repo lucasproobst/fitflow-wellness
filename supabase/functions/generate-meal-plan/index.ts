@@ -228,7 +228,7 @@ Regras:
                     items: {
                       type: "object",
                       properties: {
-                        day: { type: "string", enum: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"] },
+                        day: { type: "string", enum: ["Segunda", "Terça", "Quarta", "Quinta", "Sexta", "Sábado", "Domingo"], description: "Nome do dia da semana em português brasileiro" },
                         meals: {
                           type: "object",
                           properties: {
