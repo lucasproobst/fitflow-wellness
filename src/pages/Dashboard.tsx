@@ -135,7 +135,17 @@ export default function Dashboard() {
             {initials}
           </motion.div>
           <div className="min-w-0">
-            <p className="text-sm font-semibold text-white truncate">{greeting}, {firstName}</p>
+            <p className="text-sm font-semibold text-white truncate flex items-center gap-1.5">
+              <span className="truncate">{greeting}, {firstName}</span>
+              <motion.span
+                animate={emojiAnim}
+                transition={{ duration: 2.4, repeat: Infinity, ease: "easeInOut" }}
+                className="inline-block text-base shrink-0"
+                style={{ transformOrigin: "50% 80%" }}
+              >
+                {greetingEmoji}
+              </motion.span>
+            </p>
             <p className="text-xs text-white/40 truncate">{user?.email}</p>
           </div>
         </div>
