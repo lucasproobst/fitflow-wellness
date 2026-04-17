@@ -486,6 +486,98 @@ export default function Scanner() {
           </div>
         </motion.div>
       )}
+
+      {/* Manual entry modal */}
+      <AnimatePresence>
+        {manualOpen && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/70 backdrop-blur-sm p-4"
+            onClick={() => setManualOpen(false)}
+          >
+            <motion.div
+              initial={{ y: 30, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              exit={{ y: 30, opacity: 0 }}
+              onClick={(e) => e.stopPropagation()}
+              className="w-full max-w-sm rounded-2xl bg-[#16181f] border border-white/[0.08] p-5"
+            >
+              <p className="text-sm font-bold text-white mb-1">Adicionar manualmente</p>
+              <p className="text-[11px] text-white/30 mb-5">Informe a porção e calcularemos as calorias proporcionalmente</p>
+
+              <div className="space-y-3">
+                <div>
+                  <label className="text-[10px] font-bold uppercase tracking-[0.12em] text-white/40">Alimento</label>
+                  <input
+                    type="text"
+                    value={manualName}
+                    onChange={(e) => setManualName(e.target.value)}
+                    placeholder="Ex: Arroz integral cozido"
+                    maxLength={80}
+                    className="w-full mt-1 h-10 px-3 rounded-lg bg-white/[0.04] border border-white/[0.06] text-white text-sm placeholder:text-white/20 focus:outline-none focus:border-[#22c55e]/40"
+                  />
+                </div>
+
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="text-[10px] font-bold uppercase tracking-[0.12em] text-white/40">Porção (g)</label>
+                    <input
+                      type="number"
+                      inputMode="decimal"
+                      value={manualGrams}
+                      onChange={(e) => setManualGrams(e.target.value)}
+                      placeholder="100"
+                      className="w-full mt-1 h-10 px-3 rounded-lg bg-white/[0.04] border border-white/[0.06] text-white text-sm tabular-nums focus:outline-none focus:border-[#22c55e]/40"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-[10px] font-bold uppercase tracking-[0.12em] text-white/40">kcal por 100 g</label>
+                    <input
+                      type="number"
+                      inputMode="decimal"
+                      value={manualKcal100}
+                      onChange={(e) => setManualKcal100(e.target.value)}
+                      placeholder="130"
+                      className="w-full mt-1 h-10 px-3 rounded-lg bg-white/[0.04] border border-white/[0.06] text-white text-sm tabular-nums focus:outline-none focus:border-[#22c55e]/40"
+                    />
+                  </div>
+                </div>
+
+                {(() => {
+                  const g = parseFloat(manualGrams.replace(",", "."));
+                  const k = parseFloat(manualKcal100.replace(",", "."));
+                  if (g > 0 && k > 0) {
+                    return (
+                      <div className="rounded-lg bg-[#22c55e]/[0.06] border border-[#22c55e]/20 px-3 py-2.5 flex items-center justify-between">
+                        <span className="text-[11px] text-white/60">Total estimado</span>
+                        <span className="text-sm font-extrabold text-[#22c55e] tabular-nums">{Math.round((k * g) / 100)} kcal</span>
+                      </div>
+                    );
+                  }
+                  return null;
+                })()}
+              </div>
+
+              <div className="flex gap-2 mt-5">
+                <button
+                  onClick={() => setManualOpen(false)}
+                  className="flex-1 h-10 rounded-full bg-white/[0.04] border border-white/[0.06] text-white/70 text-xs font-bold active:scale-95"
+                >
+                  Cancelar
+                </button>
+                <button
+                  onClick={submitManualEntry}
+                  className="flex-1 h-10 rounded-full bg-[#22c55e] text-white text-xs font-bold active:scale-95"
+                >
+                  Adicionar
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
