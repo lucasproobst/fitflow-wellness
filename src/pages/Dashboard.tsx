@@ -36,8 +36,8 @@ function AnimCard({
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3, delay }}
       whileHover={hoverable ? { y: -2, transition: { duration: 0.2 } } : undefined}
-      className={`rounded-2xl bg-[#16181f] border border-white/[0.06] ${
-        hoverable ? "hover:border-white/[0.1] hover:shadow-[0_4px_24px_rgba(34,197,94,0.04)] cursor-pointer" : ""
+      className={`rounded-2xl bg-[#141414] border border-white/[0.07] ${
+        hoverable ? "hover:border-white/[0.12] hover:shadow-[0_4px_24px_rgba(34,197,94,0.05)] cursor-pointer" : ""
       } transition-[border-color,box-shadow] duration-300 ${className}`}
     >
       {children}
@@ -109,7 +109,7 @@ export default function Dashboard() {
   const totalFat = meals.reduce((s, m) => s + (m.fat || 0), 0);
 
   return (
-    <div className="px-4 lg:px-8 py-6 max-w-4xl mx-auto">
+    <div className="mobile-shell px-4 py-6 pb-28">
       {/* Top bar */}
       <motion.div
         initial={{ opacity: 0, y: -8 }}
@@ -247,7 +247,7 @@ export default function Dashboard() {
         <MacroBar label="Gordura" current={totalFat} target={60} />
       </AnimCard>
 
-      <div className="grid gap-4 lg:grid-cols-2">
+      <div className="grid gap-4">
         {/* Hydration */}
         <AnimCard delay={0.2} hoverable className="p-4">
           <h3 className="text-[10px] font-bold uppercase tracking-[0.15em] text-white/30 mb-3">HIDRATAÇÃO</h3>
@@ -265,22 +265,22 @@ export default function Dashboard() {
           whileHover={{ y: -2 }}
         >
           <Link to="/workout">
-            <div className="rounded-2xl bg-[#16181f] border border-white/[0.06] p-4 hover:border-white/[0.1] hover:shadow-[0_4px_24px_rgba(34,197,94,0.04)] transition-all duration-300">
+            <div className="rounded-2xl bg-[#141414] border border-white/[0.07] p-4 hover:border-white/[0.12] hover:shadow-[0_4px_24px_rgba(34,197,94,0.05)] transition-all duration-300">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   <motion.div
                     whileHover={{ rotate: -8 }}
-                    className="w-10 h-10 rounded-xl bg-white/[0.03] flex items-center justify-center"
+                    className="w-10 h-10 rounded-xl bg-[#22c55e]/10 flex items-center justify-center"
                   >
-                    <Dumbbell size={18} className="text-white/30" />
+                    <Dumbbell size={18} className="text-[#22c55e]" />
                   </motion.div>
                   <div>
                     <p className="text-sm font-semibold text-white">Treino de Hoje</p>
-                    <p className="text-xs text-white/30">Superior · 6 exercícios</p>
+                    <p className="text-xs text-white/40">Toque para abrir seu treino</p>
                   </div>
                 </div>
                 <motion.div whileHover={{ x: 3 }}>
-                  <ChevronRight size={16} className="text-white/20" />
+                  <ChevronRight size={16} className="text-white/30" />
                 </motion.div>
               </div>
             </div>
@@ -314,7 +314,7 @@ export default function Dashboard() {
         whileHover={{ y: -2 }}
       >
         <Link to="/achievements">
-          <div className="rounded-2xl bg-[#16181f] border border-white/[0.06] p-4 mt-4 hover:border-white/[0.1] hover:shadow-[0_4px_24px_rgba(34,197,94,0.04)] transition-all duration-300">
+          <div className="rounded-2xl bg-[#141414] border border-white/[0.07] p-4 mt-4 hover:border-white/[0.12] hover:shadow-[0_4px_24px_rgba(34,197,94,0.05)] transition-all duration-300">
             <AchievementBadges />
           </div>
         </Link>
