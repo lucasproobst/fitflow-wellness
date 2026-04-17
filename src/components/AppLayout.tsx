@@ -109,7 +109,8 @@ export default function AppLayout({ children }: { children: ReactNode }) {
             <div className="flex items-center justify-between px-5 lg:px-8 h-14 lg:h-16">
               <div className="flex items-center gap-3 min-w-0">
                 <SidebarTrigger className="hidden lg:flex text-white/60 hover:text-white" />
-                <div className="min-w-0">
+                {/* Mobile-only greeting (desktop has it in sidebar) */}
+                <div className="min-w-0 lg:hidden">
                   <p className="text-[11px] text-[#6b7280] font-medium">Olá,</p>
                   <h1 className="text-[15px] font-bold text-white truncate max-w-[180px]">
                     {profile?.display_name || user?.email?.split("@")[0] || "Atleta"}
@@ -120,16 +121,27 @@ export default function AppLayout({ children }: { children: ReactNode }) {
                 {showInstallButton && (
                   <button
                     onClick={handleInstall}
-                    className="h-8 px-3 rounded-full bg-[#22c55e]/15 text-[#22c55e] flex items-center gap-1.5 active:scale-90 transition-all text-[11px] font-bold"
+                    className="h-8 lg:h-9 px-3 lg:px-4 rounded-full bg-[#22c55e]/15 text-[#22c55e] flex items-center gap-1.5 active:scale-90 transition-all text-[11px] lg:text-[12px] font-bold"
                   >
                     <Download size={12} />
                     Instalar
                   </button>
                 )}
+                {/* Desktop quick action */}
+                <button
+                  onClick={() => setFabOpen(o => !o)}
+                  className="hidden lg:flex h-9 px-4 rounded-full bg-[#22c55e] text-white items-center gap-1.5 text-[13px] font-bold active:scale-95 transition-transform"
+                  style={{ boxShadow: "0 4px 14px rgba(34,197,94,0.35)" }}
+                  aria-label="Ações rápidas"
+                >
+                  <Plus size={16} strokeWidth={2.5} />
+                  Novo
+                </button>
+                {/* Avatar — both mobile and desktop */}
                 <button
                   onClick={() => navigate("/profile")}
                   aria-label="Abrir perfil"
-                  className="lg:hidden w-9 h-9 rounded-full overflow-hidden bg-[#141414] border border-white/[0.08] flex items-center justify-center text-[12px] font-bold text-white active:scale-90 transition-all"
+                  className="w-9 h-9 rounded-full overflow-hidden bg-[#141414] border border-white/[0.08] flex items-center justify-center text-[12px] font-bold text-white active:scale-90 transition-all"
                 >
                   {profile?.avatar_url ? (
                     <img src={profile.avatar_url} alt="Avatar" className="w-full h-full object-cover" />
