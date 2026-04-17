@@ -31,11 +31,45 @@ export default function Scanner() {
   const [image, setImage] = useState<string | null>(null);
   const [scanning, setScanning] = useState(false);
   const [result, setResult] = useState<ScanResult | null>(null);
+  const [baseline, setBaseline] = useState<ScanResult | null>(null);
+  const [baseGrams, setBaseGrams] = useState<number>(0);
+  const [grams, setGrams] = useState<number>(0);
   const [notFound, setNotFound] = useState(false);
   const [history, setHistory] = useState<SavedScan[]>([]);
+  const [manualOpen, setManualOpen] = useState(false);
+  const [manualName, setManualName] = useState("");
+  const [manualGrams, setManualGrams] = useState<string>("100");
+  const [manualKcal100, setManualKcal100] = useState<string>("");
   const fileRef = useRef<HTMLInputElement>(null);
   const cameraRef = useRef<HTMLInputElement>(null);
   const { user } = useAuth();
+
+  // Extract numeric grams from a serving string like "1 prato (350g)" or "350 g"
+  const extractGrams = (s: string | undefined): number => {
+    if (!s) return 100;
+    const m = s.match(/(\d+(?:[.,]\d+)?)\s*g/i);
+    return m ? Math.round(parseFloat(m[1].replace(",", "."))) : 100;
+  };
+
+  // Proportional scaling preview
+  const scaled = useMemo(() => {
+    if (!baseline || baseGrams <= 0) return result;
+    const f = grams / baseGrams;
+    return {
+      ...baseline,
+      serving: `${Math.round(grams)} g`,
+      calories: Math.round(baseline.calories * f),
+      protein: Math.round(baseline.protein * f * 10) / 10,
+      carbs: Math.round(baseline.carbs * f * 10) / 10,
+      fat: Math.round(baseline.fat * f * 10) / 10,
+      items: baseline.items?.map(it => ({
+        ...it,
+        grams: Math.round(it.grams * f),
+        calories: Math.round(it.calories * f),
+      })),
+    } as ScanResult;
+  }, [baseline, baseGrams, grams, result]);
+
 
   useEffect(() => {
     if (!user) return;
