@@ -5,7 +5,8 @@ import { WaterTracker } from "@/components/WaterTracker";
 import { useDailyLog, useUpsertDailyLog, useAddWater, DailyLogMeal, MealType } from "@/lib/use-tracking";
 import { Search, Plus, Coffee, UtensilsCrossed, Cookie, Moon } from "lucide-react";
 import { toast } from "sonner";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
+import { SwipeableMealItem } from "@/components/SwipeableMealItem";
 
 const MEAL_TYPES: { key: MealType; label: string; icon: typeof Coffee }[] = [
   { key: "breakfast", label: "Café", icon: Coffee },
