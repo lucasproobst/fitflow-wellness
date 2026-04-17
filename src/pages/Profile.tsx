@@ -3,7 +3,8 @@ import { useAuth } from "@/lib/auth-context";
 import { useProfile, useUpdateProfile } from "@/lib/use-profile";
 import { GlassCard } from "@/components/GlassCard";
 import { NotificationSettings } from "@/components/NotificationSettings";
-import { LogOut, Pencil, Check, X } from "lucide-react";
+import { EditProfileSheet } from "@/components/EditProfileSheet";
+import { LogOut, Pencil, Check, X, Settings2 } from "lucide-react";
 import { toast } from "sonner";
 
 export default function Profile() {
