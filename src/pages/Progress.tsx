@@ -16,58 +16,6 @@ const timeRanges = [
   { label: "180d", days: 180 },
 ];
 
-type PhotoType = "before" | "after";
-
-function useProgressPhotos() {
-  const { user } = useAuth();
-  return useQuery({
-    queryKey: ["progress-photos", user?.id],
-    enabled: !!user,
-    queryFn: async () => {
-      const results: Record<PhotoType, string | null> = { before: null, after: null };
-      for (const type of ["before", "after"] as PhotoType[]) {
-        const { data } = await supabase.storage
-          .from("progress-photos")
-          .list(`${user!.id}/${type}`, { limit: 1, sortBy: { column: "created_at", order: "desc" } });
-        if (data && data.length > 0) {
-          const { data: urlData } = await supabase.storage
-            .from("progress-photos")
-            .createSignedUrl(`${user!.id}/${type}/${data[0].name}`, 3600);
-          results[type] = urlData?.signedUrl ?? null;
-        }
-      }
-      return results;
-    },
-  });
-}
-
-function useUploadPhoto() {
-  const { user } = useAuth();
-  const qc = useQueryClient();
-  return useMutation({
-    mutationFn: async ({ file, type }: { file: File; type: PhotoType }) => {
-      const ext = file.name.split(".").pop() || "jpg";
-      const path = `${user!.id}/${type}/${Date.now()}.${ext}`;
-      const { data: existing } = await supabase.storage
-        .from("progress-photos")
-        .list(`${user!.id}/${type}`);
-      if (existing && existing.length > 0) {
-        await supabase.storage
-          .from("progress-photos")
-          .remove(existing.map(f => `${user!.id}/${type}/${f.name}`));
-      }
-      const { error } = await supabase.storage
-        .from("progress-photos")
-        .upload(path, file, { upsert: true });
-      if (error) throw error;
-    },
-    onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ["progress-photos"] });
-      toast.success("Foto enviada!");
-    },
-    onError: (err: any) => toast.error(err.message || "Falha no envio"),
-  });
-}
 
 export default function Progress() {
   const [rangeIdx, setRangeIdx] = useState(0);
