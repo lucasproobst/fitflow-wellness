@@ -88,8 +88,9 @@ function parseIngredients(meal: Meal): string[] {
 }
 
 export default function DietPlan() {
-  const [selectedDay, setSelectedDay] = useState(0);
-  const [activeFilter, setActiveFilter] = useState("TODOS");
+  const todayIdx = (() => { const d = new Date().getDay(); return (d + 6) % 7; })();
+  const [selectedDay, setSelectedDay] = useState(todayIdx);
+  const [activeFilter, setActiveFilter] = useState("Todos");
   const [swappingMeal, setSwappingMeal] = useState<string | null>(null);
   const [favorites, setFavorites] = useState<Set<string>>(new Set());
   const [favoritesLoaded, setFavoritesLoaded] = useState(false);
@@ -100,6 +101,8 @@ export default function DietPlan() {
   const recipesCache = useRef<Record<number, Recipe[]>>({});
   const { user } = useAuth();
   const qc = useQueryClient();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const navigate = useNavigate();
 
   const { data: planRow, isLoading } = useQuery({
     queryKey: ["meal-plan", user?.id],
