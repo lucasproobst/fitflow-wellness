@@ -63,7 +63,7 @@ export default function WorkoutPlan() {
   const [videoExercise, setVideoExercise] = useState<string | null>(null);
   const { user } = useAuth();
   const qc = useQueryClient();
-
+  const [searchParams, setSearchParams] = useSearchParams();
   const weekDates = useMemo(() => getWeekDates(), []);
 
   // Fetch workout sessions for this week
