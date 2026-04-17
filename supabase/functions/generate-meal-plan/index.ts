@@ -200,6 +200,7 @@ Regras:
 - Cada refeição deve ter macros realistas que somam corretamente
 - Forneça variedade ao longo da semana
 - Use ingredientes comuns no Brasil
+- Os 7 dias DEVEM usar exatamente estes nomes em português, nesta ordem: "Segunda", "Terça", "Quarta", "Quinta", "Sexta", "Sábado", "Domingo"
 - Use a ferramenta fornecida para retornar o plano estruturado`;
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
@@ -228,7 +229,7 @@ Regras:
                     items: {
                       type: "object",
                       properties: {
-                        day: { type: "string", enum: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"] },
+                        day: { type: "string", enum: ["Segunda", "Terça", "Quarta", "Quinta", "Sexta", "Sábado", "Domingo"], description: "Nome do dia da semana em português brasileiro" },
                         meals: {
                           type: "object",
                           properties: {
