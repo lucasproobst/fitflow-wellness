@@ -133,6 +133,32 @@ export default function FoodDiary() {
 
         {/* RIGHT — Search + meals (7/12) */}
         <div className="lg:col-span-7 space-y-4">
+          {/* Meal-type chips */}
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.18 }}
+            className="flex gap-2 overflow-x-auto -mx-1 px-1 pb-1 scrollbar-hide"
+          >
+            {MEAL_TYPES.map(({ key, label, icon: Icon }) => {
+              const active = selectedMeal === key;
+              return (
+                <button
+                  key={key}
+                  onClick={() => setSelectedMeal(key)}
+                  className={`flex items-center gap-1.5 shrink-0 h-9 px-3.5 rounded-full border text-xs font-bold transition-all ${
+                    active
+                      ? "bg-[#22c55e] border-[#22c55e] text-black"
+                      : "bg-[#141414] border-white/[0.07] text-white/60 hover:text-white hover:border-white/[0.15]"
+                  }`}
+                >
+                  <Icon size={13} />
+                  {label}
+                </button>
+              );
+            })}
+          </motion.div>
+
           {/* Busca rápida */}
           <motion.div
             initial={{ opacity: 0, y: 10 }}
@@ -145,7 +171,7 @@ export default function FoodDiary() {
               type="text"
               value={search}
               onChange={e => setSearch(e.target.value)}
-              placeholder="Buscar alimentos para adicionar..."
+              placeholder={`Adicionar em ${MEAL_TYPES.find(m => m.key === selectedMeal)?.label}...`}
               className="w-full h-11 lg:h-12 pl-10 pr-4 rounded-xl bg-[#141414] border border-white/[0.07] text-white text-xs lg:text-sm focus:outline-none focus:border-white/[0.15] transition-colors placeholder:text-white/20"
             />
             {search && (
@@ -183,19 +209,48 @@ export default function FoodDiary() {
             {meals.length === 0 ? (
               <div className="rounded-2xl bg-[#141414] border border-white/[0.05] py-10 lg:py-16 text-center">
                 <p className="text-xs text-white/30">Nenhuma refeição registrada hoje</p>
-                <p className="text-[10px] text-white/15 mt-1">Busque acima ou use o scanner</p>
+                <p className="text-[10px] text-white/15 mt-1">Selecione um horário e busque acima</p>
               </div>
             ) : (
-              <div className="space-y-2 lg:grid lg:grid-cols-2 lg:gap-2 lg:space-y-0">
-                {meals.map((meal, i) => (
-                  <div key={i} className="rounded-xl bg-[#141414] border border-white/[0.05] px-4 py-3 flex items-center justify-between">
-                    <div className="min-w-0">
-                      <p className="text-xs font-bold text-white truncate">{meal.name}</p>
-                      <p className="text-[10px] text-white/30 mt-0.5">P:{meal.protein}g · C:{meal.carbs}g · G:{meal.fat}g</p>
+              <div className="space-y-4 lg:grid lg:grid-cols-2 lg:gap-4 lg:space-y-0">
+                {mealsByType.map(({ key, label, icon: Icon, items }) => {
+                  const groupCals = items.reduce((s, m) => s + m.calories, 0);
+                  return (
+                    <div key={key} className="rounded-2xl bg-[#141414] border border-white/[0.05] p-4">
+                      <div className="flex items-center justify-between mb-3">
+                        <div className="flex items-center gap-2">
+                          <div className="h-7 w-7 rounded-lg bg-white/[0.04] flex items-center justify-center">
+                            <Icon size={13} className="text-[#22c55e]" />
+                          </div>
+                          <span className="text-xs font-bold text-white">{label}</span>
+                          <span className="text-[10px] text-white/30">·</span>
+                          <span className="text-[10px] font-bold text-white/40 tabular-nums">{items.length}</span>
+                        </div>
+                        <span className="text-xs font-extrabold text-white tabular-nums">{groupCals} <span className="text-[9px] font-bold text-white/30">kcal</span></span>
+                      </div>
+                      {items.length === 0 ? (
+                        <button
+                          onClick={() => setSelectedMeal(key)}
+                          className="w-full py-3 rounded-lg border border-dashed border-white/[0.08] text-[10px] text-white/30 hover:border-white/[0.15] hover:text-white/50 transition-colors"
+                        >
+                          + Adicionar em {label.toLowerCase()}
+                        </button>
+                      ) : (
+                        <div className="space-y-1.5">
+                          {items.map((meal, i) => (
+                            <div key={i} className="rounded-lg bg-white/[0.02] border border-white/[0.04] px-3 py-2 flex items-center justify-between">
+                              <div className="min-w-0">
+                                <p className="text-[11px] font-bold text-white truncate">{meal.name}</p>
+                                <p className="text-[9px] text-white/30 mt-0.5">P:{meal.protein}g · C:{meal.carbs}g · G:{meal.fat}g</p>
+                              </div>
+                              <span className="text-xs font-extrabold text-white tabular-nums shrink-0 ml-2">{meal.calories}</span>
+                            </div>
+                          ))}
+                        </div>
+                      )}
                     </div>
-                    <span className="text-sm font-extrabold text-white tabular-nums shrink-0 ml-3">{meal.calories}</span>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             )}
           </motion.div>
