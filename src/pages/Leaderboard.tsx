@@ -32,15 +32,16 @@ function useLeaderboard() {
       const userIds = Array.from(countMap.keys());
       const { data: profiles } = await supabase
         .from("user_profile")
-        .select("user_id, display_name")
+        .select("user_id, display_name, is_pro")
         .in("user_id", userIds);
 
-      const profileMap = new Map((profiles || []).map(p => [p.user_id, p.display_name]));
+      const profileMap = new Map((profiles || []).map(p => [p.user_id, p]));
 
       return userIds
         .map(uid => ({
           user_id: uid,
-          display_name: profileMap.get(uid) || null,
+          display_name: profileMap.get(uid)?.display_name || null,
+          is_pro: profileMap.get(uid)?.is_pro || false,
           count: countMap.get(uid) || 0,
         }))
         .sort((a, b) => b.count - a.count) as LeaderboardEntry[];
