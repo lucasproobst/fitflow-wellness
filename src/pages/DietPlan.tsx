@@ -454,7 +454,7 @@ export default function DietPlan() {
         </div>
       )}
 
-      {/* Meal cards */}
+      {/* Meal sections */}
       {currentDay && (
         <AnimatePresence mode="wait">
           <motion.div
@@ -463,15 +463,15 @@ export default function DietPlan() {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -6 }}
             transition={{ duration: 0.2, ease: "easeOut" }}
-            className="space-y-3"
+            className="space-y-5"
           >
-            {mealTypes.map((type, index) => {
+            {(["breakfast", "lunch", "dinner", "snack"] as const).map((type, index) => {
               const meal = currentDay.meals?.[type];
               if (!meal) return null;
               const isSwapping = swappingMeal === `${dayNames[selectedDay]}-${type}`;
               const favKey = `${selectedDay}-${type}`;
               const isFav = favorites.has(favKey);
-              const ingredients = parseIngredients(meal);
+              const Icon = mealIcons[type] || UtensilsCrossed;
 
               return (
                 <motion.div
@@ -479,72 +479,66 @@ export default function DietPlan() {
                   initial={{ opacity: 0, y: 12 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.25, delay: index * 0.05, ease: "easeOut" }}
-                  className={`group rounded-2xl bg-[#16181f] border border-white/[0.04] overflow-hidden hover:-translate-y-px hover:border-white/[0.08] transition-all duration-300 ${
-                    isSwapping ? "opacity-40" : ""
-                  }`}
                 >
-                  <div className="p-5">
-                    <div className="flex items-start justify-between gap-4">
-                      <div className="flex-1 min-w-0">
-                        <span className="text-[10px] font-bold uppercase tracking-[0.15em] text-[#6b7280]">
-                          {mealTypeLabels[type] || type.toUpperCase()}
-                        </span>
-                        <p className="text-[15px] font-bold text-white mt-1.5 leading-snug">
-                          {meal.name}
-                        </p>
-                        {ingredients.length > 0 && (
-                          <ul className="mt-2.5 space-y-1">
-                            {ingredients.map((ing, i) => (
-                              <li key={i} className="flex items-center gap-2 text-[12px] text-[#6b7280]">
-                                <span className="w-1 h-1 rounded-full bg-white/20 shrink-0" />
-                                {ing}
-                              </li>
-                            ))}
-                          </ul>
-                        )}
-                        {/* Macro bars */}
-                        <div className="mt-3 space-y-1.5">
-                          {[
-                            { label: "Proteína", value: meal.protein, max: 80, color: "bg-white/70" },
-                            { label: "Carboidrato", value: meal.carbs, max: 120, color: "bg-white/40" },
-                            { label: "Gordura", value: meal.fat, max: 60, color: "bg-white/20" },
-                          ].map(m => (
-                            <div key={m.label} className="flex items-center gap-2">
-                              <span className="text-[10px] font-medium text-[#6b7280] w-[70px] shrink-0">{m.label}</span>
-                              <div className="flex-1 h-1 rounded-full bg-white/[0.04] overflow-hidden">
-                                <div className={`h-full rounded-full ${m.color} transition-all duration-500`} style={{ width: `${Math.min((m.value / m.max) * 100, 100)}%` }} />
-                              </div>
-                              <span className="text-[10px] font-bold text-white/60 tabular-nums w-8 text-right">{m.value}g</span>
-                            </div>
-                          ))}
-                        </div>
+                  {/* Section header */}
+                  <div className="flex items-center gap-2 mb-2.5 px-1">
+                    <Icon size={12} className="text-[#6b7280]" />
+                    <span className="text-[11px] font-bold uppercase tracking-[0.18em] text-[#6b7280]">
+                      {mealTypeLabels[type]}
+                    </span>
+                  </div>
+
+                  {/* Meal card */}
+                  <div
+                    className={`rounded-2xl bg-[#141414] border border-white/[0.07] p-4 active:scale-[0.99] transition-transform ${
+                      isSwapping ? "opacity-40" : ""
+                    }`}
+                  >
+                    <div className="flex items-start justify-between gap-3 mb-2">
+                      <p className="text-[17px] font-bold text-white leading-tight flex-1 min-w-0">
+                        {meal.name}
+                      </p>
+                      <span className="text-[15px] font-bold text-[#22c55e] tabular-nums shrink-0">
+                        {meal.calories} kcal
+                      </span>
+                    </div>
+
+                    {meal.description && (
+                      <p className="text-[13px] text-[#6b7280] leading-snug line-clamp-2 mb-3">
+                        {meal.description}
+                      </p>
+                    )}
+
+                    <div className="flex items-center justify-between gap-3">
+                      <div className="flex items-center gap-4">
+                        {[
+                          { letter: "P", value: meal.protein },
+                          { letter: "C", value: meal.carbs },
+                          { letter: "G", value: meal.fat },
+                        ].map(m => (
+                          <div key={m.letter} className="flex items-baseline gap-1">
+                            <span className="text-[11px] font-medium text-[#6b7280] uppercase">{m.letter}</span>
+                            <span className="text-[13px] font-bold text-white tabular-nums">{m.value}g</span>
+                          </div>
+                        ))}
                       </div>
-                      <div className="flex flex-col items-end gap-2 shrink-0">
-                        <div className="text-right">
-                          <span className="text-xl font-extrabold text-white tabular-nums">
-                            {meal.calories}
-                          </span>
-                          <p className="text-[10px] font-medium text-[#6b7280] -mt-0.5">kcal</p>
-                        </div>
-                        <div className="flex items-center gap-1.5 mt-auto pt-2">
-                          <button
-                            onClick={() => toggleFavorite(favKey)}
-                            className="w-8 h-8 rounded-full flex items-center justify-center hover:bg-white/[0.04] active:scale-90 transition-all"
-                          >
-                            <Heart
-                              size={14}
-                              className={isFav ? "text-white fill-white" : "text-white/20"}
-                            />
-                          </button>
-                          <button
-                            onClick={() => swapMeal.mutate({ day: dayNames[selectedDay], mealType: type })}
-                            disabled={isSwapping || swapMeal.isPending}
-                            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-white/[0.08] text-[10px] uppercase tracking-wider font-bold text-[#6b7280] hover:bg-white/[0.04] hover:text-white/60 active:scale-95 transition-all disabled:opacity-30"
-                          >
-                            <Shuffle size={10} className={isSwapping ? "animate-spin" : ""} />
-                            TROCAR
-                          </button>
-                        </div>
+
+                      <div className="flex items-center gap-1.5 shrink-0">
+                        <button
+                          onClick={() => toggleFavorite(favKey)}
+                          aria-label="Favoritar"
+                          className="w-8 h-8 rounded-lg flex items-center justify-center active:scale-90 transition-transform"
+                        >
+                          <Heart size={14} className={isFav ? "text-[#22c55e] fill-[#22c55e]" : "text-[#6b7280]"} />
+                        </button>
+                        <button
+                          onClick={() => swapMeal.mutate({ day: dayNames[selectedDay], mealType: type })}
+                          disabled={isSwapping || swapMeal.isPending}
+                          className="flex items-center gap-1.5 px-3.5 py-2 rounded-lg bg-white/[0.06] border border-white/[0.1] text-[11px] uppercase tracking-wider font-bold text-white active:scale-95 transition-all disabled:opacity-40"
+                        >
+                          <Shuffle size={10} className={isSwapping ? "animate-spin" : ""} />
+                          Swap meal
+                        </button>
                       </div>
                     </div>
                   </div>
