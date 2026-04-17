@@ -57,6 +57,10 @@ export default function Dashboard() {
   useCheckAchievements();
   useNotificationReminders();
 
+  const firstName = profile?.display_name?.split(" ")[0] || user?.email?.split("@")[0] || "Atleta";
+  const hour = new Date().getHours();
+  const greeting = hour < 12 ? "Bom dia" : hour < 18 ? "Boa tarde" : "Boa noite";
+
   const [showWeekly, setShowWeekly] = useState(false);
   const [installPrompt, setInstallPrompt] = useState<BeforeInstallPromptEvent | null>(null);
   const [installDismissed, setInstallDismissed] = useState(() => localStorage.getItem("install-banner-dismissed") === "1");
