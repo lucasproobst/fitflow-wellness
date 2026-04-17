@@ -109,7 +109,7 @@ export default function Dashboard() {
   const totalFat = meals.reduce((s, m) => s + (m.fat || 0), 0);
 
   return (
-    <div className="px-4 lg:px-8 py-6 max-w-4xl mx-auto">
+    <div className="mobile-shell px-4 py-6 pb-28">
       {/* Top bar */}
       <motion.div
         initial={{ opacity: 0, y: -8 }}
