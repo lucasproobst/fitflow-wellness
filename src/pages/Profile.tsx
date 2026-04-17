@@ -13,6 +13,7 @@ export default function Profile() {
   const updateProfile = useUpdateProfile();
   const [editingName, setEditingName] = useState(false);
   const [nameValue, setNameValue] = useState("");
+  const [editInfoOpen, setEditInfoOpen] = useState(false);
 
   useEffect(() => {
     if (profile?.display_name) setNameValue(profile.display_name);
