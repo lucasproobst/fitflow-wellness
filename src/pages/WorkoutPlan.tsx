@@ -256,7 +256,10 @@ export default function WorkoutPlan() {
   };
 
   return (
-    <div className="px-4 lg:px-8 py-6 max-w-4xl mx-auto pb-32">
+    <div className="mobile-shell px-4 lg:px-8 py-6 pb-32 lg:pb-12">
+      <div className="lg:grid lg:grid-cols-12 lg:gap-6">
+        <div className="lg:col-span-4">
+          <div className="lg:sticky lg:top-20 lg:space-y-1">
       {/* Header com back + título + ação */}
       <div className="flex items-center justify-between mb-6">
         <button
