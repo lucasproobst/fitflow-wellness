@@ -295,7 +295,7 @@ export default function Scanner() {
         initial={{ opacity: 0, scale: 0.96 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ duration: 0.35, delay: 0.05 }}
-        className="relative aspect-square max-w-sm mx-auto rounded-2xl bg-[#16181f] border border-white/[0.06] flex items-center justify-center overflow-hidden mb-4"
+        className="relative aspect-square max-w-sm mx-auto rounded-2xl bg-[#141414] border border-white/[0.07] flex items-center justify-center overflow-hidden mb-4"
       >
         {image ? (
           <img src={image} alt="Alimento" className="w-full h-full object-cover" />
@@ -310,7 +310,7 @@ export default function Scanner() {
         <div className="absolute bottom-4 left-4 w-8 h-8 border-l-2 border-b-2 border-[#22c55e]/60 rounded-bl-sm" />
         <div className="absolute bottom-4 right-4 w-8 h-8 border-r-2 border-b-2 border-[#22c55e]/60 rounded-br-sm" />
         {scanning && (
-          <div className="absolute inset-0 bg-[#0f1117]/70 flex items-center justify-center backdrop-blur-sm">
+          <div className="absolute inset-0 bg-black/70 flex items-center justify-center backdrop-blur-sm">
             <div className="w-10 h-10 border-2 border-[#22c55e] border-t-transparent rounded-full animate-spin" />
           </div>
         )}
@@ -353,7 +353,7 @@ export default function Scanner() {
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
-            className="mb-4 rounded-2xl bg-[#16181f] border border-orange-500/10 p-5"
+            className="mb-4 rounded-2xl bg-[#141414] border border-orange-500/15 p-5"
           >
             <div className="flex flex-col items-center text-center">
               <div className="w-12 h-12 rounded-xl bg-orange-500/[0.08] flex items-center justify-center mb-3">
@@ -391,7 +391,7 @@ export default function Scanner() {
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
-            className="mb-4 rounded-2xl bg-[#16181f] border border-white/[0.06] p-5"
+            className="mb-4 rounded-2xl bg-[#141414] border border-white/[0.07] p-5"
           >
             <div className="flex items-start justify-between mb-4 gap-3">
               <div className="min-w-0 flex-1">
