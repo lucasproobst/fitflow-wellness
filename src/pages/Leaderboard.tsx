@@ -255,9 +255,12 @@ function PodiumSlot({
       >
         {initials}
       </div>
-      <p className="text-[11px] font-bold text-white truncate w-full text-center">
-        {me ? "Você" : (entry.display_name || `Atleta`)}
-      </p>
+      <div className="flex items-center gap-1 w-full justify-center">
+        <p className="text-[11px] font-bold text-white truncate text-center">
+          {me ? "Você" : (entry.display_name || `Atleta`)}
+        </p>
+        {entry.is_pro && <ProBadge size={9} />}
+      </div>
       <p className={`text-[10px] font-extrabold tabular-nums ${cfg.color}`}>
         {entry.count} 🏅
       </p>
