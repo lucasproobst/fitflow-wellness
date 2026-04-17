@@ -8,6 +8,7 @@ import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { GenerationProgress } from "@/components/GenerationProgress";
 
 const dayNames = ["Segunda", "Terça", "Quarta", "Quinta", "Sexta", "Sábado", "Domingo"];
 const shortDays = ["Seg", "Ter", "Qua", "Qui", "Sex", "Sáb", "Dom"];
@@ -355,8 +356,20 @@ export default function DietPlan() {
         ))}
       </div>
 
+      {/* Generation progress */}
+      <GenerationProgress
+        active={generate.isPending}
+        steps={[
+          "Analisando seu perfil e objetivos...",
+          "Calculando calorias e macros ideais...",
+          "Selecionando refeições balanceadas...",
+          "Montando o plano semanal...",
+          "Finalizando os detalhes...",
+        ]}
+      />
+
       {/* Loading skeleton */}
-      {(isLoading || generate.isPending) && !planData && (
+      {isLoading && !generate.isPending && !planData && (
         <div className="space-y-3">
           {[1, 2, 3, 4].map(i => (
             <div key={i} className="rounded-2xl bg-[#16181f] border border-white/[0.04] p-5 space-y-3">
