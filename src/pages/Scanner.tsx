@@ -284,7 +284,7 @@ export default function Scanner() {
   };
 
   return (
-    <div className="px-4 lg:px-8 py-6 max-w-4xl mx-auto">
+    <div className="mobile-shell px-4 py-6 pb-28">
       <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }}>
         <h1 className="text-2xl font-bold tracking-tight text-white mb-1">Scanner de Alimentos</h1>
         <p className="text-xs text-white/30 mb-6">Tire uma foto, digite manualmente ou use seus favoritos</p>
@@ -295,7 +295,7 @@ export default function Scanner() {
         initial={{ opacity: 0, scale: 0.96 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ duration: 0.35, delay: 0.05 }}
-        className="relative aspect-square max-w-sm mx-auto rounded-2xl bg-[#16181f] border border-white/[0.06] flex items-center justify-center overflow-hidden mb-4"
+        className="relative aspect-square max-w-sm mx-auto rounded-2xl bg-[#141414] border border-white/[0.07] flex items-center justify-center overflow-hidden mb-4"
       >
         {image ? (
           <img src={image} alt="Alimento" className="w-full h-full object-cover" />
@@ -310,7 +310,7 @@ export default function Scanner() {
         <div className="absolute bottom-4 left-4 w-8 h-8 border-l-2 border-b-2 border-[#22c55e]/60 rounded-bl-sm" />
         <div className="absolute bottom-4 right-4 w-8 h-8 border-r-2 border-b-2 border-[#22c55e]/60 rounded-br-sm" />
         {scanning && (
-          <div className="absolute inset-0 bg-[#0f1117]/70 flex items-center justify-center backdrop-blur-sm">
+          <div className="absolute inset-0 bg-black/70 flex items-center justify-center backdrop-blur-sm">
             <div className="w-10 h-10 border-2 border-[#22c55e] border-t-transparent rounded-full animate-spin" />
           </div>
         )}
@@ -353,7 +353,7 @@ export default function Scanner() {
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
-            className="mb-4 rounded-2xl bg-[#16181f] border border-orange-500/10 p-5"
+            className="mb-4 rounded-2xl bg-[#141414] border border-orange-500/15 p-5"
           >
             <div className="flex flex-col items-center text-center">
               <div className="w-12 h-12 rounded-xl bg-orange-500/[0.08] flex items-center justify-center mb-3">
@@ -391,7 +391,7 @@ export default function Scanner() {
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
-            className="mb-4 rounded-2xl bg-[#16181f] border border-white/[0.06] p-5"
+            className="mb-4 rounded-2xl bg-[#141414] border border-white/[0.07] p-5"
           >
             <div className="flex items-start justify-between mb-4 gap-3">
               <div className="min-w-0 flex-1">
@@ -491,7 +491,7 @@ export default function Scanner() {
           </div>
           <div className="space-y-2">
             {favorites.map(fav => (
-              <div key={fav.id} className="rounded-xl bg-[#16181f] border border-white/[0.04] px-4 py-3 flex items-center justify-between gap-3">
+              <div key={fav.id} className="rounded-xl bg-[#141414] border border-white/[0.07] px-4 py-3 flex items-center justify-between gap-3">
                 <button
                   onClick={() => openFavPicker(fav)}
                   className="flex-1 min-w-0 text-left active:opacity-60 transition-opacity"
@@ -520,7 +520,7 @@ export default function Scanner() {
           <h2 className="text-[10px] font-bold uppercase tracking-[0.15em] text-white/20 mb-3">ESCANEAMENTOS SALVOS</h2>
           <div className="space-y-2">
             {history.map((item) => (
-              <div key={item.id} className="rounded-xl bg-[#16181f] border border-white/[0.04] px-4 py-3 flex items-center justify-between">
+              <div key={item.id} className="rounded-xl bg-[#141414] border border-white/[0.07] px-4 py-3 flex items-center justify-between">
                 <div>
                   <p className="text-xs text-white/50">{item.name}</p>
                   <p className="text-[10px] text-white/20 mt-0.5">
@@ -560,7 +560,7 @@ export default function Scanner() {
               animate={{ y: 0, opacity: 1 }}
               exit={{ y: 30, opacity: 0 }}
               onClick={e => e.stopPropagation()}
-              className="w-full max-w-sm rounded-2xl bg-[#16181f] border border-white/[0.08] p-5 max-h-[90vh] overflow-y-auto"
+              className="w-full max-w-sm rounded-2xl bg-[#141414] border border-white/[0.08] p-5 max-h-[90vh] overflow-y-auto"
             >
               <p className="text-sm font-bold text-white mb-1">Adicionar manualmente</p>
               <p className="text-[11px] text-white/30 mb-5">Após adicionar, use a estrela para salvar nos favoritos</p>
@@ -658,7 +658,7 @@ export default function Scanner() {
               animate={{ y: 0, opacity: 1 }}
               exit={{ y: 30, opacity: 0 }}
               onClick={e => e.stopPropagation()}
-              className="w-full max-w-sm rounded-2xl bg-[#16181f] border border-white/[0.08] p-5"
+              className="w-full max-w-sm rounded-2xl bg-[#141414] border border-white/[0.08] p-5"
             >
               <p className="text-sm font-bold text-white mb-1 truncate">{pickedFav.name}</p>
               <p className="text-[11px] text-white/30 mb-5">
