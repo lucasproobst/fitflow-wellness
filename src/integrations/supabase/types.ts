@@ -47,6 +47,45 @@ export type Database = {
         }
         Relationships: []
       }
+      food_favorites: {
+        Row: {
+          base_grams: number
+          calories: number
+          carbs: number
+          created_at: string
+          fat: number
+          id: string
+          name: string
+          protein: number
+          serving: string | null
+          user_id: string
+        }
+        Insert: {
+          base_grams?: number
+          calories?: number
+          carbs?: number
+          created_at?: string
+          fat?: number
+          id?: string
+          name: string
+          protein?: number
+          serving?: string | null
+          user_id: string
+        }
+        Update: {
+          base_grams?: number
+          calories?: number
+          carbs?: number
+          created_at?: string
+          fat?: number
+          id?: string
+          name?: string
+          protein?: number
+          serving?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       food_scans: {
         Row: {
           calories: number
