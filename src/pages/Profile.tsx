@@ -3,7 +3,8 @@ import { useAuth } from "@/lib/auth-context";
 import { useProfile, useUpdateProfile } from "@/lib/use-profile";
 import { GlassCard } from "@/components/GlassCard";
 import { NotificationSettings } from "@/components/NotificationSettings";
-import { LogOut, Pencil, Check, X } from "lucide-react";
+import { EditProfileSheet } from "@/components/EditProfileSheet";
+import { LogOut, Pencil, Check, X, Settings2 } from "lucide-react";
 import { toast } from "sonner";
 
 export default function Profile() {
@@ -12,6 +13,7 @@ export default function Profile() {
   const updateProfile = useUpdateProfile();
   const [editingName, setEditingName] = useState(false);
   const [nameValue, setNameValue] = useState("");
+  const [editInfoOpen, setEditInfoOpen] = useState(false);
 
   useEffect(() => {
     if (profile?.display_name) setNameValue(profile.display_name);
@@ -111,7 +113,16 @@ export default function Profile() {
       </div>
 
       <GlassCard className="mb-4">
-        <h2 className="label-style text-[10px] mb-4">SUAS INFORMAÇÕES</h2>
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="label-style text-[10px]">SUAS INFORMAÇÕES</h2>
+          <button
+            onClick={() => setEditInfoOpen(true)}
+            className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-[0.12em] text-fitflow-primary hover:opacity-80 transition-opacity"
+          >
+            <Settings2 size={12} />
+            Editar
+          </button>
+        </div>
         <div className="grid grid-cols-2 gap-4">
           {stats.map(s => (
             <div key={s.label}>
@@ -144,6 +155,12 @@ export default function Profile() {
         <LogOut size={16} />
         Sair
       </button>
+
+      <EditProfileSheet
+        open={editInfoOpen}
+        onOpenChange={setEditInfoOpen}
+        profile={profile ?? null}
+      />
     </div>
   );
 }
