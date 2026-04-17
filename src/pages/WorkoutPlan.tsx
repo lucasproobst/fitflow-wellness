@@ -432,7 +432,7 @@ export default function WorkoutPlan() {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -8 }}
               transition={{ duration: 0.2 }}
-              className={`space-y-3 mb-6 ${dayLocked ? "opacity-50 pointer-events-none select-none" : ""}`}
+              className={`space-y-3 lg:space-y-0 lg:grid lg:grid-cols-2 lg:gap-3 mb-6 ${dayLocked ? "opacity-50 pointer-events-none select-none" : ""}`}
             >
               {currentDay.exercises.length === 0 ? (
                 <div className="rounded-2xl bg-[#141414] border border-white/[0.07] py-10 text-center">
@@ -560,6 +560,8 @@ export default function WorkoutPlan() {
           )}
         </>
       )}
+        </div>
+      </div>
 
       {/* SWAP EXERCISE Sheet */}
       <AnimatePresence>
