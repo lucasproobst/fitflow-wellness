@@ -173,7 +173,8 @@ export default function Scanner() {
   };
 
   const addToDiary = async () => {
-    if (!result || !user) return;
+    const final = scaled || result;
+    if (!final || !user) return;
     try {
       const today = new Date().toISOString().split("T")[0];
 
@@ -182,12 +183,12 @@ export default function Scanner() {
         .from("food_scans" as any)
         .insert({
           user_id: user.id,
-          name: result.name,
-          serving: result.serving,
-          calories: result.calories,
-          protein: result.protein,
-          carbs: result.carbs,
-          fat: result.fat,
+          name: final.name,
+          serving: final.serving,
+          calories: final.calories,
+          protein: final.protein,
+          carbs: final.carbs,
+          fat: final.fat,
         } as any)
         .select()
         .single();
@@ -205,7 +206,7 @@ export default function Scanner() {
         .maybeSingle();
 
       const currentMeals = (existing?.meals as any[]) || [];
-      const newMeals = [...currentMeals, result];
+      const newMeals = [...currentMeals, final];
       const newCalories = newMeals.reduce((s: number, m: any) => s + (m.calories || 0), 0);
 
       if (existing) {
@@ -222,9 +223,8 @@ export default function Scanner() {
         });
       }
 
-      toast.success(`${result.name} adicionado ao diário!`);
-      setResult(null);
-      setImage(null);
+      toast.success(`${final.name} adicionado ao diário!`);
+      resetScanner();
     } catch {
       toast.error("Falha ao salvar no diário");
     }
@@ -265,7 +265,7 @@ export default function Scanner() {
       </motion.div>
 
       {/* Action buttons */}
-      <div className="flex gap-3 max-w-sm mx-auto mb-6">
+      <div className="flex gap-3 max-w-sm mx-auto mb-3">
         <button
           onClick={() => cameraRef.current?.click()}
           className="flex-1 h-11 rounded-full bg-[#22c55e] text-white text-xs font-bold flex items-center justify-center gap-2 active:scale-95 transition-all"
@@ -279,6 +279,15 @@ export default function Scanner() {
         >
           <Plus size={16} />
           Galeria
+        </button>
+      </div>
+      <div className="max-w-sm mx-auto mb-6">
+        <button
+          onClick={openManualEntry}
+          className="w-full h-10 rounded-full bg-transparent border border-white/[0.08] text-white/70 text-xs font-bold flex items-center justify-center gap-2 active:scale-95 transition-all hover:bg-white/[0.04] hover:text-white"
+        >
+          <Pencil size={14} />
+          Digitar manualmente (sem foto)
         </button>
       </div>
 
@@ -326,36 +335,84 @@ export default function Scanner() {
           >
             <div className="flex items-start justify-between mb-4 gap-3">
               <div className="min-w-0">
-                <p className="text-sm font-bold text-white truncate">{result.name}</p>
-                <p className="text-[11px] text-white/30 mt-0.5">{result.serving}</p>
-                {result.confidence && (
+                <p className="text-sm font-bold text-white truncate">{(scaled || result).name}</p>
+                <p className="text-[11px] text-white/30 mt-0.5">{(scaled || result).serving}</p>
+                {(scaled || result).confidence && (
                   <span
                     className={`inline-block mt-2 px-2 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-[0.1em] ${
-                      result.confidence === "alta"
+                      (scaled || result).confidence === "alta"
                         ? "bg-[#22c55e]/10 text-[#22c55e]"
-                        : result.confidence === "media"
+                        : (scaled || result).confidence === "media"
                           ? "bg-yellow-500/10 text-yellow-400"
                           : "bg-orange-500/10 text-orange-400"
                     }`}
                   >
-                    Confiança {result.confidence}
+                    Confiança {(scaled || result).confidence}
                   </span>
                 )}
               </div>
               <div className="text-right shrink-0">
-                <span className="text-xl font-extrabold text-white tabular-nums">{result.calories}</span>
+                <span className="text-xl font-extrabold text-white tabular-nums">{(scaled || result).calories}</span>
                 <p className="text-[10px] text-[#6b7280] -mt-0.5">kcal</p>
               </div>
             </div>
 
+            {/* Ajuste de gramagem */}
+            {baseline && baseGrams > 0 && (
+              <div className="mb-5 rounded-xl bg-white/[0.02] border border-white/[0.04] px-3 py-3">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-[10px] font-bold uppercase tracking-[0.12em] text-white/30">
+                    Ajustar porção
+                  </span>
+                  <span className="text-[10px] text-white/30">base {baseGrams} g</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => setGrams(Math.max(5, grams - 10))}
+                    className="w-8 h-8 rounded-full bg-white/[0.04] border border-white/[0.06] text-white/70 flex items-center justify-center active:scale-95"
+                    aria-label="Diminuir 10g"
+                  >
+                    <Minus size={14} />
+                  </button>
+                  <div className="flex-1 flex items-center gap-2">
+                    <input
+                      type="number"
+                      min={1}
+                      max={2000}
+                      value={grams}
+                      onChange={(e) => setGrams(Math.max(1, Math.min(2000, parseInt(e.target.value) || 0)))}
+                      className="w-20 h-9 rounded-lg bg-white/[0.04] border border-white/[0.06] text-white text-sm font-bold text-center tabular-nums focus:outline-none focus:border-[#22c55e]/40"
+                    />
+                    <span className="text-xs font-semibold text-white/40">g</span>
+                    <input
+                      type="range"
+                      min={5}
+                      max={Math.max(500, baseGrams * 3)}
+                      step={5}
+                      value={grams}
+                      onChange={(e) => setGrams(parseInt(e.target.value))}
+                      className="flex-1 accent-[#22c55e]"
+                    />
+                  </div>
+                  <button
+                    onClick={() => setGrams(Math.min(2000, grams + 10))}
+                    className="w-8 h-8 rounded-full bg-white/[0.04] border border-white/[0.06] text-white/70 flex items-center justify-center active:scale-95"
+                    aria-label="Aumentar 10g"
+                  >
+                    <Plus size={14} />
+                  </button>
+                </div>
+              </div>
+            )}
+
             {/* Itens identificados */}
-            {result.items && result.items.length > 0 && (
+            {(scaled || result).items && (scaled || result).items!.length > 0 && (
               <div className="mb-5">
                 <p className="text-[10px] font-bold uppercase tracking-[0.12em] text-white/30 mb-2">
                   Itens identificados
                 </p>
                 <div className="rounded-xl bg-white/[0.02] border border-white/[0.04] divide-y divide-white/[0.04]">
-                  {result.items.map((it, i) => (
+                  {(scaled || result).items!.map((it, i) => (
                     <div key={i} className="flex items-center justify-between px-3 py-2.5">
                       <div className="min-w-0 flex-1">
                         <p className="text-xs font-semibold text-white/80 truncate capitalize">{it.name}</p>
@@ -372,9 +429,9 @@ export default function Scanner() {
 
             <div className="space-y-3 mb-5">
               {[
-                { label: "PROTEÍNA", value: result.protein, color: "#3b82f6" },
-                { label: "CARBOIDRATOS", value: result.carbs, color: "#22c55e" },
-                { label: "GORDURA", value: result.fat, color: "#22c55e" },
+                { label: "PROTEÍNA", value: (scaled || result).protein, color: "#3b82f6" },
+                { label: "CARBOIDRATOS", value: (scaled || result).carbs, color: "#22c55e" },
+                { label: "GORDURA", value: (scaled || result).fat, color: "#22c55e" },
               ].map(m => (
                 <div key={m.label}>
                   <div className="flex items-center justify-between mb-1">
