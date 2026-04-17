@@ -1,6 +1,6 @@
 import { ReactNode, useState, useEffect } from "react";
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
-import { Home, Utensils, Dumbbell, BarChart3, Plus, X, Camera, Salad, Download } from "lucide-react";
+import { Home, Utensils, Dumbbell, BarChart3, Plus, X, Camera, Salad, Download, Trophy } from "lucide-react";
 import { useAuth } from "@/lib/auth-context";
 import { useProfile } from "@/lib/use-profile";
 import { motion, AnimatePresence } from "framer-motion";
@@ -71,6 +71,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
     { icon: Camera, title: "Escanear Alimento", subtitle: "Aponte a câmera para qualquer comida", onClick: () => navigate("/scanner") },
     { icon: Salad, title: "Gerar Dieta", subtitle: "Nova dieta personalizada", onClick: () => navigate("/diet?generate=1") },
     { icon: Dumbbell, title: "Gerar Treino", subtitle: "Novo treino na medida", onClick: () => navigate("/workout?generate=1") },
+    { icon: Trophy, title: "Ranking", subtitle: "Veja sua posição entre os atletas", onClick: () => navigate("/leaderboard") },
   ];
 
   // No-chrome routes (auth/onboarding/landing): render bare
