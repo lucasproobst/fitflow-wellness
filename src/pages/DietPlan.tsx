@@ -549,34 +549,24 @@ export default function DietPlan() {
         </AnimatePresence>
       )}
 
-      {/* Bottom summary bar */}
+      {/* "View recipes" floating button — sits above bottom nav */}
       {currentDay && (
-        <div className="fixed bottom-16 lg:bottom-0 left-0 right-0 z-40 bg-[#0f1117]/95 backdrop-blur-xl border-t border-white/[0.04]">
-          <div className="max-w-4xl mx-auto px-4 lg:px-8 py-3 flex items-center justify-between">
-            <div className="flex items-center gap-5">
-              <span className="text-xs font-semibold text-[#6b7280]">P {dayTotals.protein}g</span>
-              <span className="text-xs font-semibold text-[#6b7280]">C {dayTotals.carbs}g</span>
-              <span className="text-xs font-semibold text-[#6b7280]">G {dayTotals.fat}g</span>
-              <span className="text-xs font-extrabold text-white ml-1">{dayTotals.calories.toLocaleString("pt-BR")} kcal</span>
-            </div>
-            <button
-              onClick={handleViewRecipes}
-              disabled={loadingRecipes}
-              className="flex items-center gap-1.5 px-4 py-2 rounded-full bg-[#22c55e] text-white text-xs font-bold active:scale-95 transition-all disabled:opacity-60"
-            >
-              {loadingRecipes ? (
-                <>
-                  <RefreshCw size={14} className="animate-spin" />
-                  Gerando...
-                </>
-              ) : (
-                <>
-                  Ver receitas
-                  <ChevronRight size={14} />
-                </>
-              )}
-            </button>
-          </div>
+        <div
+          className="fixed left-1/2 -translate-x-1/2 z-40 w-full max-w-[480px] px-5 pointer-events-none"
+          style={{ bottom: `calc(80px + env(safe-area-inset-bottom, 0px))` }}
+        >
+          <button
+            onClick={handleViewRecipes}
+            disabled={loadingRecipes}
+            className="pointer-events-auto w-full flex items-center justify-center gap-2 h-12 rounded-2xl bg-[#22c55e] text-white text-[13px] font-bold active:scale-[0.98] transition-transform disabled:opacity-60"
+            style={{ boxShadow: "0 8px 24px rgba(34,197,94,0.25)" }}
+          >
+            {loadingRecipes ? (
+              <><RefreshCw size={14} className="animate-spin" /> Gerando receitas...</>
+            ) : (
+              <>Ver receitas do dia <ChevronRight size={14} /></>
+            )}
+          </button>
         </div>
       )}
 
