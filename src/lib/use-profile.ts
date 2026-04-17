@@ -40,8 +40,7 @@ export function useUpdateProfile() {
     mutationFn: async (updates: Partial<UserProfile>) => {
       const { error } = await supabase
         .from("user_profile")
-        .update(updates as any)
-        .eq("user_id", user!.id);
+        .upsert({ ...(updates as any), user_id: user!.id }, { onConflict: "user_id" });
       if (error) throw error;
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ["profile"] }),
