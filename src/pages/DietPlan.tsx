@@ -294,73 +294,48 @@ export default function DietPlan() {
   const carbsPct = macroTotal > 0 ? (dayTotals.carbs / macroTotal) * 100 : 33;
   const fatPct = macroTotal > 0 ? (dayTotals.fat / macroTotal) * 100 : 34;
 
+  // Auto-trigger generation from FAB ?generate=1
+  useEffect(() => {
+    if (searchParams.get("generate") === "1" && !generate.isPending) {
+      generate.mutate();
+      searchParams.delete("generate");
+      setSearchParams(searchParams, { replace: true });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   return (
-    <div className="px-4 lg:px-8 py-6 max-w-4xl mx-auto pb-36 lg:pb-28">
-      {/* Header */}
-      <div className="flex items-start justify-between gap-3 mb-6">
-        <div className="min-w-0">
-          <h1 className="text-2xl font-bold tracking-tight text-white">Plano Alimentar</h1>
-          <p className="text-sm text-[#6b7280] mt-0.5">Seu plano semanal personalizado</p>
-        </div>
+    <div className="px-5 pt-4 pb-32">
+      {/* Top bar: back / title / filter */}
+      <div className="flex items-center justify-between h-10 mb-4">
+        <button
+          onClick={() => navigate("/")}
+          className="w-9 h-9 -ml-2 rounded-full flex items-center justify-center text-[#6b7280] active:scale-90 transition-transform"
+          aria-label="Voltar"
+        >
+          <ArrowLeft size={20} />
+        </button>
+        <h1 className="text-[18px] font-bold text-white">Diet Plan</h1>
         <button
           onClick={() => generate.mutate()}
           disabled={generate.isPending}
-          className="flex items-center gap-2 px-5 py-2.5 rounded-full bg-[#22c55e] text-white text-xs font-bold active:scale-95 transition-all disabled:opacity-50 shrink-0"
+          className="w-9 h-9 -mr-2 rounded-full flex items-center justify-center text-[#6b7280] active:scale-90 transition-transform disabled:opacity-40"
+          aria-label="Atualizar"
         >
-          <RefreshCw size={14} className={generate.isPending ? "animate-spin" : ""} />
-          {generate.isPending ? "Gerando..." : planData ? "Regenerar" : "Gerar Plano"}
+          <RefreshCw size={18} className={generate.isPending ? "animate-spin" : ""} />
         </button>
       </div>
 
-      {/* Daily calories + macro bar */}
-      {currentDay && (
-        <div className="mb-6">
-          <div className="flex items-baseline gap-2 mb-3">
-            <span className="text-3xl font-extrabold text-white tabular-nums">
-              {dayTotals.calories.toLocaleString("pt-BR")}
-            </span>
-            <span className="text-sm font-medium text-[#6b7280]">kcal hoje</span>
-          </div>
-          <div className="h-1.5 rounded-full overflow-hidden bg-white/[0.06] flex">
-            <div className="h-full bg-white/60 transition-all duration-500" style={{ width: `${proteinPct}%` }} />
-            <div className="h-full bg-white/30 transition-all duration-500" style={{ width: `${carbsPct}%` }} />
-            <div className="h-full bg-white/15 transition-all duration-500" style={{ width: `${fatPct}%` }} />
-          </div>
-          <div className="flex gap-5 mt-2">
-            <span className="text-[11px] font-medium text-[#6b7280]">P {dayTotals.protein}g</span>
-            <span className="text-[11px] font-medium text-[#6b7280]">C {dayTotals.carbs}g</span>
-            <span className="text-[11px] font-medium text-[#6b7280]">G {dayTotals.fat}g</span>
-          </div>
-        </div>
-      )}
-
-      {/* Day selector */}
-      <div className="flex gap-2 mb-4 overflow-x-auto pb-2 no-scrollbar">
-        {shortDays.map((d, i) => (
-          <button
-            key={d}
-            onClick={() => setSelectedDay(i)}
-            className={`px-4 py-2 rounded-full text-xs font-bold whitespace-nowrap transition-all active:scale-95 ${
-              selectedDay === i
-                ? "bg-[#22c55e] text-white"
-                : "border border-white/[0.08] text-[#6b7280] hover:border-white/[0.15] hover:text-white/60"
-            }`}
-          >
-            {d}
-          </button>
-        ))}
-      </div>
-
-      {/* Filter chips */}
-      <div className="flex gap-2 mb-6 overflow-x-auto pb-2 no-scrollbar">
+      {/* Filter pills */}
+      <div className="flex gap-2 mb-5 overflow-x-auto no-scrollbar -mx-1 px-1">
         {filters.map(f => (
           <button
             key={f}
             onClick={() => setActiveFilter(f)}
-            className={`px-3 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-wider transition-all active:scale-95 ${
+            className={`shrink-0 px-[18px] py-2 rounded-full text-[13px] font-semibold whitespace-nowrap transition-all active:scale-95 ${
               activeFilter === f
-                ? "bg-white/[0.08] text-white border border-white/[0.12]"
-                : "border border-white/[0.06] text-[#6b7280]/60 hover:text-[#6b7280]"
+                ? "bg-[#22c55e] text-white"
+                : "border border-white/[0.12] text-[#6b7280]"
             }`}
           >
             {f}
@@ -368,7 +343,76 @@ export default function DietPlan() {
         ))}
       </div>
 
+      {/* Day selector — circles */}
+      <div className="flex items-center justify-between mb-5">
+        {shortDays.map((d, i) => {
+          const isActive = selectedDay === i;
+          const isToday = todayIdx === i;
+          const isPast = i < todayIdx;
+          return (
+            <button
+              key={d}
+              onClick={() => setSelectedDay(i)}
+              className="flex flex-col items-center gap-1.5 active:scale-95 transition-transform"
+            >
+              <span className="text-[10px] font-bold uppercase tracking-wider text-[#6b7280]">
+                {d}
+              </span>
+              <div
+                className={`w-9 h-9 rounded-full flex items-center justify-center text-[14px] font-bold transition-all ${
+                  isActive
+                    ? "bg-[#22c55e] text-white"
+                    : isPast
+                      ? "border border-[#22c55e]/40 text-[#22c55e]"
+                      : isToday
+                        ? "border border-white/20 text-white"
+                        : "text-[#6b7280]"
+                }`}
+              >
+                {i + 1}
+              </div>
+            </button>
+          );
+        })}
+      </div>
+
+      {/* Calorie summary */}
+      {currentDay && (
+        <div className="rounded-2xl bg-[#141414] border border-white/[0.07] p-4 mb-5">
+          <div className="flex items-baseline justify-between mb-2.5">
+            <div>
+              <p className="text-[11px] uppercase tracking-wider text-[#6b7280] font-semibold">Calorias do dia</p>
+              <p className="text-[26px] font-extrabold text-white tabular-nums leading-none mt-1">
+                {dayTotals.calories.toLocaleString("pt-BR")}
+                <span className="text-[12px] font-medium text-[#6b7280] ml-1.5">kcal</span>
+              </p>
+            </div>
+            <div className="flex gap-3 text-right">
+              <div><p className="text-[10px] text-[#6b7280] uppercase">P</p><p className="text-[13px] font-bold text-white">{dayTotals.protein}g</p></div>
+              <div><p className="text-[10px] text-[#6b7280] uppercase">C</p><p className="text-[13px] font-bold text-white">{dayTotals.carbs}g</p></div>
+              <div><p className="text-[10px] text-[#6b7280] uppercase">G</p><p className="text-[13px] font-bold text-white">{dayTotals.fat}g</p></div>
+            </div>
+          </div>
+          <div className="h-1.5 rounded-full overflow-hidden bg-white/[0.06] flex">
+            <div className="h-full bg-[#22c55e] transition-all duration-500" style={{ width: `${proteinPct}%` }} />
+            <div className="h-full bg-[#22c55e]/60 transition-all duration-500" style={{ width: `${carbsPct}%` }} />
+            <div className="h-full bg-[#22c55e]/30 transition-all duration-500" style={{ width: `${fatPct}%` }} />
+          </div>
+        </div>
+      )}
+
       {/* Generation progress */}
+      <GenerationProgress
+        active={generate.isPending}
+        steps={[
+          "Analisando seu perfil e objetivos...",
+          "Calculando calorias e macros ideais...",
+          "Selecionando refeições balanceadas...",
+          "Montando o plano semanal...",
+          "Finalizando os detalhes...",
+        ]}
+      />
+
       <GenerationProgress
         active={generate.isPending}
         steps={[
