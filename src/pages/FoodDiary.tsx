@@ -62,8 +62,15 @@ export default function FoodDiary() {
 
   return (
     <div className="px-4 lg:px-8 py-6 max-w-4xl mx-auto">
-      <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }}>
-        <h1 className="text-2xl font-bold tracking-tight text-white mb-6">Diário Alimentar</h1>
+      <motion.div
+        initial={{ opacity: 0, y: 8 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.3 }}
+        className="mb-6"
+      >
+        <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-white/30 mb-1">Hoje</p>
+        <h1 className="text-[28px] font-extrabold tracking-tight text-white leading-tight">Diário alimentar</h1>
+        <p className="text-xs text-white/40 mt-1">Acompanhe calorias, macros e hidratação</p>
       </motion.div>
 
       <motion.div
