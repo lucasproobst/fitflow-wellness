@@ -133,6 +133,16 @@ export default function WorkoutPlan() {
     onError: (err: any) => toast.error(err.message || "Falha ao gerar plano"),
   });
 
+  // Auto-trigger generation from FAB ?generate=1
+  useEffect(() => {
+    if (searchParams.get("generate") === "1" && !generate.isPending) {
+      generate.mutate();
+      searchParams.delete("generate");
+      setSearchParams(searchParams, { replace: true });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   const toggleSet = (key: string) => {
     setCompletedSets((prev) => {
       const next = new Set(prev);
