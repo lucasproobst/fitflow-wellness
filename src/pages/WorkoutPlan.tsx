@@ -5,6 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth-context";
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
+import { GenerationProgress } from "@/components/GenerationProgress";
 
 const shortDays = ["Seg", "Ter", "Qua", "Qui", "Sex", "Sáb", "Dom"];
 
@@ -241,8 +242,20 @@ export default function WorkoutPlan() {
         })}
       </div>
 
+      {/* Generation progress */}
+      <GenerationProgress
+        active={generate.isPending}
+        steps={[
+          "Analisando seu perfil e nível...",
+          "Definindo divisão de treino...",
+          "Selecionando exercícios ideais...",
+          "Ajustando séries e repetições...",
+          "Finalizando o plano semanal...",
+        ]}
+      />
+
       {/* Loading skeleton */}
-      {(isLoading || generate.isPending) && !planData && (
+      {isLoading && !generate.isPending && !planData && (
         <div className="space-y-3">
           {[1, 2, 3, 4].map((i) => (
             <div key={i} className="rounded-2xl bg-[#16181f] border border-white/[0.06] p-4 flex gap-3">
