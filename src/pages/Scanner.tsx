@@ -5,6 +5,12 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth-context";
 import { motion, AnimatePresence } from "framer-motion";
 
+interface ScanItem {
+  name: string;
+  grams: number;
+  calories: number;
+}
+
 interface ScanResult {
   name: string;
   serving: string;
@@ -12,6 +18,8 @@ interface ScanResult {
   protein: number;
   carbs: number;
   fat: number;
+  items?: ScanItem[];
+  confidence?: "alta" | "media" | "baixa";
 }
 
 interface SavedScan extends ScanResult {
