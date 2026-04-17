@@ -51,15 +51,15 @@ serve(async (req) => {
     const activity = profile.activity_level || "moderate";
 
     const goalDescriptions: Record<string, string> = {
-      lose_weight: "perda de gordura com séries mais altas, circuitos HIIT e recuperação ativa",
-      gain_muscle: "hipertrofia com sobrecarga progressiva, exercícios compostos, 3-4 séries de 8-12 repetições",
-      maintain: "manutenção equilibrada com volume moderado",
-      improve_health: "saúde geral com mistura de força, cardio e flexibilidade",
+      lose_weight: "perda de gordura — priorize compostos básicos com mais repetições (12-15) + 1-2 finalizadores cardio simples (corrida, bike, polichinelos, burpees). Evite isolamentos avançados.",
+      gain_muscle: "hipertrofia — base nos 'big 6' compostos (Supino Reto, Agachamento Livre, Levantamento Terra, Barra Fixa, Remada Curvada, Desenvolvimento Militar) + 1-2 isoladores básicos por treino (Rosca Direta, Tríceps Pulley, Elevação Lateral, Cadeira Extensora, Mesa Flexora, Panturrilha em Pé). Use 3-4 séries de 8-12 reps.",
+      maintain: "manutenção — exercícios clássicos full-body 3-4x por semana (Agachamento, Supino, Remada, Desenvolvimento, Prancha, Caminhada/Bike). Volume moderado, foco em consistência.",
+      improve_health: "saúde geral — movimentos funcionais simples e conhecidos (Agachamento, Flexão de Braço, Prancha, Caminhada, Remada, Elevação Pélvica, Alongamento). Sem exercícios avançados.",
     };
 
     const activityAdjust: Record<string, string> = {
-      sedentary: "3 dias de treino, intensidade menor, mais dias de descanso",
-      light: "4 dias de treino, intensidade moderada",
+      sedentary: "3 dias de treino, intensidade leve, exercícios mais simples, mais dias de descanso",
+      light: "4 dias de treino, intensidade moderada, exercícios básicos",
       moderate: "5 dias de treino, boa mistura de intensidade",
       active: "5-6 dias de treino, volume mais alto",
       very_active: "6 dias de treino, alto volume e intensidade",
@@ -72,18 +72,30 @@ serve(async (req) => {
       improve_health: "melhorar saúde",
     };
 
-    const systemPrompt = `Você é um personal trainer de elite brasileiro. Crie um plano de treino completo de 7 dias.
-TUDO deve estar em português brasileiro — nomes dos exercícios, foco do dia, grupos musculares, nível de dificuldade.
-Regras:
+    const systemPrompt = `Você é um personal trainer brasileiro de elite. Crie um plano de treino de 7 dias usando APENAS exercícios famosos, clássicos e simples — os mesmos que qualquer academia ensina no primeiro dia.
+
+REGRA DE OURO — só use exercícios desta lista (ou variações diretas):
+PEITO: Supino Reto, Supino Inclinado, Supino Declinado, Crucifixo, Flexão de Braço, Crossover.
+COSTAS: Barra Fixa, Puxada Frontal (Pulley), Remada Curvada, Remada Baixa, Remada Unilateral com Halter, Levantamento Terra.
+PERNAS: Agachamento Livre, Leg Press, Cadeira Extensora, Mesa Flexora, Stiff, Avanço (Afundo), Panturrilha em Pé, Panturrilha Sentado, Elevação Pélvica (Hip Thrust).
+OMBROS: Desenvolvimento Militar, Desenvolvimento com Halter, Elevação Lateral, Elevação Frontal, Crucifixo Inverso.
+BRAÇOS: Rosca Direta, Rosca Alternada, Rosca Martelo, Tríceps Pulley, Tríceps Testa, Tríceps Francês, Mergulho no Banco.
+CORE: Prancha, Abdominal Reto, Abdominal Bicicleta, Elevação de Pernas, Prancha Lateral, Mountain Climber.
+CARDIO/HIIT: Corrida, Caminhada, Bike Ergométrica, Polichinelos, Burpees, Pular Corda, Mountain Climber.
+
+PROIBIDO: nomes técnicos pouco conhecidos, exercícios de CrossFit avançado (Snatch, Clean, Muscle-Up, Pistol Squat), variações exóticas (Zercher, Jefferson, Anderson), nomes em inglês quando houver equivalente em português.
+
+Configurações deste usuário:
 - Objetivo: ${goalPt[goal] || goal} — ${goalDescriptions[goal] || goalDescriptions.maintain}
 - Nível de atividade: ${activity} — ${activityAdjust[activity] || activityAdjust.moderate}
-- Inclua dias de descanso apropriados para o nível de atividade
-- Cada exercício precisa de: nome (em português), séries, repetições (ou segundos para exercícios cronometrados), grupo muscular alvo, nível de dificuldade
-- Grupos musculares em português: Peito, Costas, Ombros, Bíceps, Tríceps, Pernas, Glúteos, Core, Corpo Inteiro, Cardio
-- Dificuldade em português: Iniciante, Intermediário, Avançado
-- Dias de descanso devem ter "Descanso" ou "Recuperação Ativa" como foco
-- Use nomes de exercícios em português (ex: Supino Reto, Agachamento, Remada Curvada, Desenvolvimento, Rosca Direta, etc.)
-- Use a ferramenta fornecida para retornar o plano estruturado`;
+
+Outras regras:
+- Inclua dias de descanso apropriados (foco = "Descanso" ou "Recuperação Ativa", exercises = []).
+- Cada exercício: nome em português, 3-4 séries, 8-15 reps (ou segundos para isométricos/cardio), grupo muscular, dificuldade.
+- Grupos musculares válidos: Peito, Costas, Ombros, Bíceps, Tríceps, Pernas, Glúteos, Core, Corpo Inteiro, Cardio.
+- Dificuldade: Iniciante, Intermediário, Avançado (priorize Iniciante/Intermediário, exceto se atividade = very_active).
+- 4-6 exercícios por treino, sem repetir o mesmo exercício no mesmo dia.
+- Use a ferramenta fornecida para retornar o plano estruturado.`;
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
