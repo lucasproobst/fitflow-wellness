@@ -129,7 +129,7 @@ export default function Dashboard() {
             {initials}
           </motion.div>
           <div className="min-w-0">
-            <p className="text-sm font-semibold text-white truncate">Bem-vindo, {profile?.display_name?.split(" ")[0] || user?.email?.split("@")[0] || "Atleta"}</p>
+            <p className="text-sm font-semibold text-white truncate">{greeting}, {firstName}</p>
             <p className="text-xs text-white/40 truncate">{user?.email}</p>
           </div>
         </div>
