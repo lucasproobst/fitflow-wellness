@@ -26,8 +26,6 @@ export default function Progress() {
   const logWeight = useLogWeight();
   const { data: measurementLogs } = useMeasurementLogs();
   const logMeasurements = useLogMeasurements();
-  const { data: photos } = useProgressPhotos();
-  const uploadPhoto = useUploadPhoto();
   const { data: streakCount = 0 } = useStreak();
 
   const { data: workoutCount = 0 } = useQuery({
