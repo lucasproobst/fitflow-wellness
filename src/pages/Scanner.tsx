@@ -1,5 +1,5 @@
-import { useState, useRef, useEffect } from "react";
-import { Camera, Plus, AlertTriangle, RotateCcw, Trash2 } from "lucide-react";
+import { useState, useRef, useEffect, useMemo } from "react";
+import { Camera, Plus, AlertTriangle, RotateCcw, Trash2, Pencil, Minus } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth-context";
