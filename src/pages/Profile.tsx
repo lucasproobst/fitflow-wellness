@@ -4,6 +4,7 @@ import { useProfile, useUpdateProfile } from "@/lib/use-profile";
 import { GlassCard } from "@/components/GlassCard";
 import { NotificationSettings } from "@/components/NotificationSettings";
 import { EditProfileSheet } from "@/components/EditProfileSheet";
+import { MeasurementsHistory } from "@/components/MeasurementsHistory";
 import { LogOut, Pencil, Check, X, Settings2 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -145,6 +146,8 @@ export default function Profile() {
           </div>
         </GlassCard>
       )}
+
+      <MeasurementsHistory />
 
       <NotificationSettings />
 
