@@ -114,8 +114,9 @@ export default function AppLayout({ children }: { children: ReactNode }) {
                 {/* Mobile-only greeting (desktop has it in sidebar) */}
                 <div className="min-w-0 lg:hidden">
                   <p className="text-[11px] text-[#6b7280] font-medium">Olá,</p>
-                  <h1 className="text-[15px] font-bold text-white truncate max-w-[180px]">
-                    {profile?.display_name || user?.email?.split("@")[0] || "Atleta"}
+                  <h1 className="text-[15px] font-bold text-white truncate max-w-[180px] flex items-center gap-1">
+                    <span className="truncate">{profile?.display_name || user?.email?.split("@")[0] || "Atleta"}</span>
+                    {profile?.is_pro && <ProBadge size={11} />}
                   </h1>
                 </div>
               </div>
