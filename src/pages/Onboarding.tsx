@@ -57,6 +57,8 @@ export default function Onboarding() {
     return false;
   };
 
+  const [generating, setGenerating] = useState(false);
+
   const handleFinish = async () => {
     try {
       await updateProfile.mutateAsync({
@@ -69,7 +71,18 @@ export default function Onboarding() {
         target_weight_kg: Number(targetWeight),
         onboarding_complete: true,
       } as any);
-      navigate("/");
+
+      // Fire off plan generation in background; don't block navigation if it fails
+      setGenerating(true);
+      void Promise.allSettled([
+        supabase.functions.invoke("generate-meal-plan", { body: {} }),
+        supabase.functions.invoke("generate-workout-plan", { body: {} }),
+      ]).finally(() => {
+        setGenerating(false);
+      });
+
+      // Small delay so the user sees the "preparando seus planos" message
+      setTimeout(() => navigate("/"), 800);
     } catch {
       toast.error("Falha ao salvar perfil");
     }
