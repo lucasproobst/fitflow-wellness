@@ -92,7 +92,7 @@ export default function Onboarding() {
     <div className="min-h-screen bg-[#0f1117] flex flex-col">
       {/* Full-screen saving overlay */}
       <AnimatePresence>
-        {updateProfile.isPending && (
+        {(updateProfile.isPending || generating) && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -105,8 +105,14 @@ export default function Onboarding() {
               className="w-14 h-14 rounded-full border-2 border-white/[0.06] border-t-[#22c55e]"
             />
             <div className="text-center px-6">
-              <p className="text-sm font-bold text-white">Personalizando sua experiência</p>
-              <p className="text-[11px] text-white/40 mt-1.5">Estamos preparando tudo para você...</p>
+              <p className="text-sm font-bold text-white">
+                {generating ? "Preparando seus planos" : "Salvando seu perfil"}
+              </p>
+              <p className="text-[11px] text-white/40 mt-1.5">
+                {generating
+                  ? "Estamos criando sua dieta e treino personalizados..."
+                  : "Estamos preparando tudo para você..."}
+              </p>
             </div>
           </motion.div>
         )}
