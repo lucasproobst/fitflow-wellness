@@ -216,9 +216,9 @@ export default function AppLayout({ children }: { children: ReactNode }) {
           )}
         </AnimatePresence>
 
-        {/* Bottom Nav */}
+        {/* Bottom Nav — mobile only */}
         <nav
-          className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[480px] bg-[#0a0a0a] border-t border-white/[0.06] z-50 safe-bottom"
+          className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[480px] bg-[#0a0a0a] border-t border-white/[0.06] z-50 safe-bottom lg:hidden"
         >
           <div className="relative h-[72px] grid grid-cols-5 items-center px-2">
             {tabs.slice(0, 2).map(t => <BottomTab key={t.to} {...t} />)}
