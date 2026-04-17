@@ -1,12 +1,13 @@
-import { useState, useRef, useMemo } from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useState, useMemo } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { LineChart, Line, XAxis, YAxis, ResponsiveContainer, Tooltip } from "recharts";
-import { TrendingDown, TrendingUp, Upload, Camera, Share2, Dumbbell, ChevronDown, ChevronUp } from "lucide-react";
+import { TrendingDown, TrendingUp, Share2, Dumbbell, ChevronDown, ChevronUp } from "lucide-react";
 import { useWeightLogs, useLogWeight, useMeasurementLogs, useLogMeasurements, useStreak } from "@/lib/use-tracking";
 import { useAuth } from "@/lib/auth-context";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { MilestoneShareCard } from "@/components/MilestoneShareCard";
+import { ProgressPhotosTimeline } from "@/components/ProgressPhotosTimeline";
 import { motion, AnimatePresence } from "framer-motion";
 
 const timeRanges = [
