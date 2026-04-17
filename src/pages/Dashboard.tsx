@@ -314,7 +314,7 @@ export default function Dashboard() {
         whileHover={{ y: -2 }}
       >
         <Link to="/achievements">
-          <div className="rounded-2xl bg-[#16181f] border border-white/[0.06] p-4 mt-4 hover:border-white/[0.1] hover:shadow-[0_4px_24px_rgba(34,197,94,0.04)] transition-all duration-300">
+          <div className="rounded-2xl bg-[#141414] border border-white/[0.07] p-4 mt-4 hover:border-white/[0.12] hover:shadow-[0_4px_24px_rgba(34,197,94,0.05)] transition-all duration-300">
             <AchievementBadges />
           </div>
         </Link>
