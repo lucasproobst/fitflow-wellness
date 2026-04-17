@@ -200,6 +200,33 @@ export type Database = {
         }
         Relationships: []
       }
+      progress_photos: {
+        Row: {
+          created_at: string
+          id: string
+          storage_path: string
+          taken_on: string
+          type: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          storage_path: string
+          taken_on?: string
+          type: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          storage_path?: string
+          taken_on?: string
+          type?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       recipe_cache: {
         Row: {
           created_at: string
