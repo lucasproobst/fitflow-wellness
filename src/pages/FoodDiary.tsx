@@ -233,7 +233,7 @@ export default function FoodDiary() {
             ) : (
               <div className="space-y-4 lg:grid lg:grid-cols-2 lg:gap-4 lg:space-y-0">
                 {mealsByType.map(({ key, label, icon: Icon, items }) => {
-                  const groupCals = items.reduce((s, m) => s + m.calories, 0);
+                  const groupCals = items.reduce((s, { meal }) => s + meal.calories, 0);
                   return (
                     <div key={key} className="rounded-2xl bg-[#141414] border border-white/[0.05] p-4">
                       <div className="flex items-center justify-between mb-3">
@@ -256,15 +256,16 @@ export default function FoodDiary() {
                         </button>
                       ) : (
                         <div className="space-y-1.5">
-                          {items.map((meal, i) => (
-                            <div key={i} className="rounded-lg bg-white/[0.02] border border-white/[0.04] px-3 py-2 flex items-center justify-between">
-                              <div className="min-w-0">
-                                <p className="text-[11px] font-bold text-white truncate">{meal.name}</p>
-                                <p className="text-[9px] text-white/30 mt-0.5">P:{meal.protein}g · C:{meal.carbs}g · G:{meal.fat}g</p>
-                              </div>
-                              <span className="text-xs font-extrabold text-white tabular-nums shrink-0 ml-2">{meal.calories}</span>
-                            </div>
-                          ))}
+                          <AnimatePresence initial={false}>
+                            {items.map(({ meal, idx }) => (
+                              <SwipeableMealItem
+                                key={`${idx}-${meal.name}`}
+                                meal={meal}
+                                onDelete={() => deleteFood(idx)}
+                              />
+                            ))}
+                          </AnimatePresence>
+                          <p className="text-[9px] text-white/20 text-center pt-1 lg:hidden">← deslize para excluir</p>
                         </div>
                       )}
                     </div>
