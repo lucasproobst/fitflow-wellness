@@ -76,6 +76,28 @@ export default function Onboarding() {
 
   return (
     <div className="min-h-screen bg-[#0f1117] flex flex-col">
+      {/* Full-screen saving overlay */}
+      <AnimatePresence>
+        {updateProfile.isPending && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 bg-[#0f1117]/95 backdrop-blur-sm flex flex-col items-center justify-center gap-6"
+          >
+            <motion.div
+              animate={{ rotate: 360 }}
+              transition={{ duration: 1.2, repeat: Infinity, ease: "linear" }}
+              className="w-14 h-14 rounded-full border-2 border-white/[0.06] border-t-[#22c55e]"
+            />
+            <div className="text-center px-6">
+              <p className="text-sm font-bold text-white">Personalizando sua experiência</p>
+              <p className="text-[11px] text-white/40 mt-1.5">Estamos preparando tudo para você...</p>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {/* Progress bar */}
       <div className="px-6 pt-8 pb-4">
         <div className="flex gap-2">
