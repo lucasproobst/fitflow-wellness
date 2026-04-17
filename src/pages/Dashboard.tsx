@@ -147,7 +147,7 @@ export default function Dashboard() {
       >
         <div>
           <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-white/30 mb-1">Hoje</p>
-          <h1 className="text-[32px] font-extrabold tracking-tight text-white leading-tight">Bem-vindo de volta</h1>
+          <h1 className="text-[32px] font-extrabold tracking-tight text-white leading-tight">Bem-vindo, {profile?.display_name?.split(" ")[0] || user?.email?.split("@")[0] || "Atleta"}</h1>
           <p className="text-sm text-white/40 mt-1">Seu resumo de saúde, treino e nutrição</p>
         </div>
         <motion.div
