@@ -164,7 +164,7 @@ export default function Progress() {
   });
 
   return (
-    <div className="px-4 lg:px-8 py-6 max-w-4xl mx-auto">
+    <div className="mobile-shell px-4 py-6 pb-28">
       <div className="mb-8">
         <h1 className="text-2xl font-semibold tracking-tight text-white">Progresso</h1>
         <p className="text-sm text-white/40 mt-0.5">Acompanhe sua evolução</p>
@@ -194,7 +194,7 @@ export default function Progress() {
       />
 
       {/* Registrar peso */}
-      <motion.div {...fadeIn(0.05)} className="rounded-2xl bg-[#16181f] border border-white/[0.06] p-4 mb-4">
+      <motion.div {...fadeIn(0.05)} className="rounded-2xl bg-[#141414] border border-white/[0.07] p-4 mb-4">
         <h2 className="text-[10px] font-bold uppercase tracking-[0.15em] text-white/30 mb-3">REGISTRAR PESO DE HOJE</h2>
         <div className="flex gap-2">
           <input
@@ -215,7 +215,7 @@ export default function Progress() {
       </motion.div>
 
       {/* Gráfico de Peso */}
-      <motion.div {...fadeIn(0.1)} className="rounded-2xl bg-[#16181f] border border-white/[0.06] p-4 mb-4">
+      <motion.div {...fadeIn(0.1)} className="rounded-2xl bg-[#141414] border border-white/[0.07] p-4 mb-4">
         <div className="flex items-center justify-between mb-4">
           <div>
             <h2 className="text-sm font-semibold text-white">Peso</h2>
@@ -250,7 +250,7 @@ export default function Progress() {
               <XAxis dataKey="date" tick={{ fontSize: 10, fill: "rgba(255,255,255,0.25)" }} axisLine={false} tickLine={false} />
               <YAxis domain={["auto", "auto"]} tick={{ fontSize: 10, fill: "rgba(255,255,255,0.25)" }} axisLine={false} tickLine={false} width={30} />
               <Tooltip
-                contentStyle={{ background: "#16181f", border: "1px solid rgba(255,255,255,0.06)", borderRadius: 12, fontSize: 12, color: "#fff" }}
+                contentStyle={{ background: "#141414", border: "1px solid rgba(255,255,255,0.07)", borderRadius: 12, fontSize: 12, color: "#fff" }}
                 labelStyle={{ color: "rgba(255,255,255,0.4)" }}
               />
               <Line type="monotone" dataKey="weight" stroke="#22c55e" strokeWidth={2} dot={{ fill: "#22c55e", r: 3 }} />
@@ -262,7 +262,7 @@ export default function Progress() {
       </motion.div>
 
       {/* Medidas */}
-      <motion.div {...fadeIn(0.15)} className="rounded-2xl bg-[#16181f] border border-white/[0.06] p-4 mb-4">
+      <motion.div {...fadeIn(0.15)} className="rounded-2xl bg-[#141414] border border-white/[0.07] p-4 mb-4">
         <h2 className="text-[10px] font-bold uppercase tracking-[0.15em] text-white/30 mb-4">MEDIDAS CORPORAIS</h2>
         <div className="grid grid-cols-3 gap-3 mb-3">
           {[
@@ -292,7 +292,7 @@ export default function Progress() {
       </motion.div>
 
       {/* Fotos Antes/Depois */}
-      <motion.div {...fadeIn(0.2)} className="rounded-2xl bg-[#16181f] border border-white/[0.06] p-4 mb-4">
+      <motion.div {...fadeIn(0.2)} className="rounded-2xl bg-[#141414] border border-white/[0.07] p-4 mb-4">
         <h2 className="text-[10px] font-bold uppercase tracking-[0.15em] text-white/30 mb-4">ANTES & DEPOIS</h2>
         <div className="grid grid-cols-2 gap-3">
           {(["before", "after"] as PhotoType[]).map(type => {
@@ -383,7 +383,7 @@ function WorkoutHistory({ userId, fadeIn }: { userId?: string; fadeIn: (d: numbe
   if (!sessions || sessions.length === 0) return null;
 
   return (
-    <motion.div {...fadeIn(0.25)} className="rounded-2xl bg-[#16181f] border border-white/[0.06] p-4 mb-4">
+    <motion.div {...fadeIn(0.25)} className="rounded-2xl bg-[#141414] border border-white/[0.07] p-4 mb-4">
       <h2 className="text-[10px] font-bold uppercase tracking-[0.15em] text-white/30 mb-4 flex items-center gap-2">
         <Dumbbell size={12} className="text-white/20" />
         HISTÓRICO DE TREINOS
