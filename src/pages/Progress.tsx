@@ -64,8 +64,6 @@ export default function Progress() {
   const [chest, setChest] = useState("");
   const [arms, setArms] = useState("");
 
-  const beforeRef = useRef<HTMLInputElement>(null);
-  const afterRef = useRef<HTMLInputElement>(null);
 
   const chartData = (weightLogs || []).map(l => ({
     date: new Date(l.date).toLocaleDateString("pt-BR", { month: "short", day: "numeric" }),
