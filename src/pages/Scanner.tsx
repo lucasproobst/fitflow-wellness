@@ -284,7 +284,7 @@ export default function Scanner() {
   };
 
   return (
-    <div className="px-4 lg:px-8 py-6 max-w-4xl mx-auto">
+    <div className="mobile-shell px-4 py-6 pb-28">
       <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }}>
         <h1 className="text-2xl font-bold tracking-tight text-white mb-1">Scanner de Alimentos</h1>
         <p className="text-xs text-white/30 mb-6">Tire uma foto, digite manualmente ou use seus favoritos</p>
