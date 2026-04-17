@@ -8,12 +8,15 @@ function today() {
 
 // ─── Daily Log ───
 
+export type MealType = "breakfast" | "lunch" | "snack" | "dinner";
+
 export interface DailyLogMeal {
   name: string;
   calories: number;
   protein: number;
   carbs: number;
   fat: number;
+  mealType?: MealType;
 }
 
 export interface DailyLog {
