@@ -52,6 +52,7 @@ const commonFoods: DailyLogMeal[] = [
 
 export default function FoodDiary() {
   const [search, setSearch] = useState("");
+  const [selectedMeal, setSelectedMeal] = useState<MealType>(guessMealTypeByTime());
   const { data: dailyLog } = useDailyLog();
   const upsert = useUpsertDailyLog();
   const addWater = useAddWater();
@@ -68,12 +69,17 @@ export default function FoodDiary() {
     : [];
 
   const addFood = (food: DailyLogMeal) => {
-    const newMeals = [...meals, food];
+    const newMeals = [...meals, { ...food, mealType: selectedMeal }];
     upsert.mutate({ meals: newMeals }, {
-      onSuccess: () => toast.success(`${food.name} adicionado`),
+      onSuccess: () => toast.success(`${food.name} adicionado em ${MEAL_TYPES.find(m => m.key === selectedMeal)?.label}`),
     });
     setSearch("");
   };
+
+  const mealsByType = MEAL_TYPES.map(t => ({
+    ...t,
+    items: meals.filter(m => (m.mealType || "snack") === t.key),
+  }));
 
   return (
     <div className="mobile-shell px-4 lg:px-8 py-6 pb-28 lg:pb-12">
