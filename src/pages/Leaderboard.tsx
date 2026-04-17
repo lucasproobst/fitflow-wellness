@@ -4,10 +4,12 @@ import { useAuth } from "@/lib/auth-context";
 import { supabase } from "@/integrations/supabase/client";
 import { Trophy, Medal, Award, Crown } from "lucide-react";
 import { motion } from "framer-motion";
+import { ProBadge } from "@/components/ProBadge";
 
 interface LeaderboardEntry {
   user_id: string;
   display_name: string | null;
+  is_pro: boolean;
   count: number;
 }
 
