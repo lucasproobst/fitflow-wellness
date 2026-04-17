@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import { Camera, Plus, AlertTriangle, RotateCcw, Trash2 } from "lucide-react";
+import { Camera, Plus, AlertTriangle, RotateCcw, Trash2, Pencil, Star, Minus } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth-context";
@@ -27,12 +27,38 @@ interface SavedScan extends ScanResult {
   created_at: string;
 }
 
+interface FoodFavorite {
+  id: string;
+  name: string;
+  serving: string | null;
+  calories: number;
+  protein: number;
+  carbs: number;
+  fat: number;
+  base_grams: number;
+  created_at: string;
+}
+
 export default function Scanner() {
   const [image, setImage] = useState<string | null>(null);
   const [scanning, setScanning] = useState(false);
   const [result, setResult] = useState<ScanResult | null>(null);
   const [notFound, setNotFound] = useState(false);
   const [history, setHistory] = useState<SavedScan[]>([]);
+  const [favorites, setFavorites] = useState<FoodFavorite[]>([]);
+
+  const [manualOpen, setManualOpen] = useState(false);
+  const [mName, setMName] = useState("");
+  const [mGrams, setMGrams] = useState("100");
+  const [mKcal, setMKcal] = useState("");
+  const [mProtein, setMProtein] = useState("");
+  const [mCarbs, setMCarbs] = useState("");
+  const [mFat, setMFat] = useState("");
+
+  const [favOpen, setFavOpen] = useState(false);
+  const [favPickGrams, setFavPickGrams] = useState<number>(100);
+  const [pickedFav, setPickedFav] = useState<FoodFavorite | null>(null);
+
   const fileRef = useRef<HTMLInputElement>(null);
   const cameraRef = useRef<HTMLInputElement>(null);
   const { user } = useAuth();
@@ -47,6 +73,14 @@ export default function Scanner() {
       .limit(20)
       .then(({ data }) => {
         if (data) setHistory(data as any);
+      });
+    supabase
+      .from("food_favorites" as any)
+      .select("*")
+      .eq("user_id", user.id)
+      .order("created_at", { ascending: false })
+      .then(({ data }) => {
+        if (data) setFavorites(data as any);
       });
   }, [user]);
 
@@ -96,12 +130,108 @@ export default function Scanner() {
     }
   };
 
+  // ─── Manual entry ───
+  const openManual = (preset?: Partial<ScanResult & { base_grams: number }>) => {
+    setMName(preset?.name || "");
+    setMGrams(String(preset?.base_grams || 100));
+    setMKcal(preset?.calories ? String(preset.calories) : "");
+    setMProtein(preset?.protein ? String(preset.protein) : "");
+    setMCarbs(preset?.carbs ? String(preset.carbs) : "");
+    setMFat(preset?.fat ? String(preset.fat) : "");
+    setManualOpen(true);
+  };
+
+  const submitManual = () => {
+    const name = mName.trim();
+    const g = parseFloat(mGrams.replace(",", "."));
+    const k = parseFloat(mKcal.replace(",", "."));
+    if (!name) return toast.error("Informe o nome do alimento");
+    if (!g || g <= 0) return toast.error("Informe a gramagem da porção");
+    if (!k || k <= 0) return toast.error("Informe as kcal da porção");
+    const r: ScanResult = {
+      name,
+      serving: `${Math.round(g)} g`,
+      calories: Math.round(k),
+      protein: parseFloat(mProtein.replace(",", ".")) || 0,
+      carbs: parseFloat(mCarbs.replace(",", ".")) || 0,
+      fat: parseFloat(mFat.replace(",", ".")) || 0,
+      confidence: "alta",
+    };
+    setResult(r);
+    setImage(null);
+    setNotFound(false);
+    setManualOpen(false);
+  };
+
+  // ─── Favorites ───
+  const saveAsFavorite = async () => {
+    if (!result || !user) return;
+    // Extract grams from serving like "180 g"
+    const gMatch = result.serving?.match(/(\d+(?:[.,]\d+)?)\s*g/i);
+    const baseGrams = gMatch ? parseFloat(gMatch[1].replace(",", ".")) : 100;
+    try {
+      const { data, error } = await supabase
+        .from("food_favorites" as any)
+        .insert({
+          user_id: user.id,
+          name: result.name,
+          serving: result.serving,
+          calories: result.calories,
+          protein: result.protein,
+          carbs: result.carbs,
+          fat: result.fat,
+          base_grams: baseGrams,
+        } as any)
+        .select()
+        .single();
+      if (error) throw error;
+      if (data) setFavorites(prev => [data as any, ...prev]);
+      toast.success("Salvo nos favoritos!");
+    } catch {
+      toast.error("Falha ao favoritar");
+    }
+  };
+
+  const removeFavorite = async (id: string) => {
+    await supabase.from("food_favorites" as any).delete().eq("id", id);
+    setFavorites(prev => prev.filter(f => f.id !== id));
+  };
+
+  const openFavPicker = (fav: FoodFavorite) => {
+    setPickedFav(fav);
+    setFavPickGrams(fav.base_grams || 100);
+    setFavOpen(true);
+  };
+
+  const useFavorite = () => {
+    if (!pickedFav) return;
+    const f = favPickGrams / (pickedFav.base_grams || 100);
+    setResult({
+      name: pickedFav.name,
+      serving: `${Math.round(favPickGrams)} g`,
+      calories: Math.round(pickedFav.calories * f),
+      protein: Math.round(pickedFav.protein * f * 10) / 10,
+      carbs: Math.round(pickedFav.carbs * f * 10) / 10,
+      fat: Math.round(pickedFav.fat * f * 10) / 10,
+      confidence: "alta",
+    });
+    setImage(null);
+    setNotFound(false);
+    setFavOpen(false);
+    setPickedFav(null);
+  };
+
+  const isResultFavorited =
+    !!result &&
+    favorites.some(
+      f => f.name.toLowerCase() === result.name.toLowerCase() && f.serving === result.serving,
+    );
+
   const addToDiary = async () => {
     if (!result || !user) return;
     try {
       const today = new Date().toISOString().split("T")[0];
 
-      // Save scan to food_scans table
       const { data: savedScan } = await supabase
         .from("food_scans" as any)
         .insert({
@@ -120,7 +250,6 @@ export default function Scanner() {
         setHistory(prev => [savedScan as any, ...prev].slice(0, 20));
       }
 
-      // Also add to daily_log
       const { data: existing } = await supabase
         .from("daily_log")
         .select("*")
@@ -158,7 +287,7 @@ export default function Scanner() {
     <div className="px-4 lg:px-8 py-6 max-w-4xl mx-auto">
       <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }}>
         <h1 className="text-2xl font-bold tracking-tight text-white mb-1">Scanner de Alimentos</h1>
-        <p className="text-xs text-white/30 mb-6">Tire uma foto para obter informações nutricionais</p>
+        <p className="text-xs text-white/30 mb-6">Tire uma foto, digite manualmente ou use seus favoritos</p>
       </motion.div>
 
       {/* Visor */}
@@ -176,7 +305,6 @@ export default function Scanner() {
             <span className="text-xs font-medium tracking-wide">Escaneie um alimento</span>
           </div>
         )}
-        {/* Corner brackets */}
         <div className="absolute top-4 left-4 w-8 h-8 border-l-2 border-t-2 border-[#22c55e]/60 rounded-tl-sm" />
         <div className="absolute top-4 right-4 w-8 h-8 border-r-2 border-t-2 border-[#22c55e]/60 rounded-tr-sm" />
         <div className="absolute bottom-4 left-4 w-8 h-8 border-l-2 border-b-2 border-[#22c55e]/60 rounded-bl-sm" />
@@ -189,7 +317,7 @@ export default function Scanner() {
       </motion.div>
 
       {/* Action buttons */}
-      <div className="flex gap-3 max-w-sm mx-auto mb-6">
+      <div className="flex gap-3 max-w-sm mx-auto mb-3">
         <button
           onClick={() => cameraRef.current?.click()}
           className="flex-1 h-11 rounded-full bg-[#22c55e] text-white text-xs font-bold flex items-center justify-center gap-2 active:scale-95 transition-all"
@@ -205,8 +333,16 @@ export default function Scanner() {
           Galeria
         </button>
       </div>
+      <div className="max-w-sm mx-auto mb-6">
+        <button
+          onClick={() => openManual()}
+          className="w-full h-10 rounded-full bg-transparent border border-white/[0.08] text-white/70 text-xs font-bold flex items-center justify-center gap-2 active:scale-95 transition-all hover:bg-white/[0.04] hover:text-white"
+        >
+          <Pencil size={14} />
+          Digitar manualmente (sem foto)
+        </button>
+      </div>
 
-      {/* Hidden inputs — camera capture MUST be separate to preserve gesture chain */}
       <input ref={cameraRef} type="file" accept="image/*" capture="environment" onChange={handleFile} className="hidden" />
       <input ref={fileRef} type="file" accept="image/*" onChange={handleFile} className="hidden" />
 
@@ -225,15 +361,24 @@ export default function Scanner() {
               </div>
               <p className="text-sm font-bold text-white mb-1">Alimento não identificado</p>
               <p className="text-xs text-white/30 mb-4 max-w-[260px] leading-relaxed">
-                Não conseguimos reconhecer o alimento na foto. Tente tirar outra foto com melhor iluminação e ângulo.
+                Não conseguimos reconhecer o alimento na foto. Tente outra foto ou digite manualmente.
               </p>
-              <button
-                onClick={() => { resetScanner(); cameraRef.current?.click(); }}
-                className="h-10 px-5 rounded-full bg-white/[0.06] border border-white/[0.08] text-white text-xs font-bold flex items-center gap-2 active:scale-95 transition-all hover:bg-white/[0.1]"
-              >
-                <RotateCcw size={14} />
-                Escanear Novamente
-              </button>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => { resetScanner(); cameraRef.current?.click(); }}
+                  className="h-10 px-4 rounded-full bg-white/[0.06] border border-white/[0.08] text-white text-xs font-bold flex items-center gap-2 active:scale-95 transition-all hover:bg-white/[0.1]"
+                >
+                  <RotateCcw size={14} />
+                  Reescanear
+                </button>
+                <button
+                  onClick={() => { resetScanner(); openManual(); }}
+                  className="h-10 px-4 rounded-full bg-[#22c55e] text-white text-xs font-bold flex items-center gap-2 active:scale-95 transition-all"
+                >
+                  <Pencil size={14} />
+                  Digitar
+                </button>
+              </div>
             </div>
           </motion.div>
         )}
@@ -249,8 +394,22 @@ export default function Scanner() {
             className="mb-4 rounded-2xl bg-[#16181f] border border-white/[0.06] p-5"
           >
             <div className="flex items-start justify-between mb-4 gap-3">
-              <div className="min-w-0">
-                <p className="text-sm font-bold text-white truncate">{result.name}</p>
+              <div className="min-w-0 flex-1">
+                <div className="flex items-center gap-2">
+                  <p className="text-sm font-bold text-white truncate">{result.name}</p>
+                  <button
+                    onClick={saveAsFavorite}
+                    disabled={isResultFavorited}
+                    title={isResultFavorited ? "Já está nos favoritos" : "Salvar nos favoritos"}
+                    className={`shrink-0 p-1 rounded-full transition-all active:scale-90 ${
+                      isResultFavorited
+                        ? "text-yellow-400"
+                        : "text-white/30 hover:text-yellow-400"
+                    }`}
+                  >
+                    <Star size={15} fill={isResultFavorited ? "currentColor" : "none"} />
+                  </button>
+                </div>
                 <p className="text-[11px] text-white/30 mt-0.5">{result.serving}</p>
                 {result.confidence && (
                   <span
@@ -323,6 +482,38 @@ export default function Scanner() {
         )}
       </AnimatePresence>
 
+      {/* Favoritos */}
+      {favorites.length > 0 && (
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.05 }} className="mb-6">
+          <div className="flex items-center gap-1.5 mb-3">
+            <Star size={11} className="text-yellow-400" fill="currentColor" />
+            <h2 className="text-[10px] font-bold uppercase tracking-[0.15em] text-white/30">Favoritos</h2>
+          </div>
+          <div className="space-y-2">
+            {favorites.map(fav => (
+              <div key={fav.id} className="rounded-xl bg-[#16181f] border border-white/[0.04] px-4 py-3 flex items-center justify-between gap-3">
+                <button
+                  onClick={() => openFavPicker(fav)}
+                  className="flex-1 min-w-0 text-left active:opacity-60 transition-opacity"
+                >
+                  <p className="text-xs font-semibold text-white/80 truncate">{fav.name}</p>
+                  <p className="text-[10px] text-white/30 mt-0.5 tabular-nums">
+                    {fav.calories} kcal · {fav.base_grams}g · P {fav.protein}g · C {fav.carbs}g · G {fav.fat}g
+                  </p>
+                </button>
+                <button
+                  onClick={() => removeFavorite(fav.id)}
+                  className="text-white/20 hover:text-red-400 transition-colors shrink-0"
+                  title="Remover dos favoritos"
+                >
+                  <Trash2 size={14} />
+                </button>
+              </div>
+            ))}
+          </div>
+        </motion.div>
+      )}
+
       {/* Histórico */}
       {history.length > 0 && (
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.1 }}>
@@ -353,6 +544,188 @@ export default function Scanner() {
           </div>
         </motion.div>
       )}
+
+      {/* Modal: Manual entry */}
+      <AnimatePresence>
+        {manualOpen && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/70 backdrop-blur-sm p-4"
+            onClick={() => setManualOpen(false)}
+          >
+            <motion.div
+              initial={{ y: 30, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              exit={{ y: 30, opacity: 0 }}
+              onClick={e => e.stopPropagation()}
+              className="w-full max-w-sm rounded-2xl bg-[#16181f] border border-white/[0.08] p-5 max-h-[90vh] overflow-y-auto"
+            >
+              <p className="text-sm font-bold text-white mb-1">Adicionar manualmente</p>
+              <p className="text-[11px] text-white/30 mb-5">Após adicionar, use a estrela para salvar nos favoritos</p>
+
+              <div className="space-y-3">
+                <div>
+                  <label className="text-[10px] font-bold uppercase tracking-[0.12em] text-white/40">Alimento</label>
+                  <input
+                    type="text"
+                    value={mName}
+                    onChange={e => setMName(e.target.value)}
+                    placeholder="Ex: Arroz integral cozido"
+                    maxLength={80}
+                    className="w-full mt-1 h-10 px-3 rounded-lg bg-white/[0.04] border border-white/[0.06] text-white text-sm placeholder:text-white/20 focus:outline-none focus:border-[#22c55e]/40"
+                  />
+                </div>
+
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="text-[10px] font-bold uppercase tracking-[0.12em] text-white/40">Porção (g)</label>
+                    <input
+                      type="number"
+                      inputMode="decimal"
+                      value={mGrams}
+                      onChange={e => setMGrams(e.target.value)}
+                      placeholder="100"
+                      className="w-full mt-1 h-10 px-3 rounded-lg bg-white/[0.04] border border-white/[0.06] text-white text-sm tabular-nums focus:outline-none focus:border-[#22c55e]/40"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-[10px] font-bold uppercase tracking-[0.12em] text-white/40">Calorias</label>
+                    <input
+                      type="number"
+                      inputMode="decimal"
+                      value={mKcal}
+                      onChange={e => setMKcal(e.target.value)}
+                      placeholder="130"
+                      className="w-full mt-1 h-10 px-3 rounded-lg bg-white/[0.04] border border-white/[0.06] text-white text-sm tabular-nums focus:outline-none focus:border-[#22c55e]/40"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-3 gap-2">
+                  {[
+                    { label: "Proteína", v: mProtein, set: setMProtein },
+                    { label: "Carb.", v: mCarbs, set: setMCarbs },
+                    { label: "Gordura", v: mFat, set: setMFat },
+                  ].map(f => (
+                    <div key={f.label}>
+                      <label className="text-[9px] font-bold uppercase tracking-[0.1em] text-white/40">{f.label} (g)</label>
+                      <input
+                        type="number"
+                        inputMode="decimal"
+                        value={f.v}
+                        onChange={e => f.set(e.target.value)}
+                        placeholder="0"
+                        className="w-full mt-1 h-9 px-2 rounded-lg bg-white/[0.04] border border-white/[0.06] text-white text-xs tabular-nums focus:outline-none focus:border-[#22c55e]/40"
+                      />
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div className="flex gap-2 mt-5">
+                <button
+                  onClick={() => setManualOpen(false)}
+                  className="flex-1 h-10 rounded-full bg-white/[0.04] border border-white/[0.06] text-white/70 text-xs font-bold active:scale-95"
+                >
+                  Cancelar
+                </button>
+                <button
+                  onClick={submitManual}
+                  className="flex-1 h-10 rounded-full bg-[#22c55e] text-white text-xs font-bold active:scale-95"
+                >
+                  Adicionar
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Modal: Use favorite (ajustar gramagem) */}
+      <AnimatePresence>
+        {favOpen && pickedFav && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/70 backdrop-blur-sm p-4"
+            onClick={() => setFavOpen(false)}
+          >
+            <motion.div
+              initial={{ y: 30, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              exit={{ y: 30, opacity: 0 }}
+              onClick={e => e.stopPropagation()}
+              className="w-full max-w-sm rounded-2xl bg-[#16181f] border border-white/[0.08] p-5"
+            >
+              <p className="text-sm font-bold text-white mb-1 truncate">{pickedFav.name}</p>
+              <p className="text-[11px] text-white/30 mb-5">
+                Base: {pickedFav.base_grams}g = {pickedFav.calories} kcal
+              </p>
+
+              <label className="text-[10px] font-bold uppercase tracking-[0.12em] text-white/40">
+                Quantos gramas hoje?
+              </label>
+              <div className="flex items-center gap-2 mt-2 mb-4">
+                <button
+                  onClick={() => setFavPickGrams(Math.max(5, favPickGrams - 10))}
+                  className="w-9 h-9 rounded-full bg-white/[0.04] border border-white/[0.06] text-white/70 flex items-center justify-center active:scale-95"
+                >
+                  <Minus size={14} />
+                </button>
+                <input
+                  type="number"
+                  min={1}
+                  max={2000}
+                  value={favPickGrams}
+                  onChange={e => setFavPickGrams(Math.max(1, Math.min(2000, parseInt(e.target.value) || 0)))}
+                  className="w-20 h-10 rounded-lg bg-white/[0.04] border border-white/[0.06] text-white text-sm font-bold text-center tabular-nums focus:outline-none focus:border-[#22c55e]/40"
+                />
+                <span className="text-xs text-white/40 font-semibold">g</span>
+                <input
+                  type="range"
+                  min={5}
+                  max={Math.max(500, (pickedFav.base_grams || 100) * 3)}
+                  step={5}
+                  value={favPickGrams}
+                  onChange={e => setFavPickGrams(parseInt(e.target.value))}
+                  className="flex-1 accent-[#22c55e]"
+                />
+                <button
+                  onClick={() => setFavPickGrams(Math.min(2000, favPickGrams + 10))}
+                  className="w-9 h-9 rounded-full bg-white/[0.04] border border-white/[0.06] text-white/70 flex items-center justify-center active:scale-95"
+                >
+                  <Plus size={14} />
+                </button>
+              </div>
+
+              <div className="rounded-xl bg-[#22c55e]/[0.06] border border-[#22c55e]/20 px-3 py-2.5 flex items-center justify-between mb-4">
+                <span className="text-[11px] text-white/60">Total estimado</span>
+                <span className="text-sm font-extrabold text-[#22c55e] tabular-nums">
+                  {Math.round((pickedFav.calories * favPickGrams) / (pickedFav.base_grams || 100))} kcal
+                </span>
+              </div>
+
+              <div className="flex gap-2">
+                <button
+                  onClick={() => setFavOpen(false)}
+                  className="flex-1 h-10 rounded-full bg-white/[0.04] border border-white/[0.06] text-white/70 text-xs font-bold active:scale-95"
+                >
+                  Cancelar
+                </button>
+                <button
+                  onClick={useFavorite}
+                  className="flex-1 h-10 rounded-full bg-[#22c55e] text-white text-xs font-bold active:scale-95"
+                >
+                  Usar
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
