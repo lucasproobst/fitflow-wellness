@@ -358,7 +358,7 @@ export default function WorkoutPlan() {
         {/* RIGHT — exercise list (8/12 desktop) */}
         <div className="lg:col-span-8 space-y-0">
 
-
+      <GenerationProgress
         active={generate.isPending}
         steps={[
           "Analisando seu perfil e nível...",
