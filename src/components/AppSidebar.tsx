@@ -15,6 +15,7 @@ import {
 } from "@/components/ui/sidebar";
 import { useAuth } from "@/lib/auth-context";
 import { useProfile } from "@/lib/use-profile";
+import { ProBadge } from "@/components/ProBadge";
 
 const mainItems = [
   { to: "/", icon: Home, label: "Início" },
