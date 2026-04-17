@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { useUpdateProfile } from "@/lib/use-profile";
 import { useAuth } from "@/lib/auth-context";
+import { supabase } from "@/integrations/supabase/client";
 import { Target, Dumbbell, Scale, Heart, ChevronRight, ChevronLeft } from "lucide-react";
 import { toast } from "sonner";
 
