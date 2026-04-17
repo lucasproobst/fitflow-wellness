@@ -164,7 +164,7 @@ export default function Progress() {
   });
 
   return (
-    <div className="px-4 lg:px-8 py-6 max-w-4xl mx-auto">
+    <div className="mobile-shell px-4 py-6 pb-28">
       <div className="mb-8">
         <h1 className="text-2xl font-semibold tracking-tight text-white">Progresso</h1>
         <p className="text-sm text-white/40 mt-0.5">Acompanhe sua evolução</p>
