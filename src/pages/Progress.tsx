@@ -101,14 +101,25 @@ export default function Progress() {
   });
 
   return (
-    <div className="mobile-shell px-4 py-6 pb-28">
-      <div className="mb-8">
-        <h1 className="text-2xl font-semibold tracking-tight text-white">Progresso</h1>
-        <p className="text-sm text-white/40 mt-0.5">Acompanhe sua evolução</p>
+    <div className="mobile-shell px-4 lg:px-8 py-6 pb-28 lg:pb-12">
+      <div className="flex items-end justify-between mb-6 lg:mb-8 gap-3">
+        <div>
+          <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-white/30 mb-1 hidden lg:block">Sua evolução</p>
+          <h1 className="text-2xl lg:text-[32px] font-extrabold tracking-tight text-white leading-tight">Progresso</h1>
+          <p className="text-sm text-white/40 mt-0.5">Acompanhe sua evolução</p>
+        </div>
+        <motion.button
+          {...fadeIn(0)}
+          onClick={() => setShareOpen(true)}
+          className="hidden lg:flex h-10 px-4 rounded-full bg-[#22c55e] text-white text-[13px] font-bold items-center gap-2 active:scale-95 transition-all shrink-0"
+        >
+          <Share2 size={14} />
+          Compartilhar marco
+        </motion.button>
       </div>
 
-      {/* Compartilhar Marco */}
-      <motion.div {...fadeIn(0)}>
+      {/* Mobile share button */}
+      <motion.div {...fadeIn(0)} className="lg:hidden">
         <button
           onClick={() => setShareOpen(true)}
           className="w-full mb-4 h-12 rounded-xl bg-[#22c55e] text-white text-sm font-semibold flex items-center justify-center gap-2 active:scale-[0.98] transition-all"
@@ -130,109 +141,120 @@ export default function Progress() {
         }}
       />
 
-      {/* Registrar peso */}
-      <motion.div {...fadeIn(0.05)} className="rounded-2xl bg-[#141414] border border-white/[0.07] p-4 mb-4">
-        <h2 className="text-[10px] font-bold uppercase tracking-[0.15em] text-white/30 mb-3">REGISTRAR PESO DE HOJE</h2>
-        <div className="flex gap-2">
-          <input
-            type="number"
-            value={newWeight}
-            onChange={e => setNewWeight(e.target.value)}
-            placeholder="ex: 75,5"
-            className="flex-1 h-11 px-4 rounded-xl bg-white/[0.03] border border-white/[0.06] text-white text-sm focus:outline-none focus:border-[#22c55e]/40 transition-colors placeholder:text-white/20"
-          />
-          <button
-            onClick={handleLogWeight}
-            disabled={logWeight.isPending}
-            className="px-5 h-11 rounded-xl bg-[#22c55e] text-white text-sm font-semibold active:scale-95 transition-all disabled:opacity-50"
-          >
-            {logWeight.isPending ? "..." : "Salvar"}
-          </button>
-        </div>
-      </motion.div>
-
-      {/* Gráfico de Peso */}
-      <motion.div {...fadeIn(0.1)} className="rounded-2xl bg-[#141414] border border-white/[0.07] p-4 mb-4">
-        <div className="flex items-center justify-between mb-4">
-          <div>
-            <h2 className="text-sm font-semibold text-white">Peso</h2>
-            {diff !== 0 && (
-              <div className="flex items-center gap-1.5 mt-1">
-                <TrendIcon size={14} className="text-[#22c55e]" />
-                <span className="text-xs text-[#22c55e] font-medium">
-                  {diff > 0 ? "+" : ""}{diff.toFixed(1)} kg
-                </span>
-              </div>
-            )}
-          </div>
-          <div className="flex gap-1">
-            {timeRanges.map((r, i) => (
-              <button
-                key={r.label}
-                onClick={() => setRangeIdx(i)}
-                className={`px-3 py-1 rounded-full text-[10px] font-semibold transition-all active:scale-95 ${
-                  rangeIdx === i
-                    ? "bg-[#22c55e] text-white"
-                    : "border border-white/[0.06] text-white/30 hover:bg-white/[0.03]"
-                }`}
-              >
-                {r.label}
-              </button>
-            ))}
-          </div>
-        </div>
-        {chartData.length > 0 ? (
-          <ResponsiveContainer width="100%" height={180}>
-            <LineChart data={chartData}>
-              <XAxis dataKey="date" tick={{ fontSize: 10, fill: "rgba(255,255,255,0.25)" }} axisLine={false} tickLine={false} />
-              <YAxis domain={["auto", "auto"]} tick={{ fontSize: 10, fill: "rgba(255,255,255,0.25)" }} axisLine={false} tickLine={false} width={30} />
-              <Tooltip
-                contentStyle={{ background: "#141414", border: "1px solid rgba(255,255,255,0.07)", borderRadius: 12, fontSize: 12, color: "#fff" }}
-                labelStyle={{ color: "rgba(255,255,255,0.4)" }}
-              />
-              <Line type="monotone" dataKey="weight" stroke="#22c55e" strokeWidth={2} dot={{ fill: "#22c55e", r: 3 }} />
-            </LineChart>
-          </ResponsiveContainer>
-        ) : (
-          <p className="text-center text-sm text-white/20 py-8">Registre seu peso para ver o progresso</p>
-        )}
-      </motion.div>
-
-      {/* Medidas */}
-      <motion.div {...fadeIn(0.15)} className="rounded-2xl bg-[#141414] border border-white/[0.07] p-4 mb-4">
-        <h2 className="text-[10px] font-bold uppercase tracking-[0.15em] text-white/30 mb-4">MEDIDAS CORPORAIS</h2>
-        <div className="grid grid-cols-3 gap-3 mb-3">
-          {[
-            { label: "Cintura", value: waist, set: setWaist },
-            { label: "Peito", value: chest, set: setChest },
-            { label: "Braços", value: arms, set: setArms },
-          ].map(m => (
-            <div key={m.label}>
-              <label className="text-[10px] text-white/30 block mb-1">{m.label} (cm)</label>
+      {/* Responsive 2-col layout */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 lg:gap-6">
+        {/* LEFT — big chart + weight input (8/12) */}
+        <div className="lg:col-span-8 space-y-4">
+          {/* Registrar peso */}
+          <motion.div {...fadeIn(0.05)} className="rounded-2xl bg-[#141414] border border-white/[0.07] p-4 lg:p-5">
+            <h2 className="text-[10px] font-bold uppercase tracking-[0.15em] text-white/30 mb-3">REGISTRAR PESO DE HOJE</h2>
+            <div className="flex gap-2">
               <input
                 type="number"
-                value={m.value}
-                onChange={e => m.set(e.target.value)}
-                placeholder="—"
-                className="w-full h-10 px-3 rounded-xl bg-white/[0.03] border border-white/[0.06] text-white text-sm text-center focus:outline-none focus:border-[#22c55e]/40 transition-colors placeholder:text-white/15"
+                value={newWeight}
+                onChange={e => setNewWeight(e.target.value)}
+                placeholder="ex: 75,5"
+                className="flex-1 h-11 px-4 rounded-xl bg-white/[0.03] border border-white/[0.06] text-white text-sm focus:outline-none focus:border-[#22c55e]/40 transition-colors placeholder:text-white/20"
               />
+              <button
+                onClick={handleLogWeight}
+                disabled={logWeight.isPending}
+                className="px-5 h-11 rounded-xl bg-[#22c55e] text-white text-sm font-semibold active:scale-95 transition-all disabled:opacity-50"
+              >
+                {logWeight.isPending ? "..." : "Salvar"}
+              </button>
             </div>
-          ))}
+          </motion.div>
+
+          {/* Gráfico de Peso — bigger on desktop */}
+          <motion.div {...fadeIn(0.1)} className="rounded-2xl bg-[#141414] border border-white/[0.07] p-4 lg:p-6">
+            <div className="flex items-center justify-between mb-4">
+              <div>
+                <h2 className="text-sm lg:text-base font-bold text-white">Peso</h2>
+                {diff !== 0 && (
+                  <div className="flex items-center gap-1.5 mt-1">
+                    <TrendIcon size={14} className="text-[#22c55e]" />
+                    <span className="text-xs text-[#22c55e] font-medium">
+                      {diff > 0 ? "+" : ""}{diff.toFixed(1)} kg
+                    </span>
+                  </div>
+                )}
+              </div>
+              <div className="flex gap-1">
+                {timeRanges.map((r, i) => (
+                  <button
+                    key={r.label}
+                    onClick={() => setRangeIdx(i)}
+                    className={`px-3 py-1 rounded-full text-[10px] font-semibold transition-all active:scale-95 ${
+                      rangeIdx === i
+                        ? "bg-[#22c55e] text-white"
+                        : "border border-white/[0.06] text-white/30 hover:bg-white/[0.03]"
+                    }`}
+                  >
+                    {r.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+            {chartData.length > 0 ? (
+              <ResponsiveContainer width="100%" height={180} className="lg:!h-[360px]">
+                <LineChart data={chartData}>
+                  <XAxis dataKey="date" tick={{ fontSize: 10, fill: "rgba(255,255,255,0.25)" }} axisLine={false} tickLine={false} />
+                  <YAxis domain={["auto", "auto"]} tick={{ fontSize: 10, fill: "rgba(255,255,255,0.25)" }} axisLine={false} tickLine={false} width={30} />
+                  <Tooltip
+                    contentStyle={{ background: "#141414", border: "1px solid rgba(255,255,255,0.07)", borderRadius: 12, fontSize: 12, color: "#fff" }}
+                    labelStyle={{ color: "rgba(255,255,255,0.4)" }}
+                  />
+                  <Line type="monotone" dataKey="weight" stroke="#22c55e" strokeWidth={2} dot={{ fill: "#22c55e", r: 3 }} />
+                </LineChart>
+              </ResponsiveContainer>
+            ) : (
+              <p className="text-center text-sm text-white/20 py-8 lg:py-24">Registre seu peso para ver o progresso</p>
+            )}
+          </motion.div>
+
+          {/* Histórico de Treinos — wide column */}
+          <WorkoutHistory userId={user?.id} fadeIn={fadeIn} />
         </div>
-        <button
-          onClick={handleLogMeasurements}
-          disabled={logMeasurements.isPending}
-          className="w-full h-10 rounded-xl bg-white/[0.04] text-white/60 text-sm font-semibold hover:bg-white/[0.06] active:scale-[0.98] transition-all disabled:opacity-50"
-        >
-          Salvar Medidas
-        </button>
-      </motion.div>
 
-      {/* Fotos Antes/Depois — timeline + comparador */}
-      <ProgressPhotosTimeline />
+        {/* RIGHT — sidebar with measurements + photos (4/12) */}
+        <div className="lg:col-span-4 space-y-4">
+          {/* Medidas */}
+          <motion.div {...fadeIn(0.15)} className="rounded-2xl bg-[#141414] border border-white/[0.07] p-4 lg:p-5">
+            <h2 className="text-[10px] font-bold uppercase tracking-[0.15em] text-white/30 mb-4">MEDIDAS CORPORAIS</h2>
+            <div className="grid grid-cols-3 lg:grid-cols-1 gap-3 mb-3">
+              {[
+                { label: "Cintura", value: waist, set: setWaist },
+                { label: "Peito", value: chest, set: setChest },
+                { label: "Braços", value: arms, set: setArms },
+              ].map(m => (
+                <div key={m.label} className="lg:flex lg:items-center lg:gap-3">
+                  <label className="text-[10px] text-white/30 block mb-1 lg:mb-0 lg:flex-1 lg:text-xs lg:font-semibold lg:text-white/60 lg:uppercase lg:tracking-wider">
+                    {m.label} <span className="lg:hidden">(cm)</span>
+                  </label>
+                  <input
+                    type="number"
+                    value={m.value}
+                    onChange={e => m.set(e.target.value)}
+                    placeholder="—"
+                    className="w-full lg:w-20 h-10 px-3 rounded-xl bg-white/[0.03] border border-white/[0.06] text-white text-sm text-center focus:outline-none focus:border-[#22c55e]/40 transition-colors placeholder:text-white/15"
+                  />
+                </div>
+              ))}
+            </div>
+            <button
+              onClick={handleLogMeasurements}
+              disabled={logMeasurements.isPending}
+              className="w-full h-10 rounded-xl bg-white/[0.04] text-white/60 text-sm font-semibold hover:bg-white/[0.06] active:scale-[0.98] transition-all disabled:opacity-50"
+            >
+              Salvar Medidas
+            </button>
+          </motion.div>
 
-      {/* Histórico de Treinos */}
-      <WorkoutHistory userId={user?.id} fadeIn={fadeIn} />
+          {/* Fotos Antes/Depois */}
+          <ProgressPhotosTimeline />
+        </div>
+      </div>
     </div>
   );
 }

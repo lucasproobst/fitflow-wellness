@@ -256,7 +256,10 @@ export default function WorkoutPlan() {
   };
 
   return (
-    <div className="px-4 lg:px-8 py-6 max-w-4xl mx-auto pb-32">
+    <div className="mobile-shell px-4 lg:px-8 py-6 pb-32 lg:pb-12">
+      <div className="lg:grid lg:grid-cols-12 lg:gap-6">
+        <div className="lg:col-span-4">
+          <div className="lg:sticky lg:top-20 lg:space-y-1">
       {/* Header com back + título + ação */}
       <div className="flex items-center justify-between mb-6">
         <button
@@ -349,8 +352,13 @@ export default function WorkoutPlan() {
           ))}
         </div>
       )}
+          </div>
+        </div>
 
-      <GenerationProgress
+        {/* RIGHT — exercise list (8/12 desktop) */}
+        <div className="lg:col-span-8 space-y-0">
+
+
         active={generate.isPending}
         steps={[
           "Analisando seu perfil e nível...",
@@ -424,7 +432,7 @@ export default function WorkoutPlan() {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -8 }}
               transition={{ duration: 0.2 }}
-              className={`space-y-3 mb-6 ${dayLocked ? "opacity-50 pointer-events-none select-none" : ""}`}
+              className={`space-y-3 lg:space-y-0 lg:grid lg:grid-cols-2 lg:gap-3 mb-6 ${dayLocked ? "opacity-50 pointer-events-none select-none" : ""}`}
             >
               {currentDay.exercises.length === 0 ? (
                 <div className="rounded-2xl bg-[#141414] border border-white/[0.07] py-10 text-center">
@@ -552,6 +560,8 @@ export default function WorkoutPlan() {
           )}
         </>
       )}
+        </div>
+      </div>
 
       {/* SWAP EXERCISE Sheet */}
       <AnimatePresence>

@@ -61,111 +61,125 @@ export default function FoodDiary() {
   };
 
   return (
-    <div className="px-4 lg:px-8 py-6 max-w-4xl mx-auto">
+    <div className="mobile-shell px-4 lg:px-8 py-6 pb-28 lg:pb-12">
       <motion.div
         initial={{ opacity: 0, y: 8 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.3 }}
-        className="mb-6"
+        className="mb-6 lg:mb-8"
       >
-        <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-white/30 mb-1">Hoje</p>
-        <h1 className="text-[28px] font-extrabold tracking-tight text-white leading-tight">Diário alimentar</h1>
-        <p className="text-xs text-white/40 mt-1">Acompanhe calorias, macros e hidratação</p>
+        <p className="text-[10px] lg:text-[11px] font-bold uppercase tracking-[0.18em] text-white/30 mb-1">Hoje</p>
+        <h1 className="text-[28px] lg:text-[32px] font-extrabold tracking-tight text-white leading-tight">Diário alimentar</h1>
+        <p className="text-xs lg:text-sm text-white/40 mt-1">Acompanhe calorias, macros e hidratação</p>
       </motion.div>
 
-      <motion.div
-        initial={{ opacity: 0, scale: 0.95 }}
-        animate={{ opacity: 1, scale: 1 }}
-        transition={{ duration: 0.35, delay: 0.05 }}
-        className="flex justify-center mb-6"
-      >
-        <CalorieRing consumed={totalCals} target={2000} size={180} />
-      </motion.div>
+      {/* Responsive 2-col layout */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 lg:gap-6">
+        {/* LEFT — Ring + macros + hidratação (5/12) */}
+        <div className="lg:col-span-5 space-y-4">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.35, delay: 0.05 }}
+            className="rounded-2xl bg-[#141414] border border-white/[0.07] p-6 flex flex-col items-center"
+          >
+            <h3 className="text-[10px] font-bold uppercase tracking-[0.15em] text-white/30 mb-4 self-start">CALORIAS</h3>
+            <CalorieRing consumed={totalCals} target={2000} size={180} />
+          </motion.div>
 
-      <motion.div
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.1 }}
-        className="rounded-2xl bg-[#141414] border border-white/[0.07] p-5 mb-4 space-y-3"
-      >
-        <MacroBar label="Proteína" current={totalProtein} target={150} />
-        <MacroBar label="Carboidratos" current={totalCarbs} target={200} />
-        <MacroBar label="Gordura" current={totalFat} target={60} />
-      </motion.div>
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1 }}
+            className="rounded-2xl bg-[#141414] border border-white/[0.07] p-5 space-y-3"
+          >
+            <h3 className="text-[10px] font-bold uppercase tracking-[0.15em] text-white/30">MACROS</h3>
+            <MacroBar label="Proteína" current={totalProtein} target={150} />
+            <MacroBar label="Carboidratos" current={totalCarbs} target={200} />
+            <MacroBar label="Gordura" current={totalFat} target={60} />
+          </motion.div>
 
-      <motion.div
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.15 }}
-        className="rounded-2xl bg-[#141414] border border-white/[0.07] p-5 mb-4"
-      >
-        <h3 className="text-[10px] font-bold uppercase tracking-[0.15em] text-white/20 mb-3">HIDRATAÇÃO</h3>
-        <WaterTracker glasses={waterGlasses} onAdd={() => addWater.mutate()} />
-      </motion.div>
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.15 }}
+            className="rounded-2xl bg-[#141414] border border-white/[0.07] p-5"
+          >
+            <h3 className="text-[10px] font-bold uppercase tracking-[0.15em] text-white/30 mb-3">HIDRATAÇÃO</h3>
+            <WaterTracker glasses={waterGlasses} onAdd={() => addWater.mutate()} />
+          </motion.div>
+        </div>
 
-      {/* Busca rápida */}
-      <motion.div
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.2 }}
-        className="relative mb-4"
-      >
-        <Search size={14} className="absolute left-4 top-1/2 -translate-y-1/2 text-white/20" />
-        <input
-          type="text"
-          value={search}
-          onChange={e => setSearch(e.target.value)}
-          placeholder="Buscar alimentos para adicionar..."
-          className="w-full h-11 pl-10 pr-4 rounded-xl bg-[#141414] border border-white/[0.07] text-white text-xs focus:outline-none focus:border-white/[0.15] transition-colors placeholder:text-white/20"
-        />
-        {search && (
-          <div className="absolute top-full left-0 right-0 mt-1 bg-[#141414] border border-white/[0.08] rounded-xl overflow-hidden z-10 max-h-60 overflow-y-auto">
-            {filtered.length === 0 ? (
-              <p className="p-4 text-xs text-white/30">Nenhum alimento encontrado</p>
-            ) : (
-              filtered.map((f, i) => (
-                <button
-                  key={i}
-                  onClick={() => addFood(f)}
-                  className="w-full flex items-center justify-between px-4 py-3 hover:bg-white/[0.03] transition-colors border-b border-white/[0.03] last:border-0"
-                >
-                  <span className="text-xs text-white/70">{f.name}</span>
-                  <div className="flex items-center gap-2">
-                    <span className="text-[11px] font-bold text-white/50 tabular-nums">{f.calories} kcal</span>
-                    <Plus size={12} className="text-[#22c55e]" />
-                  </div>
-                </button>
-              ))
-            )}
-          </div>
-        )}
-      </motion.div>
-
-      <motion.div
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.25 }}
-      >
-        <h2 className="text-[10px] font-bold uppercase tracking-[0.15em] text-white/20 mb-3">REFEIÇÕES DE HOJE</h2>
-        {meals.length === 0 ? (
-          <div className="rounded-2xl bg-[#141414] border border-white/[0.05] py-10 text-center">
-            <p className="text-xs text-white/30">Nenhuma refeição registrada hoje</p>
-            <p className="text-[10px] text-white/15 mt-1">Busque acima ou use o scanner</p>
-          </div>
-        ) : (
-          <div className="space-y-2">
-            {meals.map((meal, i) => (
-              <div key={i} className="rounded-xl bg-[#141414] border border-white/[0.05] px-4 py-3 flex items-center justify-between">
-                <div>
-                  <p className="text-xs font-bold text-white">{meal.name}</p>
-                  <p className="text-[10px] text-white/30 mt-0.5">P:{meal.protein}g · C:{meal.carbs}g · G:{meal.fat}g</p>
-                </div>
-                <span className="text-sm font-extrabold text-white tabular-nums">{meal.calories}</span>
+        {/* RIGHT — Search + meals (7/12) */}
+        <div className="lg:col-span-7 space-y-4">
+          {/* Busca rápida */}
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2 }}
+            className="relative"
+          >
+            <Search size={14} className="absolute left-4 top-1/2 -translate-y-1/2 text-white/20" />
+            <input
+              type="text"
+              value={search}
+              onChange={e => setSearch(e.target.value)}
+              placeholder="Buscar alimentos para adicionar..."
+              className="w-full h-11 lg:h-12 pl-10 pr-4 rounded-xl bg-[#141414] border border-white/[0.07] text-white text-xs lg:text-sm focus:outline-none focus:border-white/[0.15] transition-colors placeholder:text-white/20"
+            />
+            {search && (
+              <div className="absolute top-full left-0 right-0 mt-1 bg-[#141414] border border-white/[0.08] rounded-xl overflow-hidden z-10 max-h-60 overflow-y-auto">
+                {filtered.length === 0 ? (
+                  <p className="p-4 text-xs text-white/30">Nenhum alimento encontrado</p>
+                ) : (
+                  filtered.map((f, i) => (
+                    <button
+                      key={i}
+                      onClick={() => addFood(f)}
+                      className="w-full flex items-center justify-between px-4 py-3 hover:bg-white/[0.03] transition-colors border-b border-white/[0.03] last:border-0"
+                    >
+                      <span className="text-xs text-white/70">{f.name}</span>
+                      <div className="flex items-center gap-2">
+                        <span className="text-[11px] font-bold text-white/50 tabular-nums">{f.calories} kcal</span>
+                        <Plus size={12} className="text-[#22c55e]" />
+                      </div>
+                    </button>
+                  ))
+                )}
               </div>
-            ))}
-          </div>
-        )}
-      </motion.div>
+            )}
+          </motion.div>
+
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.25 }}
+          >
+            <div className="flex items-center justify-between mb-3">
+              <h2 className="text-[10px] font-bold uppercase tracking-[0.15em] text-white/30">REFEIÇÕES DE HOJE</h2>
+              <span className="text-[10px] font-bold text-white/40 tabular-nums">{meals.length} item{meals.length !== 1 ? "s" : ""}</span>
+            </div>
+            {meals.length === 0 ? (
+              <div className="rounded-2xl bg-[#141414] border border-white/[0.05] py-10 lg:py-16 text-center">
+                <p className="text-xs text-white/30">Nenhuma refeição registrada hoje</p>
+                <p className="text-[10px] text-white/15 mt-1">Busque acima ou use o scanner</p>
+              </div>
+            ) : (
+              <div className="space-y-2 lg:grid lg:grid-cols-2 lg:gap-2 lg:space-y-0">
+                {meals.map((meal, i) => (
+                  <div key={i} className="rounded-xl bg-[#141414] border border-white/[0.05] px-4 py-3 flex items-center justify-between">
+                    <div className="min-w-0">
+                      <p className="text-xs font-bold text-white truncate">{meal.name}</p>
+                      <p className="text-[10px] text-white/30 mt-0.5">P:{meal.protein}g · C:{meal.carbs}g · G:{meal.fat}g</p>
+                    </div>
+                    <span className="text-sm font-extrabold text-white tabular-nums shrink-0 ml-3">{meal.calories}</span>
+                  </div>
+                ))}
+              </div>
+            )}
+          </motion.div>
+        </div>
+      </div>
     </div>
   );
 }

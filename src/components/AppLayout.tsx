@@ -4,6 +4,8 @@ import { Home, Utensils, Dumbbell, BarChart3, Plus, X, Camera, Salad, Download }
 import { useAuth } from "@/lib/auth-context";
 import { useProfile } from "@/lib/use-profile";
 import { motion, AnimatePresence } from "framer-motion";
+import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
+import { AppSidebar } from "@/components/AppSidebar";
 
 interface BeforeInstallPromptEvent extends Event {
   prompt(): Promise<void>;
@@ -17,7 +19,7 @@ const tabs = [
   { to: "/progress", icon: BarChart3, label: "Stats" },
 ] as const;
 
-const HIDE_HEADER_ROUTES = ["/onboarding", "/auth", "/landing"];
+const HIDE_CHROME_ROUTES = ["/onboarding", "/auth", "/landing"];
 
 export default function AppLayout({ children }: { children: ReactNode }) {
   const { user } = useAuth();
@@ -42,7 +44,6 @@ export default function AppLayout({ children }: { children: ReactNode }) {
     };
   }, []);
 
-  // Close FAB on route change
   useEffect(() => { setFabOpen(false); }, [location.pathname]);
 
   const handleInstall = async () => {
@@ -54,7 +55,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
   };
 
   const showInstallButton = !isInstalled && deferredPrompt;
-  const hideHeader = HIDE_HEADER_ROUTES.some(r => location.pathname.startsWith(r));
+  const hideChrome = HIDE_CHROME_ROUTES.some(r => location.pathname.startsWith(r));
 
   const initials = (profile?.display_name || user?.email || "?")
     .replace(/[^a-zA-ZÀ-ÿ0-9]/g, " ")
@@ -66,63 +67,54 @@ export default function AppLayout({ children }: { children: ReactNode }) {
     .toUpperCase();
 
   const fabActions = [
-    {
-      icon: Camera,
-      title: "Escanear Alimento",
-      subtitle: "Aponte a câmera para qualquer comida",
-      onClick: () => navigate("/scanner"),
-    },
-    {
-      icon: Salad,
-      title: "Gerar Dieta",
-      subtitle: "Nova dieta personalizada",
-      onClick: () => navigate("/diet?generate=1"),
-    },
-    {
-      icon: Dumbbell,
-      title: "Gerar Treino",
-      subtitle: "Novo treino na medida",
-      onClick: () => navigate("/workout?generate=1"),
-    },
+    { icon: Camera, title: "Escanear Alimento", subtitle: "Aponte a câmera para qualquer comida", onClick: () => navigate("/scanner") },
+    { icon: Salad, title: "Gerar Dieta", subtitle: "Nova dieta personalizada", onClick: () => navigate("/diet?generate=1") },
+    { icon: Dumbbell, title: "Gerar Treino", subtitle: "Novo treino na medida", onClick: () => navigate("/workout?generate=1") },
   ];
 
+  // No-chrome routes (auth/onboarding/landing): render bare
+  if (hideChrome) {
+    return (
+      <div className="min-h-screen bg-[#0a0a0a]">
+        <AnimatePresence mode="wait">
+          <motion.main
+            key={location.pathname}
+            initial={{ opacity: 0, y: 6 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -6 }}
+            transition={{ duration: 0.2, ease: "easeInOut" }}
+          >
+            {children}
+          </motion.main>
+        </AnimatePresence>
+      </div>
+    );
+  }
+
   return (
-    <div className="min-h-screen bg-[#0a0a0a]">
-      <div className="mobile-shell relative min-h-screen flex flex-col">
-        {/* Header */}
-        {!hideHeader && (
+    <SidebarProvider defaultOpen={true}>
+      <div className="min-h-screen w-full flex bg-[#0a0a0a]">
+        {/* Desktop sidebar */}
+        <div className="hidden lg:block">
+          <AppSidebar onNewClick={() => setFabOpen(o => !o)} />
+        </div>
+
+        {/* Main column */}
+        <div className="flex-1 min-w-0 flex flex-col">
+          {/* Header */}
           <header
             className="sticky top-0 bg-[#0a0a0a]/95 backdrop-blur-xl z-40 border-b border-white/[0.06]"
             style={{ paddingTop: "env(safe-area-inset-top, 0px)" }}
           >
             <div className="flex items-center justify-between px-5 lg:px-8 h-14 lg:h-16">
-              <div className="flex items-center gap-8 min-w-0">
+              <div className="flex items-center gap-3 min-w-0">
+                <SidebarTrigger className="hidden lg:flex text-white/60 hover:text-white" />
                 <div className="min-w-0">
                   <p className="text-[11px] text-[#6b7280] font-medium">Olá,</p>
                   <h1 className="text-[15px] font-bold text-white truncate max-w-[180px]">
                     {profile?.display_name || user?.email?.split("@")[0] || "Atleta"}
                   </h1>
                 </div>
-                {/* Desktop top nav */}
-                <nav className="hidden lg:flex items-center gap-1">
-                  {tabs.map(t => (
-                    <NavLink
-                      key={t.to}
-                      to={t.to}
-                      end={t.to === "/"}
-                      className={({ isActive }) =>
-                        `flex items-center gap-2 px-4 h-9 rounded-full text-[13px] font-semibold transition-colors ${
-                          isActive
-                            ? "bg-[#22c55e]/15 text-[#22c55e]"
-                            : "text-[#6b7280] hover:text-white hover:bg-white/[0.04]"
-                        }`
-                      }
-                    >
-                      <t.icon size={16} />
-                      {t.label}
-                    </NavLink>
-                  ))}
-                </nav>
               </div>
               <div className="flex items-center gap-2">
                 {showInstallButton && (
@@ -134,19 +126,10 @@ export default function AppLayout({ children }: { children: ReactNode }) {
                     Instalar
                   </button>
                 )}
-                {/* Desktop quick action */}
-                <button
-                  onClick={() => setFabOpen(o => !o)}
-                  className="hidden lg:flex h-9 px-4 rounded-full bg-[#22c55e] text-white items-center gap-1.5 text-[13px] font-bold active:scale-95 transition-transform"
-                  style={{ boxShadow: "0 4px 14px rgba(34,197,94,0.35)" }}
-                >
-                  <Plus size={16} strokeWidth={2.5} />
-                  Novo
-                </button>
                 <button
                   onClick={() => navigate("/profile")}
                   aria-label="Abrir perfil"
-                  className="w-9 h-9 rounded-full overflow-hidden bg-[#141414] border border-white/[0.08] flex items-center justify-center text-[12px] font-bold text-white active:scale-90 transition-all"
+                  className="lg:hidden w-9 h-9 rounded-full overflow-hidden bg-[#141414] border border-white/[0.08] flex items-center justify-center text-[12px] font-bold text-white active:scale-90 transition-all"
                 >
                   {profile?.avatar_url ? (
                     <img src={profile.avatar_url} alt="Avatar" className="w-full h-full object-cover" />
@@ -157,21 +140,21 @@ export default function AppLayout({ children }: { children: ReactNode }) {
               </div>
             </div>
           </header>
-        )}
 
-        {/* Main content */}
-        <AnimatePresence mode="wait">
-          <motion.main
-            key={location.pathname}
-            initial={{ opacity: 0, y: 6 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -6 }}
-            transition={{ duration: 0.2, ease: "easeInOut" }}
-            className="flex-1 pb-32 lg:pb-12"
-          >
-            {children}
-          </motion.main>
-        </AnimatePresence>
+          {/* Main content */}
+          <AnimatePresence mode="wait">
+            <motion.main
+              key={location.pathname}
+              initial={{ opacity: 0, y: 6 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -6 }}
+              transition={{ duration: 0.2, ease: "easeInOut" }}
+              className="flex-1 pb-32 lg:pb-12"
+            >
+              {children}
+            </motion.main>
+          </AnimatePresence>
+        </div>
 
         {/* FAB menu overlay */}
         <AnimatePresence>
@@ -186,7 +169,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
                 className="fixed inset-0 bg-black/70 backdrop-blur-sm z-40"
               />
               <div
-                className="fixed left-1/2 -translate-x-1/2 z-50 w-full max-w-[480px] px-5 pointer-events-none"
+                className="fixed left-1/2 -translate-x-1/2 lg:left-auto lg:right-8 lg:translate-x-0 lg:bottom-8 z-50 w-full max-w-[480px] lg:max-w-[360px] px-5 lg:px-0 pointer-events-none"
                 style={{ bottom: `calc(100px + env(safe-area-inset-bottom, 0px))` }}
               >
                 <div className="space-y-2.5 pointer-events-auto">
@@ -244,7 +227,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
           </div>
         </nav>
       </div>
-    </div>
+    </SidebarProvider>
   );
 }
 

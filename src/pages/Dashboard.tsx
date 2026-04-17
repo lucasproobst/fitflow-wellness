@@ -18,7 +18,6 @@ interface BeforeInstallPromptEvent extends Event {
   userChoice: Promise<{ outcome: "accepted" | "dismissed" }>;
 }
 
-// Reusable animated card wrapper with hover effects
 function AnimCard({
   children,
   delay = 0,
@@ -109,13 +108,13 @@ export default function Dashboard() {
   const totalFat = meals.reduce((s, m) => s + (m.fat || 0), 0);
 
   return (
-    <div className="mobile-shell px-4 py-6 pb-28">
-      {/* Top bar */}
+    <div className="mobile-shell px-4 lg:px-8 py-6 pb-28 lg:pb-12">
+      {/* Mobile-only top bar */}
       <motion.div
         initial={{ opacity: 0, y: -8 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.3 }}
-        className="flex items-center justify-between mb-8"
+        className="flex items-center justify-between mb-8 lg:hidden"
       >
         <div className="flex items-center gap-3 min-w-0">
           <motion.div
@@ -139,7 +138,29 @@ export default function Dashboard() {
         </motion.div>
       </motion.div>
 
-      {/* Weekly summary */}
+      {/* Desktop hero */}
+      <motion.div
+        initial={{ opacity: 0, y: -8 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.3 }}
+        className="hidden lg:flex items-end justify-between mb-8"
+      >
+        <div>
+          <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-white/30 mb-1">Hoje</p>
+          <h1 className="text-[32px] font-extrabold tracking-tight text-white leading-tight">Bem-vindo de volta</h1>
+          <p className="text-sm text-white/40 mt-1">Seu resumo de saúde, treino e nutrição</p>
+        </div>
+        <motion.div
+          whileHover={{ scale: 1.04 }}
+          className="flex items-center gap-2 px-4 h-10 rounded-full bg-white/[0.04] border border-white/[0.06]"
+        >
+          <Flame size={16} className="text-orange-400" />
+          <span className="text-sm font-bold text-white tabular-nums">{streakCount}</span>
+          <span className="text-[11px] text-white/40 font-semibold">dias</span>
+        </motion.div>
+      </motion.div>
+
+      {/* Banners full width */}
       {showWeekly && weeklySummary && (
         <AnimCard delay={0} className="p-4 mb-4 relative">
           <button
@@ -163,11 +184,7 @@ export default function Dashboard() {
                 highlight: weeklySummary.weightChange !== null && weeklySummary.weightChange <= 0,
               },
             ].map((item, i) => (
-              <motion.div
-                key={i}
-                whileHover={{ scale: 1.05 }}
-                className="text-center"
-              >
+              <motion.div key={i} whileHover={{ scale: 1.05 }} className="text-center">
                 <div className="flex items-center justify-center gap-1 mb-1">
                   <item.icon size={12} className={item.highlight ? "text-[#22c55e]" : "text-white/25"} />
                 </div>
@@ -182,7 +199,6 @@ export default function Dashboard() {
         </AnimCard>
       )}
 
-      {/* Install banner */}
       {showInstallBanner && (
         <AnimCard delay={0.05} className="p-4 mb-4 relative">
           <button
@@ -192,10 +208,7 @@ export default function Dashboard() {
             <X size={12} className="text-white/30" />
           </button>
           <div className="flex items-center gap-4">
-            <motion.div
-              whileHover={{ rotate: 6, scale: 1.05 }}
-              className="w-11 h-11 rounded-2xl bg-[#22c55e]/10 flex items-center justify-center shrink-0"
-            >
+            <motion.div whileHover={{ rotate: 6, scale: 1.05 }} className="w-11 h-11 rounded-2xl bg-[#22c55e]/10 flex items-center justify-center shrink-0">
               <Smartphone size={20} className="text-[#22c55e]" />
             </motion.div>
             <div className="flex-1 min-w-0 pr-6">
@@ -206,119 +219,92 @@ export default function Dashboard() {
             </div>
           </div>
           {installPrompt ? (
-            <motion.button
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.97 }}
-              onClick={handleInstallBanner}
-              className="mt-3 w-full h-10 rounded-xl bg-[#22c55e] text-white text-xs font-semibold flex items-center justify-center gap-2"
-            >
-              <Download size={14} />
-              Instalar Agora
+            <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }} onClick={handleInstallBanner} className="mt-3 w-full h-10 rounded-xl bg-[#22c55e] text-white text-xs font-semibold flex items-center justify-center gap-2">
+              <Download size={14} /> Instalar Agora
             </motion.button>
           ) : (
             <Link to="/install">
-              <motion.div
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.97 }}
-                className="mt-3 w-full h-10 rounded-xl bg-white/[0.04] text-white/50 text-xs font-semibold flex items-center justify-center gap-2 hover:bg-white/[0.06]"
-              >
-                <Download size={14} />
-                Como instalar
+              <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }} className="mt-3 w-full h-10 rounded-xl bg-white/[0.04] text-white/50 text-xs font-semibold flex items-center justify-center gap-2 hover:bg-white/[0.06]">
+                <Download size={14} /> Como instalar
               </motion.div>
             </Link>
           )}
         </AnimCard>
       )}
 
-      {/* Calorie Ring */}
-      <motion.div
-        initial={{ opacity: 0, scale: 0.9 }}
-        animate={{ opacity: 1, scale: 1 }}
-        transition={{ duration: 0.4, delay: 0.1, type: "spring", stiffness: 200 }}
-        className="flex justify-center mb-8"
-      >
-        <CalorieRing consumed={consumed} target={calorieTarget} />
-      </motion.div>
+      {/* Responsive grid */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 lg:gap-6">
+        {/* LEFT — Calorie ring + macros */}
+        <div className="lg:col-span-5 space-y-4">
+          <AnimCard delay={0.08} className="p-6 flex flex-col items-center">
+            <h2 className="text-[10px] font-bold uppercase tracking-[0.15em] text-white/30 mb-4 self-start">CALORIAS DE HOJE</h2>
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.4, delay: 0.1, type: "spring", stiffness: 200 }}
+            >
+              <CalorieRing consumed={consumed} target={calorieTarget} />
+            </motion.div>
+          </AnimCard>
 
-      {/* Macros */}
-      <AnimCard delay={0.15} hoverable className="p-4 mb-4 space-y-4">
-        <MacroBar label="Proteína" current={totalProtein} target={150} />
-        <MacroBar label="Carboidratos" current={totalCarbs} target={200} />
-        <MacroBar label="Gordura" current={totalFat} target={60} />
-      </AnimCard>
+          <AnimCard delay={0.15} hoverable className="p-5 space-y-4">
+            <h3 className="text-[10px] font-bold uppercase tracking-[0.15em] text-white/30">MACROS</h3>
+            <MacroBar label="Proteína" current={totalProtein} target={150} />
+            <MacroBar label="Carboidratos" current={totalCarbs} target={200} />
+            <MacroBar label="Gordura" current={totalFat} target={60} />
+          </AnimCard>
+        </div>
 
-      <div className="grid gap-4">
-        {/* Hydration */}
-        <AnimCard delay={0.2} hoverable className="p-4">
-          <h3 className="text-[10px] font-bold uppercase tracking-[0.15em] text-white/30 mb-3">HIDRATAÇÃO</h3>
-          <WaterTracker
-            glasses={waterGlasses}
-            onAdd={() => addWater.mutate()}
-          />
-        </AnimCard>
-
-        {/* Workout shortcut */}
-        <motion.div
-          initial={{ opacity: 0, y: 12 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.3, delay: 0.25 }}
-          whileHover={{ y: -2 }}
-        >
-          <Link to="/workout">
-            <div className="rounded-2xl bg-[#141414] border border-white/[0.07] p-4 hover:border-white/[0.12] hover:shadow-[0_4px_24px_rgba(34,197,94,0.05)] transition-all duration-300">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <motion.div
-                    whileHover={{ rotate: -8 }}
-                    className="w-10 h-10 rounded-xl bg-[#22c55e]/10 flex items-center justify-center"
-                  >
-                    <Dumbbell size={18} className="text-[#22c55e]" />
-                  </motion.div>
-                  <div>
-                    <p className="text-sm font-semibold text-white">Treino de Hoje</p>
-                    <p className="text-xs text-white/40">Toque para abrir seu treino</p>
-                  </div>
-                </div>
-                <motion.div whileHover={{ x: 3 }}>
-                  <ChevronRight size={16} className="text-white/30" />
-                </motion.div>
+        {/* RIGHT — Hidratação, Treino, Streak, Achievements (grid 2x2 desktop) */}
+        <div className="lg:col-span-7">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <AnimCard delay={0.2} hoverable className="p-5">
+              <div className="flex items-center gap-2 mb-3">
+                <Droplets size={14} className="text-[#22c55e]" />
+                <h3 className="text-[10px] font-bold uppercase tracking-[0.15em] text-white/30">HIDRATAÇÃO</h3>
               </div>
-            </div>
-          </Link>
-        </motion.div>
-      </div>
+              <WaterTracker glasses={waterGlasses} onAdd={() => addWater.mutate()} />
+            </AnimCard>
 
-      {/* Streak */}
-      <AnimCard delay={0.3} hoverable className="p-4 mt-4">
-        <div className="flex items-center gap-3">
-          <motion.div
-            animate={{ scale: [1, 1.1, 1] }}
-            transition={{ duration: 2, repeat: Infinity, repeatDelay: 3 }}
-          >
-            <Flame size={24} className="text-orange-400" />
-          </motion.div>
-          <div>
-            <p className="text-lg font-semibold text-white">Sequência de {streakCount} Dia{streakCount !== 1 ? "s" : ""}</p>
-            <p className="text-xs text-white/30">
-              {streakCount > 0 ? "Continue assim! Você está arrasando" : "Registre refeições e treinos para começar sua sequência"}
-            </p>
+            <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3, delay: 0.25 }} whileHover={{ y: -2 }}>
+              <Link to="/workout" className="block h-full">
+                <div className="rounded-2xl bg-[#141414] border border-white/[0.07] p-5 h-full hover:border-white/[0.12] hover:shadow-[0_4px_24px_rgba(34,197,94,0.05)] transition-all duration-300">
+                  <div className="flex items-start justify-between mb-3">
+                    <motion.div whileHover={{ rotate: -8 }} className="w-11 h-11 rounded-xl bg-[#22c55e]/10 flex items-center justify-center">
+                      <Dumbbell size={20} className="text-[#22c55e]" />
+                    </motion.div>
+                    <ChevronRight size={16} className="text-white/30" />
+                  </div>
+                  <p className="text-sm font-bold text-white">Treino de hoje</p>
+                  <p className="text-xs text-white/40 mt-0.5">Toque para abrir</p>
+                </div>
+              </Link>
+            </motion.div>
+
+            <AnimCard delay={0.3} hoverable className="p-5">
+              <div className="flex items-start gap-3">
+                <motion.div animate={{ scale: [1, 1.1, 1] }} transition={{ duration: 2, repeat: Infinity, repeatDelay: 3 }} className="w-11 h-11 rounded-xl bg-orange-500/10 flex items-center justify-center shrink-0">
+                  <Flame size={20} className="text-orange-400" />
+                </motion.div>
+                <div className="min-w-0">
+                  <p className="text-lg font-extrabold text-white tabular-nums">{streakCount} dia{streakCount !== 1 ? "s" : ""}</p>
+                  <p className="text-[11px] text-white/40 leading-snug mt-0.5">
+                    {streakCount > 0 ? "Continue assim! Você está arrasando" : "Registre para começar"}
+                  </p>
+                </div>
+              </div>
+            </AnimCard>
+
+            <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3, delay: 0.35 }} whileHover={{ y: -2 }}>
+              <Link to="/achievements" className="block h-full">
+                <div className="rounded-2xl bg-[#141414] border border-white/[0.07] p-5 h-full hover:border-white/[0.12] hover:shadow-[0_4px_24px_rgba(34,197,94,0.05)] transition-all duration-300">
+                  <AchievementBadges />
+                </div>
+              </Link>
+            </motion.div>
           </div>
         </div>
-      </AnimCard>
-
-      {/* Achievements */}
-      <motion.div
-        initial={{ opacity: 0, y: 12 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.3, delay: 0.35 }}
-        whileHover={{ y: -2 }}
-      >
-        <Link to="/achievements">
-          <div className="rounded-2xl bg-[#141414] border border-white/[0.07] p-4 mt-4 hover:border-white/[0.12] hover:shadow-[0_4px_24px_rgba(34,197,94,0.05)] transition-all duration-300">
-            <AchievementBadges />
-          </div>
-        </Link>
-      </motion.div>
+      </div>
     </div>
   );
 }
