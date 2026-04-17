@@ -6,6 +6,21 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
+function formatLocalDate(d: Date): string {
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${y}-${m}-${day}`;
+}
+
+function getWeekStart(): string {
+  const today = new Date();
+  const dayOfWeek = today.getDay();
+  const monday = new Date(today);
+  monday.setDate(today.getDate() - ((dayOfWeek + 6) % 7));
+  return formatLocalDate(monday);
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
@@ -152,12 +167,7 @@ Regras:
         return d;
       });
 
-      // Save
-      const today = new Date();
-      const dayOfWeek = today.getDay();
-      const monday = new Date(today);
-      monday.setDate(today.getDate() - ((dayOfWeek + 6) % 7));
-      const weekStart = monday.toISOString().split("T")[0];
+      const weekStart = getWeekStart();
       await supabase.from("meal_plans").delete().eq("user_id", userId).eq("week_start", weekStart);
       await supabase.from("meal_plans").insert({ user_id: userId, week_start: weekStart, plan_data: updatedPlan });
 
@@ -271,12 +281,7 @@ Regras:
     }
 
     const plan = JSON.parse(toolCall.function.arguments);
-
-    const today = new Date();
-    const dayOfWeek = today.getDay();
-    const monday = new Date(today);
-    monday.setDate(today.getDate() - ((dayOfWeek + 6) % 7));
-    const weekStart = monday.toISOString().split("T")[0];
+    const weekStart = getWeekStart();
 
     await supabase.from("meal_plans").delete().eq("user_id", userId).eq("week_start", weekStart);
     await supabase.from("meal_plans").insert({ user_id: userId, week_start: weekStart, plan_data: plan });
