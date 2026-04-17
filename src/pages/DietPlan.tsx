@@ -51,12 +51,19 @@ interface MealPlanData {
   days: DayPlan[];
 }
 
+function formatLocalDate(d: Date): string {
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${y}-${m}-${day}`;
+}
+
 function getWeekStart() {
   const today = new Date();
   const dayOfWeek = today.getDay();
   const monday = new Date(today);
   monday.setDate(today.getDate() - ((dayOfWeek + 6) % 7));
-  return monday.toISOString().split("T")[0];
+  return formatLocalDate(monday);
 }
 
 function parseIngredients(meal: Meal): string[] {
