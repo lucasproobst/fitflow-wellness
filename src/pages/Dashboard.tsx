@@ -167,7 +167,17 @@ export default function Dashboard() {
       >
         <div>
           <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-white/30 mb-1">Hoje</p>
-          <h1 className="text-[32px] font-extrabold tracking-tight text-white leading-tight">{greeting}, {firstName}</h1>
+          <h1 className="text-[32px] font-extrabold tracking-tight text-white leading-tight flex items-center gap-3">
+            <span>{greeting}, {firstName}</span>
+            <motion.span
+              animate={emojiAnim}
+              transition={{ duration: 2.4, repeat: Infinity, ease: "easeInOut" }}
+              className="inline-block"
+              style={{ transformOrigin: "50% 80%" }}
+            >
+              {greetingEmoji}
+            </motion.span>
+          </h1>
           <p className="text-sm text-white/40 mt-1">Seu resumo de saúde, treino e nutrição</p>
         </div>
         <motion.div
