@@ -129,8 +129,47 @@ export default function Scanner() {
       setBaseline(data as ScanResult);
       setBaseGrams(g);
       setGrams(g);
+    } catch (err: any) {
+      setNotFound(true);
+      toast.error(err.message || "Falha ao analisar alimento");
+    } finally {
       setScanning(false);
     }
+  };
+
+  const openManualEntry = () => {
+    setManualName("");
+    setManualGrams("100");
+    setManualKcal100("");
+    setManualOpen(true);
+  };
+
+  const submitManualEntry = () => {
+    const name = manualName.trim();
+    const g = parseFloat(manualGrams.replace(",", "."));
+    const kcal100 = parseFloat(manualKcal100.replace(",", "."));
+    if (!name) return toast.error("Informe o nome do alimento");
+    if (!g || g <= 0) return toast.error("Informe a gramagem da porção");
+    if (!kcal100 || kcal100 <= 0) return toast.error("Informe as kcal por 100 g");
+    const f = g / 100;
+    const base: ScanResult = {
+      name,
+      serving: `${Math.round(g)} g`,
+      calories: Math.round(kcal100 * f),
+      protein: 0,
+      carbs: 0,
+      fat: 0,
+      confidence: "alta",
+    };
+    // baseline at 100g so the slider scales freely
+    const baseAt100: ScanResult = { ...base, serving: "100 g", calories: Math.round(kcal100) };
+    setResult(base);
+    setBaseline(baseAt100);
+    setBaseGrams(100);
+    setGrams(Math.round(g));
+    setImage(null);
+    setNotFound(false);
+    setManualOpen(false);
   };
 
   const addToDiary = async () => {
