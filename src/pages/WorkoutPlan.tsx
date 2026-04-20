@@ -637,9 +637,26 @@ function ExerciseVideoModal({ exerciseName, onClose }: { exerciseName: string; o
 
   useEffect(() => {
     let cancelled = false;
-    setLoading(true);
     setError(false);
     setVideoId(null);
+
+    const cacheKey = `yt-video:${exerciseName.toLowerCase().trim()}`;
+    const TTL_MS = 30 * 24 * 60 * 60 * 1000; // 30 days
+
+    // Try cache first
+    try {
+      const raw = localStorage.getItem(cacheKey);
+      if (raw) {
+        const parsed = JSON.parse(raw) as { videoId: string; ts: number };
+        if (parsed.videoId && Date.now() - parsed.ts < TTL_MS) {
+          setVideoId(parsed.videoId);
+          setLoading(false);
+          return () => { cancelled = true; };
+        }
+      }
+    } catch { /* ignore cache errors */ }
+
+    setLoading(true);
     (async () => {
       try {
         const supabaseUrl = (import.meta.env.VITE_SUPABASE_URL as string) || "";
@@ -651,8 +668,14 @@ function ExerciseVideoModal({ exerciseName, onClose }: { exerciseName: string; o
         if (!res.ok) throw new Error("not-ok");
         const json = await res.json();
         if (cancelled) return;
-        if (json.videoId) setVideoId(json.videoId);
-        else setError(true);
+        if (json.videoId) {
+          setVideoId(json.videoId);
+          try {
+            localStorage.setItem(cacheKey, JSON.stringify({ videoId: json.videoId, ts: Date.now() }));
+          } catch { /* quota — ignore */ }
+        } else {
+          setError(true);
+        }
       } catch {
         if (!cancelled) setError(true);
       } finally {
