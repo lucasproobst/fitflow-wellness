@@ -642,30 +642,21 @@ function ExerciseVideoModal({ exerciseName, onClose }: { exerciseName: string; o
     setVideoId(null);
     (async () => {
       try {
-        const { data, error: fnError } = await supabase.functions.invoke("youtube-search", {
-          body: null,
-          method: "GET" as any,
-          // Pass query as URL — supabase-js v2 forwards search params via "headers" workaround
+        const supabaseUrl = (import.meta.env.VITE_SUPABASE_URL as string) || "";
+        const anonKey = (import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY as string) || "";
+        const url = `${supabaseUrl}/functions/v1/youtube-search?q=${encodeURIComponent(exerciseName + " exercício forma correta")}`;
+        const res = await fetch(url, {
+          headers: { apikey: anonKey, Authorization: `Bearer ${anonKey}` },
         });
-        // supabase-js doesn't support query params directly, so do a manual fetch instead:
-        throw new Error("use-direct-fetch");
+        if (!res.ok) throw new Error("not-ok");
+        const json = await res.json();
+        if (cancelled) return;
+        if (json.videoId) setVideoId(json.videoId);
+        else setError(true);
       } catch {
-        // Direct fetch fallback (always taken)
-        try {
-          const supabaseUrl = (import.meta.env.VITE_SUPABASE_URL as string) || "";
-          const anonKey = (import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY as string) || "";
-          const url = `${supabaseUrl}/functions/v1/youtube-search?q=${encodeURIComponent(exerciseName + " exercício forma correta")}`;
-          const res = await fetch(url, { headers: { apikey: anonKey, Authorization: `Bearer ${anonKey}` } });
-          if (!res.ok) throw new Error("not-ok");
-          const json = await res.json();
-          if (cancelled) return;
-          if (json.videoId) setVideoId(json.videoId);
-          else setError(true);
-        } catch {
-          if (!cancelled) setError(true);
-        } finally {
-          if (!cancelled) setLoading(false);
-        }
+        if (!cancelled) setError(true);
+      } finally {
+        if (!cancelled) setLoading(false);
       }
     })();
     return () => { cancelled = true; };
