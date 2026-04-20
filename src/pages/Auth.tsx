@@ -7,11 +7,30 @@ import { Mail, Lock, Eye, EyeOff } from "lucide-react";
 
 export default function Auth() {
   const [isLogin, setIsLogin] = useState(true);
+  const [forgot, setForgot] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPw, setShowPw] = useState(false);
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+
+  const handleForgot = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!email) return toast.error("Digite seu e-mail");
+    setLoading(true);
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${window.location.origin}/reset-password`,
+      });
+      if (error) throw error;
+      toast.success("Enviamos um link de recuperação para seu e-mail");
+      setForgot(false);
+    } catch (err: any) {
+      toast.error(err.message || "Erro ao enviar e-mail");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -56,10 +75,39 @@ export default function Auth() {
             Fit<span className="text-fitflow-primary">Flow</span>
           </h1>
           <p className="text-sm text-foreground/50 mt-2">
-            {isLogin ? "Bem-vindo de volta" : "Crie sua conta"}
+            {forgot ? "Recuperar senha" : isLogin ? "Bem-vindo de volta" : "Crie sua conta"}
           </p>
         </div>
 
+        {forgot ? (
+          <form onSubmit={handleForgot} className="space-y-4">
+            <div className="relative">
+              <Mail size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-foreground/30" />
+              <input
+                type="email"
+                value={email}
+                onChange={e => setEmail(e.target.value)}
+                placeholder="Seu e-mail cadastrado"
+                required
+                className="w-full h-12 pl-11 pr-4 rounded-xl bg-white/5 border border-white/10 text-foreground text-sm focus:outline-none focus:border-fitflow-primary placeholder:text-foreground/30"
+              />
+            </div>
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full h-14 rounded-xl bg-fitflow-primary text-white font-semibold text-sm active:scale-95 transition-all disabled:opacity-50"
+            >
+              {loading ? "Enviando..." : "Enviar link de recuperação"}
+            </button>
+            <button
+              type="button"
+              onClick={() => setForgot(false)}
+              className="w-full text-center text-sm text-foreground/50 hover:text-foreground transition-colors"
+            >
+              Voltar ao login
+            </button>
+          </form>
+        ) : (
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="relative">
             <Mail size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-foreground/30" />
@@ -96,8 +144,21 @@ export default function Auth() {
           >
             {loading ? "Aguarde..." : isLogin ? "Entrar" : "Criar Conta"}
           </button>
-        </form>
 
+          {isLogin && (
+            <button
+              type="button"
+              onClick={() => setForgot(true)}
+              className="w-full text-center text-xs text-foreground/50 hover:text-fitflow-primary transition-colors"
+            >
+              Esqueci minha senha
+            </button>
+          )}
+        </form>
+        )}
+
+        {!forgot && (
+        <>
         <div className="my-6 flex items-center gap-3">
           <div className="flex-1 h-px bg-white/10" />
           <span className="text-xs text-foreground/30">ou</span>
@@ -123,6 +184,8 @@ export default function Auth() {
             {isLogin ? "Cadastre-se" : "Entrar"}
           </button>
         </p>
+        </>
+        )}
       </motion.div>
     </div>
   );
