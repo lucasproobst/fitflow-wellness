@@ -19,10 +19,30 @@ export default function Profile() {
   const { user, signOut } = useAuth();
   const { data: profile } = useProfile();
   const uploadAvatar = useUploadAvatar();
+  const bio = useBiometricLock(user?.id);
   const [editInfoOpen, setEditInfoOpen] = useState(false);
   const [photoSheetOpen, setPhotoSheetOpen] = useState(false);
+  const [bioBusy, setBioBusy] = useState(false);
   const cameraInput = useRef<HTMLInputElement>(null);
   const galleryInput = useRef<HTMLInputElement>(null);
+
+  const toggleBiometric = async () => {
+    if (bioBusy) return;
+    setBioBusy(true);
+    try {
+      if (bio.enabled) {
+        bio.disable();
+        toast.success("Biometria desativada");
+      } else {
+        await bio.enable(user?.email);
+        toast.success("Biometria ativada! Será pedida ao reabrir o app");
+      }
+    } catch (e: any) {
+      toast.error(e?.message || "Não foi possível ativar a biometria");
+    } finally {
+      setBioBusy(false);
+    }
+  };
 
   // Stats: workouts done, meal plans generated, active days
   const { data: stats } = useQuery({
