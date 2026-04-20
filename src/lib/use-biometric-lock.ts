@@ -9,12 +9,13 @@ interface StoredCred {
   enabledAt: number;
 }
 
-function b64uToBytes(b64u: string): Uint8Array {
+function b64uToBuffer(b64u: string): ArrayBuffer {
   const b64 = b64u.replace(/-/g, "+").replace(/_/g, "/").padEnd(b64u.length + ((4 - (b64u.length % 4)) % 4), "=");
   const bin = atob(b64);
-  const out = new Uint8Array(bin.length);
+  const buf = new ArrayBuffer(bin.length);
+  const out = new Uint8Array(buf);
   for (let i = 0; i < bin.length; i++) out[i] = bin.charCodeAt(i);
-  return out;
+  return buf;
 }
 
 function bytesToB64u(buf: ArrayBuffer): string {
@@ -100,7 +101,7 @@ export function useBiometricLock(userId: string | undefined) {
         publicKey: {
           challenge,
           allowCredentials: [{
-            id: b64uToBytes(stored.credentialId),
+            id: b64uToBuffer(stored.credentialId),
             type: "public-key",
             transports: ["internal"],
           }],
