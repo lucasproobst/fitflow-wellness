@@ -619,43 +619,111 @@ export default function WorkoutPlan() {
       {/* Video Modal */}
       <AnimatePresence>
         {videoExercise && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 flex items-center justify-center bg-black/85 backdrop-blur-sm p-4"
-            onClick={() => setVideoExercise(null)}
-          >
-            <motion.div
-              initial={{ scale: 0.9, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.9, opacity: 0 }}
-              transition={{ type: "spring", damping: 25, stiffness: 300 }}
-              className="relative w-full max-w-2xl rounded-2xl overflow-hidden bg-[#141414] border border-white/[0.08]"
-              onClick={(e) => e.stopPropagation()}
-            >
-              <div className="flex items-center justify-between px-4 py-3 border-b border-white/[0.06]">
-                <p className="text-sm font-bold text-white truncate">{videoExercise}</p>
-                <button
-                  onClick={() => setVideoExercise(null)}
-                  className="p-1.5 rounded-lg hover:bg-white/[0.06] text-white/40 hover:text-white/70 transition-colors"
-                >
-                  <X size={16} />
-                </button>
-              </div>
-              <div className="aspect-video w-full">
-                <iframe
-                  src={`https://www.youtube.com/embed?listType=search&list=${encodeURIComponent(videoExercise + " exercício forma correta")}`}
-                  className="w-full h-full"
-                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                  allowFullScreen
-                  title={videoExercise}
-                />
-              </div>
-            </motion.div>
-          </motion.div>
+          <ExerciseVideoModal
+            exerciseName={videoExercise}
+            onClose={() => setVideoExercise(null)}
+          />
         )}
       </AnimatePresence>
     </div>
+  );
+}
+
+// --- Exercise video modal (resolves YouTube videoId via edge function) ---
+function ExerciseVideoModal({ exerciseName, onClose }: { exerciseName: string; onClose: () => void }) {
+  const [videoId, setVideoId] = useState<string | null>(null);
+  const [error, setError] = useState(false);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    let cancelled = false;
+    setLoading(true);
+    setError(false);
+    setVideoId(null);
+    (async () => {
+      try {
+        const { data, error: fnError } = await supabase.functions.invoke("youtube-search", {
+          body: null,
+          method: "GET" as any,
+          // Pass query as URL — supabase-js v2 forwards search params via "headers" workaround
+        });
+        // supabase-js doesn't support query params directly, so do a manual fetch instead:
+        throw new Error("use-direct-fetch");
+      } catch {
+        // Direct fetch fallback (always taken)
+        try {
+          const supabaseUrl = (import.meta.env.VITE_SUPABASE_URL as string) || "";
+          const anonKey = (import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY as string) || "";
+          const url = `${supabaseUrl}/functions/v1/youtube-search?q=${encodeURIComponent(exerciseName + " exercício forma correta")}`;
+          const res = await fetch(url, { headers: { apikey: anonKey, Authorization: `Bearer ${anonKey}` } });
+          if (!res.ok) throw new Error("not-ok");
+          const json = await res.json();
+          if (cancelled) return;
+          if (json.videoId) setVideoId(json.videoId);
+          else setError(true);
+        } catch {
+          if (!cancelled) setError(true);
+        } finally {
+          if (!cancelled) setLoading(false);
+        }
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [exerciseName]);
+
+  return (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/85 backdrop-blur-sm p-4"
+      onClick={onClose}
+    >
+      <motion.div
+        initial={{ scale: 0.9, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        exit={{ scale: 0.9, opacity: 0 }}
+        transition={{ type: "spring", damping: 25, stiffness: 300 }}
+        className="relative w-full max-w-2xl rounded-2xl overflow-hidden bg-[#141414] border border-white/[0.08]"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="flex items-center justify-between px-4 py-3 border-b border-white/[0.06]">
+          <p className="text-sm font-bold text-white truncate">{exerciseName}</p>
+          <button
+            onClick={onClose}
+            className="p-1.5 rounded-lg hover:bg-white/[0.06] text-white/40 hover:text-white/70 transition-colors"
+          >
+            <X size={16} />
+          </button>
+        </div>
+        <div className="aspect-video w-full bg-black flex items-center justify-center">
+          {loading && (
+            <div className="w-7 h-7 border-2 border-white/20 border-t-[#22c55e] rounded-full animate-spin" />
+          )}
+          {!loading && videoId && (
+            <iframe
+              src={`https://www.youtube.com/embed/${videoId}?autoplay=1&rel=0`}
+              className="w-full h-full"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowFullScreen
+              title={exerciseName}
+            />
+          )}
+          {!loading && error && (
+            <div className="text-center px-6 py-8">
+              <p className="text-sm text-white/70 mb-3">Não conseguimos carregar o vídeo aqui.</p>
+              <a
+                href={`https://www.youtube.com/results?search_query=${encodeURIComponent(exerciseName + " exercício forma correta")}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 h-10 px-5 rounded-xl bg-[#22c55e] text-black text-[13px] font-bold active:scale-95 transition-transform"
+              >
+                Buscar no YouTube
+              </a>
+            </div>
+          )}
+        </div>
+      </motion.div>
+    </motion.div>
   );
 }
