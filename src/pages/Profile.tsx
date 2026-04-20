@@ -2,10 +2,11 @@ import { useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/lib/auth-context";
 import { useProfile, useUploadAvatar } from "@/lib/use-profile";
+import { useBiometricLock } from "@/lib/use-biometric-lock";
 import { EditProfileSheet } from "@/components/EditProfileSheet";
 import {
   ArrowLeft, Camera, User, Target, Bell, Lock, CreditCard,
-  HelpCircle, LogOut, ChevronRight, Image as ImageIcon, X,
+  HelpCircle, LogOut, ChevronRight, Image as ImageIcon, X, Fingerprint,
 } from "lucide-react";
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
@@ -18,10 +19,30 @@ export default function Profile() {
   const { user, signOut } = useAuth();
   const { data: profile } = useProfile();
   const uploadAvatar = useUploadAvatar();
+  const bio = useBiometricLock(user?.id);
   const [editInfoOpen, setEditInfoOpen] = useState(false);
   const [photoSheetOpen, setPhotoSheetOpen] = useState(false);
+  const [bioBusy, setBioBusy] = useState(false);
   const cameraInput = useRef<HTMLInputElement>(null);
   const galleryInput = useRef<HTMLInputElement>(null);
+
+  const toggleBiometric = async () => {
+    if (bioBusy) return;
+    setBioBusy(true);
+    try {
+      if (bio.enabled) {
+        bio.disable();
+        toast.success("Biometria desativada");
+      } else {
+        await bio.enable(user?.email);
+        toast.success("Biometria ativada! Será pedida ao reabrir o app");
+      }
+    } catch (e: any) {
+      toast.error(e?.message || "Não foi possível ativar a biometria");
+    } finally {
+      setBioBusy(false);
+    }
+  };
 
   // Stats: workouts done, meal plans generated, active days
   const { data: stats } = useQuery({
@@ -152,6 +173,29 @@ export default function Profile() {
             </button>
           ))}
         </div>
+
+        {/* Biometric lock */}
+        {bio.supported && (
+          <div className="rounded-2xl bg-[#141414] border border-white/[0.07] overflow-hidden mb-6">
+            <div className="flex items-center gap-3 px-4 h-14">
+              <Fingerprint size={18} className="text-[#22c55e]" />
+              <div className="flex-1">
+                <p className="text-[14px] text-white font-medium">Bloqueio com biometria</p>
+                <p className="text-[11px] text-[#6b7280] mt-0.5">Pede Face ID/Touch ID ao abrir o app</p>
+              </div>
+              <button
+                onClick={toggleBiometric}
+                disabled={bioBusy}
+                className={`relative w-11 h-6 rounded-full transition-colors ${bio.enabled ? "bg-[#22c55e]" : "bg-white/10"} disabled:opacity-50`}
+                aria-label="Ativar biometria"
+              >
+                <span
+                  className={`absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white transition-transform ${bio.enabled ? "translate-x-5" : ""}`}
+                />
+              </button>
+            </div>
+          </div>
+        )}
 
         {/* Sign out */}
         <button
