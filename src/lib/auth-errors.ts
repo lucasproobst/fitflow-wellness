@@ -13,6 +13,7 @@ const map: Array<{ match: RegExp; pt: string }> = [
   { match: /token has expired|expired/i, pt: "Link expirado. Solicite um novo" },
   { match: /invalid token|invalid.*recovery/i, pt: "Link inválido ou já utilizado" },
   { match: /new password should be different/i, pt: "A nova senha deve ser diferente da anterior" },
+  { match: /pwned|compromised|has been leaked|found in.*breach|data breach/i, pt: "Esta senha apareceu em vazamentos públicos. Escolha outra" },
   { match: /weak password|password.*weak/i, pt: "Senha muito fraca. Use letras, números e símbolos" },
   { match: /network|fetch failed|failed to fetch/i, pt: "Erro de conexão. Verifique sua internet" },
   { match: /captcha/i, pt: "Falha na verificação. Tente novamente" },
