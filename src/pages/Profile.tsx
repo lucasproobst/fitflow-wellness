@@ -174,6 +174,29 @@ export default function Profile() {
           ))}
         </div>
 
+        {/* Biometric lock */}
+        {bio.supported && (
+          <div className="rounded-2xl bg-[#141414] border border-white/[0.07] overflow-hidden mb-6">
+            <div className="flex items-center gap-3 px-4 h-14">
+              <Fingerprint size={18} className="text-[#22c55e]" />
+              <div className="flex-1">
+                <p className="text-[14px] text-white font-medium">Bloqueio com biometria</p>
+                <p className="text-[11px] text-[#6b7280] mt-0.5">Pede Face ID/Touch ID ao abrir o app</p>
+              </div>
+              <button
+                onClick={toggleBiometric}
+                disabled={bioBusy}
+                className={`relative w-11 h-6 rounded-full transition-colors ${bio.enabled ? "bg-[#22c55e]" : "bg-white/10"} disabled:opacity-50`}
+                aria-label="Ativar biometria"
+              >
+                <span
+                  className={`absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white transition-transform ${bio.enabled ? "translate-x-5" : ""}`}
+                />
+              </button>
+            </div>
+          </div>
+        )}
+
         {/* Sign out */}
         <button
           onClick={signOut}
