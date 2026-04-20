@@ -2,10 +2,11 @@ import { useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/lib/auth-context";
 import { useProfile, useUploadAvatar } from "@/lib/use-profile";
+import { useBiometricLock } from "@/lib/use-biometric-lock";
 import { EditProfileSheet } from "@/components/EditProfileSheet";
 import {
   ArrowLeft, Camera, User, Target, Bell, Lock, CreditCard,
-  HelpCircle, LogOut, ChevronRight, Image as ImageIcon, X,
+  HelpCircle, LogOut, ChevronRight, Image as ImageIcon, X, Fingerprint,
 } from "lucide-react";
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";

@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Route, Routes, Navigate } from "react-router-dom";
 import { Toaster as Sonner } from "@/components/ui/sonner";
@@ -5,6 +6,8 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider, useAuth } from "@/lib/auth-context";
 import { ThemeProvider } from "@/lib/theme-context";
 import { useProfile } from "@/lib/use-profile";
+import { useBiometricLock } from "@/lib/use-biometric-lock";
+import { BiometricLockScreen } from "@/components/BiometricLockScreen";
 import AppLayout from "@/components/AppLayout";
 import Auth from "@/pages/Auth";
 import Onboarding from "@/pages/Onboarding";
@@ -24,6 +27,14 @@ import Landing from "@/pages/Landing";
 import ResetPassword from "@/pages/ResetPassword";
 
 const queryClient = new QueryClient();
+
+function BiometricGate({ children }: { children: React.ReactNode }) {
+  const { user } = useAuth();
+  const { enabled } = useBiometricLock(user?.id);
+  const [unlocked, setUnlocked] = useState(false);
+  if (enabled && !unlocked) return <BiometricLockScreen onUnlock={() => setUnlocked(true)} />;
+  return <>{children}</>;
+}
 
 function ProtectedRoutes() {
   const { user, loading } = useAuth();
@@ -77,7 +88,7 @@ function AppRoutes() {
       <Route path="/reset-password" element={<ResetPassword />} />
       <Route path="/install" element={<Install />} />
       <Route path="/onboarding" element={user ? <Onboarding /> : <Navigate to="/auth" replace />} />
-      <Route path="/*" element={<ProtectedRoutes />} />
+      <Route path="/*" element={<BiometricGate><ProtectedRoutes /></BiometricGate>} />
     </Routes>
   );
 }
