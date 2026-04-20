@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { motion } from "framer-motion";
 import { Lock, Eye, EyeOff } from "lucide-react";
+import { translateAuthError } from "@/lib/auth-errors";
 
 export default function ResetPassword() {
   const [password, setPassword] = useState("");
@@ -37,7 +38,7 @@ export default function ResetPassword() {
       await supabase.auth.signOut();
       navigate("/auth", { replace: true });
     } catch (err: any) {
-      toast.error(err.message || "Erro ao atualizar senha");
+      toast.error(translateAuthError(err, "Erro ao atualizar senha"));
     } finally {
       setLoading(false);
     }

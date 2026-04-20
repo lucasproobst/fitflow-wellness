@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { motion } from "framer-motion";
 import { Mail, Lock, Eye, EyeOff } from "lucide-react";
+import { translateAuthError } from "@/lib/auth-errors";
 
 export default function Auth() {
   const [isLogin, setIsLogin] = useState(true);
@@ -26,7 +27,7 @@ export default function Auth() {
       toast.success("Enviamos um link de recuperação para seu e-mail");
       setForgot(false);
     } catch (err: any) {
-      toast.error(err.message || "Erro ao enviar e-mail");
+      toast.error(translateAuthError(err, "Erro ao enviar e-mail"));
     } finally {
       setLoading(false);
     }
@@ -45,7 +46,7 @@ export default function Auth() {
         toast.success("Verifique seu e-mail para confirmar a conta");
       }
     } catch (err: any) {
-      toast.error(err.message);
+      toast.error(translateAuthError(err));
     } finally {
       setLoading(false);
     }
@@ -59,7 +60,7 @@ export default function Auth() {
       });
       if (error) throw error;
     } catch (err: any) {
-      toast.error(err?.message || "Login com Google indisponível");
+      toast.error(translateAuthError(err, "Login com Google indisponível"));
     }
   };
 
