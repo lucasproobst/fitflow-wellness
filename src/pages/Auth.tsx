@@ -6,6 +6,7 @@ import { motion } from "framer-motion";
 import { Mail, Lock, Eye, EyeOff } from "lucide-react";
 import { translateAuthError } from "@/lib/auth-errors";
 import { PasswordStrengthMeter } from "@/components/PasswordStrengthMeter";
+import { evaluatePasswordStrength } from "@/lib/password-strength";
 
 export default function Auth() {
   const [isLogin, setIsLogin] = useState(true);
@@ -142,8 +143,8 @@ export default function Auth() {
           {!isLogin && <PasswordStrengthMeter password={password} />}
           <button
             type="submit"
-            disabled={loading}
-            className="w-full h-14 rounded-xl bg-fitflow-primary text-white font-semibold text-sm active:scale-95 transition-all disabled:opacity-50"
+            disabled={loading || (!isLogin && evaluatePasswordStrength(password).score < 2)}
+            className="w-full h-14 rounded-xl bg-fitflow-primary text-white font-semibold text-sm active:scale-95 transition-all disabled:opacity-50 disabled:active:scale-100"
           >
             {loading ? "Aguarde..." : isLogin ? "Entrar" : "Criar Conta"}
           </button>
