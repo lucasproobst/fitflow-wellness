@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import { motion } from "framer-motion";
 import { Lock, Eye, EyeOff } from "lucide-react";
 import { translateAuthError } from "@/lib/auth-errors";
+import { PasswordStrengthMeter } from "@/components/PasswordStrengthMeter";
 
 export default function ResetPassword() {
   const [password, setPassword] = useState("");
@@ -77,6 +78,8 @@ export default function ResetPassword() {
                 {showPw ? <EyeOff size={16} /> : <Eye size={16} />}
               </button>
             </div>
+
+            <PasswordStrengthMeter password={password} />
 
             <div className="relative">
               <Lock size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-foreground/30" />

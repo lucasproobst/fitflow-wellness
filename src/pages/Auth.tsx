@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import { motion } from "framer-motion";
 import { Mail, Lock, Eye, EyeOff } from "lucide-react";
 import { translateAuthError } from "@/lib/auth-errors";
+import { PasswordStrengthMeter } from "@/components/PasswordStrengthMeter";
 
 export default function Auth() {
   const [isLogin, setIsLogin] = useState(true);
@@ -138,6 +139,7 @@ export default function Auth() {
             </button>
           </div>
 
+          {!isLogin && <PasswordStrengthMeter password={password} />}
           <button
             type="submit"
             disabled={loading}
