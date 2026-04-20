@@ -1,6 +1,5 @@
 // Resolves the first YouTube videoId for a given search query (no API key).
 // Scrapes the public results page and extracts the first ID via regex.
-import "https://deno.land/x/[email protected]/load.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -27,11 +26,9 @@ Deno.serve(async (req) => {
 
     const html = await res.text();
 
-    // Try multiple patterns - YouTube changes layout often
     const patterns = [
       /"videoId":"([a-zA-Z0-9_-]{11})"/,
       /\/watch\?v=([a-zA-Z0-9_-]{11})/,
-      /"videoRenderer":\{"videoId":"([a-zA-Z0-9_-]{11})"/,
     ];
 
     for (const re of patterns) {
