@@ -3,9 +3,11 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { motion } from "framer-motion";
-import { Lock, Eye, EyeOff } from "lucide-react";
+import { Lock, Eye, EyeOff, AlertCircle } from "lucide-react";
 import { translateAuthError } from "@/lib/auth-errors";
 import { PasswordStrengthMeter } from "@/components/PasswordStrengthMeter";
+
+const PWNED_MSG = "Esta senha apareceu em vazamentos públicos. Escolha outra";
 
 export default function ResetPassword() {
   const [password, setPassword] = useState("");
@@ -13,6 +15,7 @@ export default function ResetPassword() {
   const [showPw, setShowPw] = useState(false);
   const [loading, setLoading] = useState(false);
   const [ready, setReady] = useState(false);
+  const [pwnedError, setPwnedError] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -32,6 +35,7 @@ export default function ResetPassword() {
     if (password.length < 6) return toast.error("A senha deve ter pelo menos 6 caracteres");
     if (password !== confirm) return toast.error("As senhas não coincidem");
     setLoading(true);
+    setPwnedError(false);
     try {
       const { error } = await supabase.auth.updateUser({ password });
       if (error) throw error;
@@ -39,7 +43,9 @@ export default function ResetPassword() {
       await supabase.auth.signOut();
       navigate("/auth", { replace: true });
     } catch (err: any) {
-      toast.error(translateAuthError(err, "Erro ao atualizar senha"));
+      const translated = translateAuthError(err, "Erro ao atualizar senha");
+      if (translated === PWNED_MSG) setPwnedError(true);
+      toast.error(translated);
     } finally {
       setLoading(false);
     }
@@ -68,16 +74,27 @@ export default function ResetPassword() {
               <input
                 type={showPw ? "text" : "password"}
                 value={password}
-                onChange={e => setPassword(e.target.value)}
+                onChange={e => { setPassword(e.target.value); if (pwnedError) setPwnedError(false); }}
                 placeholder="Nova senha"
                 required
                 minLength={6}
-                className="w-full h-12 pl-11 pr-11 rounded-xl bg-white/5 border border-white/10 text-foreground text-sm focus:outline-none focus:border-fitflow-primary placeholder:text-foreground/30"
+                aria-invalid={pwnedError}
+                className={`w-full h-12 pl-11 ${pwnedError ? "pr-20" : "pr-11"} rounded-xl bg-white/5 border ${pwnedError ? "border-destructive" : "border-white/10"} text-foreground text-sm focus:outline-none ${pwnedError ? "focus:border-destructive" : "focus:border-fitflow-primary"} placeholder:text-foreground/30`}
               />
+              {pwnedError && (
+                <AlertCircle size={16} className="absolute right-11 top-1/2 -translate-y-1/2 text-destructive" aria-label="Senha vazada" />
+              )}
               <button type="button" onClick={() => setShowPw(!showPw)} className="absolute right-4 top-1/2 -translate-y-1/2 text-foreground/30">
                 {showPw ? <EyeOff size={16} /> : <Eye size={16} />}
               </button>
             </div>
+
+            {pwnedError && (
+              <p className="flex items-start gap-2 text-xs text-destructive">
+                <AlertCircle size={14} className="shrink-0 mt-0.5" />
+                <span>{PWNED_MSG}</span>
+              </p>
+            )}
 
             <PasswordStrengthMeter password={password} />
 
