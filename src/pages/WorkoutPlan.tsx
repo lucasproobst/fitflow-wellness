@@ -304,7 +304,7 @@ export default function WorkoutPlan() {
           </h1>
         </div>
         <button
-          onClick={() => generate.mutate()}
+          onClick={openDaysPicker}
           disabled={generate.isPending}
           className="w-10 h-10 rounded-full bg-[#22c55e] flex items-center justify-center active:scale-95 transition-all disabled:opacity-50"
           aria-label="Regenerar plano"
@@ -416,7 +416,7 @@ export default function WorkoutPlan() {
         <div className="rounded-2xl bg-[#141414] border border-white/[0.07] py-16 text-center">
           <p className="text-white/30 text-sm mb-5">Nenhum plano de treino ainda</p>
           <button
-            onClick={() => generate.mutate()}
+            onClick={openDaysPicker}
             className="px-6 py-3 rounded-xl bg-[#22c55e] text-white text-sm font-bold active:scale-95 transition-all"
           >
             Gerar seu plano
