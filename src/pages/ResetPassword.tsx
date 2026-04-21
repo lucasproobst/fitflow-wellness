@@ -70,7 +70,7 @@ export default function ResetPassword() {
 
         {ready && (
           <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="relative">
+            <div className={`relative ${pwnedError ? "animate-shake" : ""}`}>
               <Lock size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-foreground/30" />
               <input
                 type={showPw ? "text" : "password"}
