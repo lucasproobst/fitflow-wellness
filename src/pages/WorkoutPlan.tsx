@@ -702,16 +702,16 @@ export default function WorkoutPlan() {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: 30 }}
               transition={{ type: "spring", damping: 26, stiffness: 280 }}
-              className="fixed left-1/2 -translate-x-1/2 bottom-0 w-full max-w-[480px] bg-[#141414] border-t border-white/[0.08] rounded-t-3xl p-5 z-50 safe-bottom"
+              className="fixed left-0 right-0 bottom-0 mx-auto w-full max-w-[480px] bg-[#141414] border-t border-white/[0.08] rounded-t-3xl p-5 z-50 safe-bottom max-h-[90vh] overflow-y-auto"
             >
-              <div className="flex items-center justify-between mb-1">
-                <div>
+              <div className="flex items-start justify-between gap-3 mb-1">
+                <div className="min-w-0 flex-1">
                   <p className="text-[10px] font-bold uppercase tracking-[0.15em] text-white/30">Personalize</p>
-                  <h3 className="text-base font-extrabold text-white mt-0.5">Em quais dias você quer treinar?</h3>
+                  <h3 className="text-[15px] font-extrabold text-white mt-0.5 leading-tight">Em quais dias você quer treinar?</h3>
                 </div>
                 <button
                   onClick={() => setDaysPickerOpen(false)}
-                  className="w-8 h-8 rounded-full bg-white/[0.06] flex items-center justify-center"
+                  className="w-8 h-8 rounded-full bg-white/[0.06] flex items-center justify-center shrink-0"
                   aria-label="Fechar"
                 >
                   <X size={14} className="text-white/60" />
@@ -726,13 +726,13 @@ export default function WorkoutPlan() {
                 onClick={() => setPickedDays(new Set(suggestion.days))}
                 className="w-full mb-5 p-3 rounded-xl bg-gradient-to-br from-[#22c55e]/[0.08] to-[#22c55e]/[0.02] border border-[#22c55e]/20 text-left active:scale-[0.99] transition-all"
               >
-                <div className="flex items-center gap-2 mb-1">
-                  <Sparkles size={12} className="text-[#22c55e]" />
-                  <span className="text-[10px] font-extrabold uppercase tracking-wider text-[#22c55e]">
-                    Sugestão para {suggestion.label}
+                <div className="flex items-center gap-2 mb-1 min-w-0">
+                  <Sparkles size={12} className="text-[#22c55e] shrink-0" />
+                  <span className="text-[10px] font-extrabold uppercase tracking-wider text-[#22c55e] truncate">
+                    Sugestão · {suggestion.label}
                   </span>
-                  <span className="ml-auto text-[10px] font-bold text-white/50">
-                    {suggestion.days.length} {suggestion.days.length === 1 ? "dia" : "dias"} →
+                  <span className="ml-auto text-[10px] font-bold text-white/50 shrink-0">
+                    {suggestion.days.length} {suggestion.days.length === 1 ? "dia" : "dias"}
                   </span>
                 </div>
                 <p className="text-[11px] text-white/60 leading-snug">{suggestion.reason}</p>
