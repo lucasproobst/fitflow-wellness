@@ -6,6 +6,9 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
+import { ALL_DAYS, resolveSelectedDays } from "./resolver.ts";
+export { ALL_DAYS, resolveSelectedDays };
+
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
@@ -36,17 +39,13 @@ serve(async (req) => {
     const userId = claimsData.claims.sub as string;
 
     // Optional body: { selected_days?: string[] } — names in Portuguese
-    const ALL_DAYS = ["Segunda", "Terça", "Quarta", "Quinta", "Sexta", "Sábado", "Domingo"];
-    let selectedDays: string[] | null = null;
+    let bodySelectedDays: unknown = null;
     try {
       if (req.headers.get("content-type")?.includes("application/json")) {
         const body = await req.json();
-        if (Array.isArray(body?.selected_days) && body.selected_days.length > 0) {
-          const filtered = body.selected_days.filter((d: unknown): d is string => ALL_DAYS.includes(d as string));
-          if (filtered.length > 0) selectedDays = filtered;
-        }
+        bodySelectedDays = body?.selected_days;
       }
-    } catch { /* no body / invalid json — use defaults */ }
+    } catch { /* no body / invalid json — fall through */ }
 
     const { data: profile, error: profileError } = await supabase
       .from("user_profile")
@@ -60,17 +59,11 @@ serve(async (req) => {
       });
     }
 
-    // Fallback: if body didn't specify days, use profile.preferred_workout_days (0=Mon … 6=Sun)
-    if (!selectedDays) {
-      const pref = (profile as any).preferred_workout_days;
-      if (Array.isArray(pref) && pref.length > 0) {
-        selectedDays = pref
-          .filter((i: unknown): i is number => typeof i === "number" && i >= 0 && i <= 6)
-          .map((i: number) => ALL_DAYS[i]);
-      }
-    }
-    if (!selectedDays || selectedDays.length === 0) selectedDays = ALL_DAYS;
-    const restDays = ALL_DAYS.filter((d) => !selectedDays!.includes(d));
+    const selectedDays = resolveSelectedDays(
+      bodySelectedDays,
+      (profile as { preferred_workout_days?: unknown }).preferred_workout_days,
+    );
+    const restDays = ALL_DAYS.filter((d) => !selectedDays.includes(d));
 
     const goal = profile.goal || "maintain";
     const activity = profile.activity_level || "moderate";
