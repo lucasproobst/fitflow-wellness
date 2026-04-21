@@ -116,14 +116,14 @@ export function EditProfileSheet({ open, onOpenChange, profile }: EditProfileShe
       onOpenChange(false);
 
       if (activityChanged && activityFrequency[activity]) {
-        const { days, label } = activityFrequency[activity];
+        const { days, label, suggestedDays } = activityFrequency[activity];
         setTimeout(() => {
           toast(`Nível alterado para ${label}`, {
             description: `Frequência ideal: ${days} dias de treino por semana. Quer regenerar seu plano?`,
             duration: 8000,
             action: {
               label: "Regenerar",
-              onClick: () => handleRegenerate(),
+              onClick: () => handleRegenerate(suggestedDays),
             },
           });
         }, 300);
@@ -135,11 +135,16 @@ export function EditProfileSheet({ open, onOpenChange, profile }: EditProfileShe
     }
   };
 
-  const handleRegenerate = async () => {
+  const handleRegenerate = async (preferredDays?: number[]) => {
     setConfirmRegen(false);
     setRegenerating(true);
     const t = toast.loading("Gerando novos planos com seus dados atualizados...");
     try {
+      // Persist new preferred workout days BEFORE regenerating so the workout
+      // generator picks them up.
+      if (preferredDays && preferredDays.length > 0) {
+        await updateProfile.mutateAsync({ preferred_workout_days: preferredDays } as any);
+      }
       const [meal, workout] = await Promise.all([
         supabase.functions.invoke("generate-meal-plan", { body: {} }),
         supabase.functions.invoke("generate-workout-plan", { body: {} }),
@@ -147,6 +152,7 @@ export function EditProfileSheet({ open, onOpenChange, profile }: EditProfileShe
       if (meal.error || workout.error) throw meal.error || workout.error;
       qc.invalidateQueries({ queryKey: ["meal-plan"] });
       qc.invalidateQueries({ queryKey: ["workout-plan"] });
+      qc.invalidateQueries({ queryKey: ["profile"] });
       toast.success("Planos atualizados!", { id: t });
     } catch (e) {
       console.error(e);
