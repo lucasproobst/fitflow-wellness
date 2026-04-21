@@ -256,7 +256,7 @@ export function ProgressPhotosTimeline() {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: 30 }}
               transition={{ type: "spring", damping: 25, stiffness: 280 }}
-              className="fixed left-1/2 -translate-x-1/2 bottom-0 w-full max-w-[480px] bg-[#141414] border-t border-white/[0.08] rounded-t-3xl p-5 z-50 safe-bottom"
+              className="fixed left-1/2 -translate-x-1/2 bottom-0 w-full max-w-[480px] bg-[#141414] border-t border-white/[0.08] rounded-t-3xl p-5 z-50 modal-safe-bottom"
             >
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-base font-bold text-white">Confirmar foto</h3>
@@ -323,7 +323,7 @@ export function ProgressPhotosTimeline() {
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.95 }}
-              className="fixed inset-0 z-50 flex items-center justify-center p-4 pointer-events-none"
+              className="fixed inset-0 z-50 flex items-center justify-center p-4 modal-safe-bottom pointer-events-none"
             >
               <div className="w-full max-w-[480px] lg:max-w-[720px] bg-[#141414] border border-white/[0.08] rounded-2xl p-4 pointer-events-auto max-h-[92vh] overflow-y-auto">
                 <div className="flex items-center justify-between mb-4">

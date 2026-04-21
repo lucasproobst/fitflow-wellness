@@ -220,7 +220,7 @@ export default function Profile() {
             <motion.div
               initial={{ y: "100%" }} animate={{ y: 0 }} exit={{ y: "100%" }}
               transition={{ type: "spring", stiffness: 320, damping: 32 }}
-              className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[480px] z-50 px-4 pb-4 safe-bottom"
+              className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[480px] z-50 px-4 modal-safe-bottom"
             >
               <div className="bg-[#141414] border border-white/[0.08] rounded-2xl overflow-hidden">
                 <div className="flex items-center justify-between px-5 h-12 border-b border-white/[0.06]">

@@ -102,7 +102,7 @@ export function AchievementShareCard({ achievement, unlockedAt, userName, open, 
   });
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4" onClick={onClose}>
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4 modal-safe-bottom" onClick={onClose}>
       <div className="w-full max-w-xs animate-in zoom-in-95 fade-in duration-300" onClick={e => e.stopPropagation()}>
         {/* Shareable card */}
         <div
