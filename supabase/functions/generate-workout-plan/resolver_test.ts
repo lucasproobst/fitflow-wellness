@@ -47,9 +47,9 @@ Deno.test("partially valid body keeps only valid day names (does not fall back)"
 });
 
 Deno.test("no body and no preference defaults to all 7 days", () => {
-  assertEquals(resolveSelectedDays(null, null), ALL_DAYS);
-  assertEquals(resolveSelectedDays(undefined, undefined), ALL_DAYS);
-  assertEquals(resolveSelectedDays(null, []), ALL_DAYS);
+  assertEquals(resolveSelectedDays(null, null), [...ALL_DAYS]);
+  assertEquals(resolveSelectedDays(undefined, undefined), [...ALL_DAYS]);
+  assertEquals(resolveSelectedDays(null, []), [...ALL_DAYS]);
 });
 
 Deno.test("preferred indices out of range are filtered", () => {
