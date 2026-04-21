@@ -204,6 +204,21 @@ Outras regras:
 
     const plan = JSON.parse(toolCall.function.arguments);
 
+    // Enforce rest days server-side: any day not in selectedDays becomes "Descanso"
+    if (Array.isArray(plan?.days)) {
+      plan.days = plan.days.map((d: { day: string; focus: string; exercises: unknown[] }) => {
+        if (!selectedDays.includes(d.day)) {
+          return { day: d.day, focus: "Descanso", exercises: [] };
+        }
+        return d;
+      });
+      // Ensure all 7 days are present in correct order
+      const byDay = new Map(plan.days.map((d: { day: string }) => [d.day, d]));
+      plan.days = ALL_DAYS.map((name) =>
+        byDay.get(name) ?? { day: name, focus: selectedDays.includes(name) ? "Treino" : "Descanso", exercises: [] }
+      );
+    }
+
     // Calculate Monday using local-style date math (matches frontend)
     const now = new Date();
     const dow = now.getDay(); // 0=Sun
