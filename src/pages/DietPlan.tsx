@@ -693,7 +693,7 @@ export default function DietPlan() {
                                     <span className="w-5 h-5 rounded-full bg-white/[0.06] flex items-center justify-center text-[10px] font-bold text-white/40 shrink-0 mt-0.5">
                                       {j + 1}
                                     </span>
-                                    <span className="text-white/70 leading-relaxed">{step}</span>
+                                    <span className="text-white/70 leading-relaxed min-w-0 break-words">{step}</span>
                                   </li>
                                 ))}
                               </ol>
