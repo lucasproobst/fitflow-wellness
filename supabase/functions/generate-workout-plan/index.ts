@@ -6,6 +6,35 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
+export const ALL_DAYS = ["Segunda", "Terça", "Quarta", "Quinta", "Sexta", "Sábado", "Domingo"];
+
+/**
+ * Pure resolver: decides which weekday names the workout plan should target.
+ * Priority:
+ *   1. Valid `bodySelectedDays` from the request body (filtered against ALL_DAYS).
+ *   2. Profile `preferred_workout_days` (numeric indices 0=Mon … 6=Sun) mapped to names.
+ *   3. Fallback: every day of the week.
+ * Exported for unit testing.
+ */
+export function resolveSelectedDays(
+  bodySelectedDays: unknown,
+  preferredWorkoutDays: unknown,
+): string[] {
+  if (Array.isArray(bodySelectedDays) && bodySelectedDays.length > 0) {
+    const filtered = bodySelectedDays.filter(
+      (d: unknown): d is string => typeof d === "string" && ALL_DAYS.includes(d),
+    );
+    if (filtered.length > 0) return filtered;
+  }
+  if (Array.isArray(preferredWorkoutDays) && preferredWorkoutDays.length > 0) {
+    const mapped = preferredWorkoutDays
+      .filter((i: unknown): i is number => typeof i === "number" && i >= 0 && i <= 6)
+      .map((i: number) => ALL_DAYS[i]);
+    if (mapped.length > 0) return mapped;
+  }
+  return [...ALL_DAYS];
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
