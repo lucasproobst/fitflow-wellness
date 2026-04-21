@@ -35,6 +35,20 @@ serve(async (req) => {
     }
     const userId = claimsData.claims.sub as string;
 
+    // Optional body: { selected_days?: string[] } — names in Portuguese
+    const ALL_DAYS = ["Segunda", "Terça", "Quarta", "Quinta", "Sexta", "Sábado", "Domingo"];
+    let selectedDays: string[] = ALL_DAYS;
+    try {
+      if (req.headers.get("content-type")?.includes("application/json")) {
+        const body = await req.json();
+        if (Array.isArray(body?.selected_days) && body.selected_days.length > 0) {
+          selectedDays = body.selected_days.filter((d: unknown): d is string => ALL_DAYS.includes(d as string));
+          if (selectedDays.length === 0) selectedDays = ALL_DAYS;
+        }
+      }
+    } catch { /* no body / invalid json — use defaults */ }
+    const restDays = ALL_DAYS.filter((d) => !selectedDays.includes(d));
+
     const { data: profile, error: profileError } = await supabase
       .from("user_profile")
       .select("*")
@@ -58,11 +72,11 @@ serve(async (req) => {
     };
 
     const activityAdjust: Record<string, string> = {
-      sedentary: "3 dias de treino, intensidade leve, exercícios mais simples, mais dias de descanso",
-      light: "4 dias de treino, intensidade moderada, exercícios básicos",
-      moderate: "5 dias de treino, boa mistura de intensidade",
-      active: "5-6 dias de treino, volume mais alto",
-      very_active: "6 dias de treino, alto volume e intensidade",
+      sedentary: "intensidade leve, exercícios mais simples",
+      light: "intensidade moderada, exercícios básicos",
+      moderate: "boa mistura de intensidade",
+      active: "volume mais alto",
+      very_active: "alto volume e intensidade",
     };
 
     const goalPt: Record<string, string> = {
@@ -89,12 +103,20 @@ Configurações deste usuário:
 - Objetivo: ${goalPt[goal] || goal} — ${goalDescriptions[goal] || goalDescriptions.maintain}
 - Nível de atividade: ${activity} — ${activityAdjust[activity] || activityAdjust.moderate}
 
+DIAS DE TREINO ESCOLHIDOS PELO USUÁRIO: ${selectedDays.join(", ")}
+DIAS DE DESCANSO OBRIGATÓRIOS: ${restDays.length > 0 ? restDays.join(", ") : "nenhum"}
+
+REGRAS CRÍTICAS DE DIAS:
+- Inclua TODOS os 7 dias da semana no array (Segunda a Domingo, em ordem).
+- Para cada dia em DIAS DE DESCANSO OBRIGATÓRIOS, use focus = "Descanso" e exercises = [].
+- Para cada dia em DIAS DE TREINO ESCOLHIDOS, monte um treino apropriado (4-6 exercícios).
+- Distribua os grupos musculares de forma inteligente entre os dias escolhidos (ex: 3 dias = full-body; 4 dias = upper/lower; 5+ dias = split por grupo).
+
 Outras regras:
-- Inclua dias de descanso apropriados (foco = "Descanso" ou "Recuperação Ativa", exercises = []).
 - Cada exercício: nome em português, 3-4 séries, 8-15 reps (ou segundos para isométricos/cardio), grupo muscular, dificuldade.
 - Grupos musculares válidos: Peito, Costas, Ombros, Bíceps, Tríceps, Pernas, Glúteos, Core, Corpo Inteiro, Cardio.
 - Dificuldade: Iniciante, Intermediário, Avançado (priorize Iniciante/Intermediário, exceto se atividade = very_active).
-- 4-6 exercícios por treino, sem repetir o mesmo exercício no mesmo dia.
+- Sem repetir o mesmo exercício no mesmo dia.
 - Use a ferramenta fornecida para retornar o plano estruturado.`;
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
@@ -181,6 +203,21 @@ Outras regras:
     }
 
     const plan = JSON.parse(toolCall.function.arguments);
+
+    // Enforce rest days server-side: any day not in selectedDays becomes "Descanso"
+    if (Array.isArray(plan?.days)) {
+      plan.days = plan.days.map((d: { day: string; focus: string; exercises: unknown[] }) => {
+        if (!selectedDays.includes(d.day)) {
+          return { day: d.day, focus: "Descanso", exercises: [] };
+        }
+        return d;
+      });
+      // Ensure all 7 days are present in correct order
+      const byDay = new Map(plan.days.map((d: { day: string }) => [d.day, d]));
+      plan.days = ALL_DAYS.map((name) =>
+        byDay.get(name) ?? { day: name, focus: selectedDays.includes(name) ? "Treino" : "Descanso", exercises: [] }
+      );
+    }
 
     // Calculate Monday using local-style date math (matches frontend)
     const now = new Date();
