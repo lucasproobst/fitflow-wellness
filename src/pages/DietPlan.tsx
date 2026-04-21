@@ -1,7 +1,7 @@
 import { useState, useMemo, useEffect, useCallback, useRef } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useSearchParams, useNavigate } from "react-router-dom";
-import { RefreshCw, Shuffle, Heart, ChevronRight, X, Clock, ChefHat, Lightbulb, ArrowLeft, SlidersHorizontal, Coffee, UtensilsCrossed, Moon, Apple } from "lucide-react";
+import { RefreshCw, Shuffle, Heart, ChevronRight, X, Clock, ChefHat, Lightbulb, ArrowLeft, ArrowUp, SlidersHorizontal, Coffee, UtensilsCrossed, Moon, Apple } from "lucide-react";
 import { RecipeShareCard } from "@/components/RecipeShareCard";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth-context";
