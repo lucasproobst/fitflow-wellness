@@ -86,12 +86,13 @@ export function EditProfileSheet({ open, onOpenChange, profile }: EditProfileShe
     );
   };
 
-  const activityFrequency: Record<string, { days: number; label: string }> = {
-    sedentary:   { days: 2, label: "Sedentário" },
-    light:       { days: 3, label: "Leve" },
-    moderate:    { days: 4, label: "Moderado" },
-    active:      { days: 5, label: "Ativo" },
-    very_active: { days: 6, label: "Muito Ativo" },
+  // Must mirror activitySuggestions in src/pages/WorkoutPlan.tsx (0=Mon … 6=Sun)
+  const activityFrequency: Record<string, { days: number; label: string; suggestedDays: number[] }> = {
+    sedentary:   { days: 2, label: "Sedentário",  suggestedDays: [0, 3] },
+    light:       { days: 3, label: "Leve",        suggestedDays: [0, 2, 4] },
+    moderate:    { days: 4, label: "Moderado",    suggestedDays: [0, 1, 3, 4] },
+    active:      { days: 5, label: "Ativo",       suggestedDays: [0, 1, 2, 4, 5] },
+    very_active: { days: 6, label: "Muito Ativo", suggestedDays: [0, 1, 2, 3, 4, 5] },
   };
 
   const handleSave = async () => {
