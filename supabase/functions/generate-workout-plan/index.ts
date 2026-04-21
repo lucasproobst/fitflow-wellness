@@ -37,17 +37,16 @@ serve(async (req) => {
 
     // Optional body: { selected_days?: string[] } — names in Portuguese
     const ALL_DAYS = ["Segunda", "Terça", "Quarta", "Quinta", "Sexta", "Sábado", "Domingo"];
-    let selectedDays: string[] = ALL_DAYS;
+    let selectedDays: string[] | null = null;
     try {
       if (req.headers.get("content-type")?.includes("application/json")) {
         const body = await req.json();
         if (Array.isArray(body?.selected_days) && body.selected_days.length > 0) {
-          selectedDays = body.selected_days.filter((d: unknown): d is string => ALL_DAYS.includes(d as string));
-          if (selectedDays.length === 0) selectedDays = ALL_DAYS;
+          const filtered = body.selected_days.filter((d: unknown): d is string => ALL_DAYS.includes(d as string));
+          if (filtered.length > 0) selectedDays = filtered;
         }
       }
     } catch { /* no body / invalid json — use defaults */ }
-    const restDays = ALL_DAYS.filter((d) => !selectedDays.includes(d));
 
     const { data: profile, error: profileError } = await supabase
       .from("user_profile")
@@ -60,6 +59,18 @@ serve(async (req) => {
         status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
+
+    // Fallback: if body didn't specify days, use profile.preferred_workout_days (0=Mon … 6=Sun)
+    if (!selectedDays) {
+      const pref = (profile as any).preferred_workout_days;
+      if (Array.isArray(pref) && pref.length > 0) {
+        selectedDays = pref
+          .filter((i: unknown): i is number => typeof i === "number" && i >= 0 && i <= 6)
+          .map((i: number) => ALL_DAYS[i]);
+      }
+    }
+    if (!selectedDays || selectedDays.length === 0) selectedDays = ALL_DAYS;
+    const restDays = ALL_DAYS.filter((d) => !selectedDays!.includes(d));
 
     const goal = profile.goal || "maintain";
     const activity = profile.activity_level || "moderate";
