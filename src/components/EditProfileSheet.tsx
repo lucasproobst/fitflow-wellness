@@ -294,7 +294,7 @@ export function EditProfileSheet({ open, onOpenChange, profile }: EditProfileShe
               Agora não
             </AlertDialogCancel>
             <AlertDialogAction
-              onClick={handleRegenerate}
+              onClick={() => handleRegenerate()}
               disabled={regenerating}
               className="bg-[#22c55e] text-white hover:bg-[#22c55e]/90"
             >
