@@ -552,7 +552,7 @@ export default function Scanner() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/70 backdrop-blur-sm p-4"
+            className="fixed inset-0 z-[80] flex items-end sm:items-center justify-center bg-black/70 backdrop-blur-sm p-4 pb-[calc(1rem+env(safe-area-inset-bottom)+88px)] sm:pb-4"
             onClick={() => setManualOpen(false)}
           >
             <motion.div
