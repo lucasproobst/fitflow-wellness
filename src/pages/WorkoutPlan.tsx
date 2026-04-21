@@ -10,6 +10,7 @@ import { GenerationProgress } from "@/components/GenerationProgress";
 
 const shortDays = ["S", "T", "Q", "Q", "S", "S", "D"];
 const fullDays = ["Seg", "Ter", "Qua", "Qui", "Sex", "Sáb", "Dom"];
+const dayNamesPt = ["Segunda", "Terça", "Quarta", "Quinta", "Sexta", "Sábado", "Domingo"];
 
 interface Exercise {
   name: string;
