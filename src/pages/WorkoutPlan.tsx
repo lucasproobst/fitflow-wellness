@@ -129,9 +129,15 @@ export default function WorkoutPlan() {
   const [pickedDays, setPickedDays] = useState<Set<number>>(new Set([0, 2, 4])); // Seg, Qua, Sex padrão
 
   const { user } = useAuth();
+  const { data: profile } = useProfile();
   const qc = useQueryClient();
   const [searchParams, setSearchParams] = useSearchParams();
   const weekDates = useMemo(() => getWeekDates(), []);
+
+  const suggestion = useMemo(() => {
+    const lvl = profile?.activity_level || "";
+    return activitySuggestions[lvl] ?? defaultSuggestion;
+  }, [profile?.activity_level]);
 
   const { data: weekSessions } = useQuery({
     queryKey: ["workout-sessions-week", user?.id],
