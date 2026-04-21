@@ -113,6 +113,9 @@ export default function WorkoutPlan() {
   const [swapTarget, setSwapTarget] = useState<{ idx: number; ex: Exercise } | null>(null);
   // Local overrides for swapped exercises (per-day index)
   const [overrides, setOverrides] = useState<Record<string, Exercise>>({});
+  // Day selection modal
+  const [daysPickerOpen, setDaysPickerOpen] = useState(false);
+  const [pickedDays, setPickedDays] = useState<Set<number>>(new Set([0, 2, 4])); // Seg, Qua, Sex padrão
 
   const { user } = useAuth();
   const qc = useQueryClient();
