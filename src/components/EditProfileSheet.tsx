@@ -86,12 +86,13 @@ export function EditProfileSheet({ open, onOpenChange, profile }: EditProfileShe
     );
   };
 
-  const activityFrequency: Record<string, { days: number; label: string }> = {
-    sedentary:   { days: 2, label: "Sedentário" },
-    light:       { days: 3, label: "Leve" },
-    moderate:    { days: 4, label: "Moderado" },
-    active:      { days: 5, label: "Ativo" },
-    very_active: { days: 6, label: "Muito Ativo" },
+  // Must mirror activitySuggestions in src/pages/WorkoutPlan.tsx (0=Mon … 6=Sun)
+  const activityFrequency: Record<string, { days: number; label: string; suggestedDays: number[] }> = {
+    sedentary:   { days: 2, label: "Sedentário",  suggestedDays: [0, 3] },
+    light:       { days: 3, label: "Leve",        suggestedDays: [0, 2, 4] },
+    moderate:    { days: 4, label: "Moderado",    suggestedDays: [0, 1, 3, 4] },
+    active:      { days: 5, label: "Ativo",       suggestedDays: [0, 1, 2, 4, 5] },
+    very_active: { days: 6, label: "Muito Ativo", suggestedDays: [0, 1, 2, 3, 4, 5] },
   };
 
   const handleSave = async () => {
@@ -115,14 +116,14 @@ export function EditProfileSheet({ open, onOpenChange, profile }: EditProfileShe
       onOpenChange(false);
 
       if (activityChanged && activityFrequency[activity]) {
-        const { days, label } = activityFrequency[activity];
+        const { days, label, suggestedDays } = activityFrequency[activity];
         setTimeout(() => {
           toast(`Nível alterado para ${label}`, {
             description: `Frequência ideal: ${days} dias de treino por semana. Quer regenerar seu plano?`,
             duration: 8000,
             action: {
               label: "Regenerar",
-              onClick: () => handleRegenerate(),
+              onClick: () => handleRegenerate(suggestedDays),
             },
           });
         }, 300);
@@ -134,11 +135,16 @@ export function EditProfileSheet({ open, onOpenChange, profile }: EditProfileShe
     }
   };
 
-  const handleRegenerate = async () => {
+  const handleRegenerate = async (preferredDays?: number[]) => {
     setConfirmRegen(false);
     setRegenerating(true);
     const t = toast.loading("Gerando novos planos com seus dados atualizados...");
     try {
+      // Persist new preferred workout days BEFORE regenerating so the workout
+      // generator picks them up.
+      if (preferredDays && preferredDays.length > 0) {
+        await updateProfile.mutateAsync({ preferred_workout_days: preferredDays } as any);
+      }
       const [meal, workout] = await Promise.all([
         supabase.functions.invoke("generate-meal-plan", { body: {} }),
         supabase.functions.invoke("generate-workout-plan", { body: {} }),
@@ -146,6 +152,7 @@ export function EditProfileSheet({ open, onOpenChange, profile }: EditProfileShe
       if (meal.error || workout.error) throw meal.error || workout.error;
       qc.invalidateQueries({ queryKey: ["meal-plan"] });
       qc.invalidateQueries({ queryKey: ["workout-plan"] });
+      qc.invalidateQueries({ queryKey: ["profile"] });
       toast.success("Planos atualizados!", { id: t });
     } catch (e) {
       console.error(e);
@@ -287,7 +294,7 @@ export function EditProfileSheet({ open, onOpenChange, profile }: EditProfileShe
               Agora não
             </AlertDialogCancel>
             <AlertDialogAction
-              onClick={handleRegenerate}
+              onClick={() => handleRegenerate()}
               disabled={regenerating}
               className="bg-[#22c55e] text-white hover:bg-[#22c55e]/90"
             >
