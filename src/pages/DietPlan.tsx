@@ -721,6 +721,22 @@ export default function DietPlan() {
               })}
             </div>
           </div>
+
+          <AnimatePresence>
+            {showBackToTop && (
+              <motion.button
+                initial={{ opacity: 0, scale: 0.8, y: 10 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.8, y: 10 }}
+                transition={{ duration: 0.2 }}
+                onClick={() => recipesScrollRef.current?.scrollTo({ top: 0, behavior: "smooth" })}
+                aria-label="Voltar ao topo"
+                className="absolute bottom-5 right-5 w-11 h-11 rounded-full bg-[#22c55e] text-white shadow-lg shadow-[#22c55e]/30 flex items-center justify-center active:scale-95 transition-transform z-10"
+              >
+                <ArrowUp size={18} strokeWidth={2.5} />
+              </motion.button>
+            )}
+          </AnimatePresence>
         </SheetContent>
       </Sheet>
     </div>
