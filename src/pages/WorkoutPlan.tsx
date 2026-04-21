@@ -717,9 +717,26 @@ export default function WorkoutPlan() {
                   <X size={14} className="text-white/60" />
                 </button>
               </div>
-              <p className="text-[11px] text-white/40 mb-5">
+              <p className="text-[11px] text-white/40 mb-4">
                 Os dias não escolhidos viram <span className="text-[#22c55e] font-bold">descanso</span>.
               </p>
+
+              {/* Smart suggestion banner */}
+              <button
+                onClick={() => setPickedDays(new Set(suggestion.days))}
+                className="w-full mb-5 p-3 rounded-xl bg-gradient-to-br from-[#22c55e]/[0.08] to-[#22c55e]/[0.02] border border-[#22c55e]/20 text-left active:scale-[0.99] transition-all"
+              >
+                <div className="flex items-center gap-2 mb-1">
+                  <Sparkles size={12} className="text-[#22c55e]" />
+                  <span className="text-[10px] font-extrabold uppercase tracking-wider text-[#22c55e]">
+                    Sugestão para {suggestion.label}
+                  </span>
+                  <span className="ml-auto text-[10px] font-bold text-white/50">
+                    {suggestion.days.length} {suggestion.days.length === 1 ? "dia" : "dias"} →
+                  </span>
+                </div>
+                <p className="text-[11px] text-white/60 leading-snug">{suggestion.reason}</p>
+              </button>
 
               <div className="grid grid-cols-7 gap-2 mb-5">
                 {fullDays.map((d, i) => {
