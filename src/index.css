@@ -103,6 +103,11 @@
   .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
   .safe-bottom { padding-bottom: env(safe-area-inset-bottom, 0px); }
   .safe-top { padding-top: env(safe-area-inset-top, 0px); }
+  /* Bottom-safe padding for modals/sheets so content & CTAs clear the fixed bottom nav (~88px) */
+  .modal-safe-bottom { padding-bottom: calc(1rem + env(safe-area-inset-bottom, 0px) + 88px); }
+  @media (min-width: 640px) {
+    .modal-safe-bottom { padding-bottom: 1rem; }
+  }
 
   /* Mobile shell — 480px on phones, expands to 1280px on desktop */
   .mobile-shell {
