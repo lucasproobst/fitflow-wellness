@@ -695,14 +695,14 @@ export default function WorkoutPlan() {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => setDaysPickerOpen(false)}
-              className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50"
+              className="fixed inset-0 bg-black/70 backdrop-blur-sm z-[60]"
             />
             <motion.div
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: 30 }}
               transition={{ type: "spring", damping: 26, stiffness: 280 }}
-              className="fixed left-0 right-0 bottom-0 mx-auto w-full max-w-[480px] bg-[#141414] border-t border-white/[0.08] rounded-t-3xl p-5 z-50 safe-bottom max-h-[90vh] overflow-y-auto"
+              className="fixed left-0 right-0 bottom-0 mx-auto w-full max-w-[480px] bg-[#141414] border-t border-white/[0.08] rounded-t-3xl p-5 z-[70] safe-bottom max-h-[90vh] overflow-y-auto"
             >
               <div className="flex items-start justify-between gap-3 mb-1">
                 <div className="min-w-0 flex-1">
