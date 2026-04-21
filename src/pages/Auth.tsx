@@ -3,10 +3,12 @@ import { useNavigate, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { motion } from "framer-motion";
-import { Mail, Lock, Eye, EyeOff } from "lucide-react";
+import { Mail, Lock, Eye, EyeOff, AlertCircle } from "lucide-react";
 import { translateAuthError } from "@/lib/auth-errors";
 import { PasswordStrengthMeter } from "@/components/PasswordStrengthMeter";
 import { evaluatePasswordStrength } from "@/lib/password-strength";
+
+const PWNED_MSG = "Esta senha apareceu em vazamentos públicos. Escolha outra";
 
 export default function Auth() {
   const [isLogin, setIsLogin] = useState(true);
@@ -15,6 +17,7 @@ export default function Auth() {
   const [password, setPassword] = useState("");
   const [showPw, setShowPw] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [pwnedError, setPwnedError] = useState(false);
   const navigate = useNavigate();
 
   const handleForgot = async (e: React.FormEvent) => {
@@ -38,6 +41,7 @@ export default function Auth() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
+    setPwnedError(false);
     try {
       if (isLogin) {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
@@ -48,7 +52,9 @@ export default function Auth() {
         toast.success("Verifique seu e-mail para confirmar a conta");
       }
     } catch (err: any) {
-      toast.error(translateAuthError(err));
+      const translated = translateAuthError(err);
+      if (translated === PWNED_MSG) setPwnedError(true);
+      toast.error(translated);
     } finally {
       setLoading(false);
     }
@@ -129,16 +135,27 @@ export default function Auth() {
             <input
               type={showPw ? "text" : "password"}
               value={password}
-              onChange={e => setPassword(e.target.value)}
+              onChange={e => { setPassword(e.target.value); if (pwnedError) setPwnedError(false); }}
               placeholder="Senha"
               required
               minLength={6}
-              className="w-full h-12 pl-11 pr-11 rounded-xl bg-white/5 border border-white/10 text-foreground text-sm focus:outline-none focus:border-fitflow-primary transition-colors placeholder:text-foreground/30"
+              aria-invalid={pwnedError}
+              className={`w-full h-12 pl-11 ${pwnedError ? "pr-20" : "pr-11"} rounded-xl bg-white/5 border ${pwnedError ? "border-destructive" : "border-white/10"} text-foreground text-sm focus:outline-none ${pwnedError ? "focus:border-destructive" : "focus:border-fitflow-primary"} transition-colors placeholder:text-foreground/30`}
             />
+            {pwnedError && (
+              <AlertCircle size={16} className="absolute right-11 top-1/2 -translate-y-1/2 text-destructive" aria-label="Senha vazada" />
+            )}
             <button type="button" onClick={() => setShowPw(!showPw)} className="absolute right-4 top-1/2 -translate-y-1/2 text-foreground/30">
               {showPw ? <EyeOff size={16} /> : <Eye size={16} />}
             </button>
           </div>
+
+          {pwnedError && (
+            <p className="flex items-start gap-2 text-xs text-destructive -mt-2">
+              <AlertCircle size={14} className="shrink-0 mt-0.5" />
+              <span>{PWNED_MSG}</span>
+            </p>
+          )}
 
           {!isLogin && <PasswordStrengthMeter password={password} />}
           <button
