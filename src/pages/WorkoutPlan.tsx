@@ -170,8 +170,11 @@ export default function WorkoutPlan() {
   });
 
   const generate = useMutation({
-    mutationFn: async () => {
-      const { data, error } = await supabase.functions.invoke("generate-workout-plan");
+    mutationFn: async (selectedDayIdxs: number[]) => {
+      const selected_days = selectedDayIdxs.map((i) => dayNamesPt[i]);
+      const { data, error } = await supabase.functions.invoke("generate-workout-plan", {
+        body: { selected_days },
+      });
       if (error) throw error;
       if (data?.error) throw new Error(data.error);
       return data as WorkoutPlanData;
@@ -184,9 +187,31 @@ export default function WorkoutPlan() {
     onError: (err: any) => toast.error(err.message || "Falha ao gerar plano"),
   });
 
+  const openDaysPicker = () => {
+    // Pre-fill with currently active days from existing plan, if any
+    if (planData?.days) {
+      const current = new Set<number>();
+      planData.days.forEach((d, i) => {
+        if (d.exercises && d.exercises.length > 0) current.add(i);
+      });
+      if (current.size > 0) setPickedDays(current);
+    }
+    setDaysPickerOpen(true);
+  };
+
+  const confirmGenerate = () => {
+    const idxs = Array.from(pickedDays).sort((a, b) => a - b);
+    if (idxs.length === 0) {
+      toast.error("Escolha pelo menos 1 dia de treino");
+      return;
+    }
+    setDaysPickerOpen(false);
+    generate.mutate(idxs);
+  };
+
   useEffect(() => {
     if (searchParams.get("generate") === "1" && !generate.isPending) {
-      generate.mutate();
+      openDaysPicker();
       searchParams.delete("generate");
       setSearchParams(searchParams, { replace: true });
     }
