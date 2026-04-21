@@ -99,6 +99,7 @@ export default function DietPlan() {
   const [loadingRecipes, setLoadingRecipes] = useState(false);
   const [expandedRecipe, setExpandedRecipe] = useState<number | null>(null);
   const [showBackToTop, setShowBackToTop] = useState(false);
+  const [readProgress, setReadProgress] = useState(0);
   const recipesScrollRef = useRef<HTMLDivElement>(null);
   const recipesCache = useRef<Record<number, Recipe[]>>({});
   const { user } = useAuth();
@@ -585,9 +586,21 @@ export default function DietPlan() {
             </div>
           </SheetHeader>
 
+          <div className="h-0.5 w-full bg-white/[0.04] shrink-0 overflow-hidden">
+            <div
+              className="h-full bg-[#22c55e] transition-[width] duration-75 ease-out"
+              style={{ width: `${readProgress}%` }}
+            />
+          </div>
+
           <div
             ref={recipesScrollRef}
-            onScroll={(e) => setShowBackToTop((e.target as HTMLDivElement).scrollTop > 400)}
+            onScroll={(e) => {
+              const el = e.target as HTMLDivElement;
+              setShowBackToTop(el.scrollTop > 400);
+              const max = el.scrollHeight - el.clientHeight;
+              setReadProgress(max > 0 ? Math.min(100, (el.scrollTop / max) * 100) : 0);
+            }}
             className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden overscroll-contain relative"
           >
             <div className="p-5 space-y-4">
