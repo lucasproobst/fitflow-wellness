@@ -4,9 +4,20 @@ import { useSearchParams, useNavigate } from "react-router-dom";
 import { ArrowLeft, PlayCircle, Check, RefreshCw, X, Lock, CheckCircle2, Repeat, Sparkles } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth-context";
+import { useProfile } from "@/lib/use-profile";
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
 import { GenerationProgress } from "@/components/GenerationProgress";
+
+// Smart suggestion: maps activity level → suggested workout days (indices: 0=Mon … 6=Sun)
+const activitySuggestions: Record<string, { days: number[]; label: string; reason: string }> = {
+  sedentary:   { days: [0, 3],          label: "Sedentário",  reason: "Comece leve com 2 dias para criar o hábito" },
+  light:       { days: [0, 2, 4],       label: "Leve",        reason: "3 dias intercalados são ideais para iniciantes" },
+  moderate:    { days: [0, 1, 3, 4],    label: "Moderado",    reason: "4 dias equilibram esforço e recuperação" },
+  active:      { days: [0, 1, 2, 4, 5], label: "Ativo",       reason: "5 dias mantêm seu ritmo ativo" },
+  very_active: { days: [0, 1, 2, 3, 4, 5], label: "Muito Ativo", reason: "6 dias para treino intenso, 1 de descanso" },
+};
+const defaultSuggestion = activitySuggestions.light;
 
 const shortDays = ["S", "T", "Q", "Q", "S", "S", "D"];
 const fullDays = ["Seg", "Ter", "Qua", "Qui", "Sex", "Sáb", "Dom"];
