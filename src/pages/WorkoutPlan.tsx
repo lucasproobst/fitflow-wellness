@@ -187,6 +187,22 @@ export default function WorkoutPlan() {
     onError: (err: any) => toast.error(err.message || "Falha ao gerar plano"),
   });
 
+  // Load preferred days from profile once
+  useEffect(() => {
+    if (!user) return;
+    (async () => {
+      const { data } = await supabase
+        .from("user_profile")
+        .select("preferred_workout_days")
+        .eq("user_id", user.id)
+        .maybeSingle();
+      const pref = (data as any)?.preferred_workout_days as number[] | null;
+      if (Array.isArray(pref) && pref.length > 0) {
+        setPickedDays(new Set(pref));
+      }
+    })();
+  }, [user]);
+
   const openDaysPicker = () => {
     // Pre-fill with currently active days from existing plan, if any
     if (planData?.days) {
@@ -199,13 +215,21 @@ export default function WorkoutPlan() {
     setDaysPickerOpen(true);
   };
 
-  const confirmGenerate = () => {
+  const confirmGenerate = async () => {
     const idxs = Array.from(pickedDays).sort((a, b) => a - b);
     if (idxs.length === 0) {
       toast.error("Escolha pelo menos 1 dia de treino");
       return;
     }
     setDaysPickerOpen(false);
+    // Persist preference (fire-and-forget)
+    if (user) {
+      supabase
+        .from("user_profile")
+        .update({ preferred_workout_days: idxs } as any)
+        .eq("user_id", user.id)
+        .then(() => {});
+    }
     generate.mutate(idxs);
   };
 

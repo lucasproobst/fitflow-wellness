@@ -312,6 +312,7 @@ export type Database = {
           id: string
           is_pro: boolean
           onboarding_complete: boolean | null
+          preferred_workout_days: Json | null
           target_weight_kg: number | null
           updated_at: string
           user_id: string
@@ -329,6 +330,7 @@ export type Database = {
           id?: string
           is_pro?: boolean
           onboarding_complete?: boolean | null
+          preferred_workout_days?: Json | null
           target_weight_kg?: number | null
           updated_at?: string
           user_id: string
@@ -346,6 +348,7 @@ export type Database = {
           id?: string
           is_pro?: boolean
           onboarding_complete?: boolean | null
+          preferred_workout_days?: Json | null
           target_weight_kg?: number | null
           updated_at?: string
           user_id?: string

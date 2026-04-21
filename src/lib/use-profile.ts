@@ -16,6 +16,7 @@ export interface UserProfile {
   onboarding_complete: boolean;
   avatar_url: string | null;
   is_pro: boolean;
+  preferred_workout_days: number[] | null;
 }
 
 export function useProfile() {
