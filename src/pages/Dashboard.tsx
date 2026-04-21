@@ -58,12 +58,15 @@ export default function Dashboard() {
   useNotificationReminders();
 
   const firstName = profile?.display_name?.split(" ")[0] || user?.email?.split("@")[0] || "Atleta";
-  const hour = new Date().getHours();
-  const greeting = hour < 12 ? "Bom dia" : hour < 18 ? "Boa tarde" : "Boa noite";
-  const greetingEmoji = hour < 12 ? "☀️" : hour < 18 ? "🌤️" : "🌙";
-  const emojiAnim = hour < 12
+  const now = new Date();
+  const minutesOfDay = now.getHours() * 60 + now.getMinutes();
+  const isMorning = minutesOfDay >= 330 && minutesOfDay < 720; // 05:30 — 12:00
+  const isAfternoon = minutesOfDay >= 720 && minutesOfDay < 1080; // 12:00 — 18:00
+  const greeting = isMorning ? "Bom dia" : isAfternoon ? "Boa tarde" : "Boa noite";
+  const greetingEmoji = isMorning ? "☀️" : isAfternoon ? "🌤️" : "🌙";
+  const emojiAnim = isMorning
     ? { rotate: [0, 12, -8, 0] } // sol balança
-    : hour < 18
+    : isAfternoon
     ? { y: [0, -3, 0], rotate: [0, 4, 0] } // nuvem flutua
     : { rotate: [-8, 8, -8] }; // lua oscila
 
