@@ -86,6 +86,14 @@ export function EditProfileSheet({ open, onOpenChange, profile }: EditProfileShe
     );
   };
 
+  const activityFrequency: Record<string, { days: number; label: string }> = {
+    sedentary:   { days: 2, label: "Sedentário" },
+    light:       { days: 3, label: "Leve" },
+    moderate:    { days: 4, label: "Moderado" },
+    active:      { days: 5, label: "Ativo" },
+    very_active: { days: 6, label: "Muito Ativo" },
+  };
+
   const handleSave = async () => {
     if (!canSave) {
       toast.error("Preencha todos os campos");
@@ -93,6 +101,7 @@ export function EditProfileSheet({ open, onOpenChange, profile }: EditProfileShe
     }
     try {
       const shouldOfferRegen = planAffectingChanged();
+      const activityChanged = profile?.activity_level !== activity;
       await updateProfile.mutateAsync({
         goal,
         food_restrictions: restrictions as any,
@@ -104,7 +113,20 @@ export function EditProfileSheet({ open, onOpenChange, profile }: EditProfileShe
       } as any);
       toast.success("Informações atualizadas!");
       onOpenChange(false);
-      if (shouldOfferRegen) {
+
+      if (activityChanged && activityFrequency[activity]) {
+        const { days, label } = activityFrequency[activity];
+        setTimeout(() => {
+          toast(`Nível alterado para ${label}`, {
+            description: `Frequência ideal: ${days} dias de treino por semana. Quer regenerar seu plano?`,
+            duration: 8000,
+            action: {
+              label: "Regenerar",
+              onClick: () => handleRegenerate(),
+            },
+          });
+        }, 300);
+      } else if (shouldOfferRegen) {
         setTimeout(() => setConfirmRegen(true), 250);
       }
     } catch {
