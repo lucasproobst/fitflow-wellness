@@ -1,5 +1,5 @@
 import { assertEquals } from "https://deno.land/std@0.224.0/assert/mod.ts";
-import { ALL_DAYS, resolveSelectedDays } from "./index.ts";
+import { ALL_DAYS, resolveSelectedDays } from "./resolver.ts";
 
 Deno.test("body selected_days takes precedence over profile preference", () => {
   const result = resolveSelectedDays(
