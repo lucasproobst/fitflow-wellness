@@ -714,7 +714,7 @@ export default function DietPlan() {
                 );
               })}
             </div>
-          </ScrollArea>
+          </div>
         </SheetContent>
       </Sheet>
     </div>
