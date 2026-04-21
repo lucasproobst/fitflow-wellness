@@ -574,16 +574,16 @@ export default function DietPlan() {
       <Sheet open={recipesOpen} onOpenChange={setRecipesOpen}>
         <SheetContent
           side="bottom"
-          className="h-[85vh] rounded-t-3xl bg-[#0f1117] border-t border-white/[0.06] p-0"
+          className="h-[85vh] rounded-t-3xl bg-[#0f1117] border-t border-white/[0.06] p-0 flex flex-col"
         >
-          <SheetHeader className="px-5 pt-5 pb-3 border-b border-white/[0.04]">
+          <SheetHeader className="px-5 pt-5 pb-3 border-b border-white/[0.04] shrink-0">
             <div>
               <SheetTitle className="text-lg font-bold text-white">Receitas do Dia</SheetTitle>
               <p className="text-xs text-[#6b7280] mt-0.5">{shortDays[selectedDay]} — {recipes.length} receitas</p>
             </div>
           </SheetHeader>
 
-          <ScrollArea className="h-[calc(85vh-80px)]">
+          <div className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden overscroll-contain">
             <div className="p-5 space-y-4">
               {loadingRecipes && (
                 <div className="py-16 flex flex-col items-center gap-3">
@@ -693,7 +693,7 @@ export default function DietPlan() {
                                     <span className="w-5 h-5 rounded-full bg-white/[0.06] flex items-center justify-center text-[10px] font-bold text-white/40 shrink-0 mt-0.5">
                                       {j + 1}
                                     </span>
-                                    <span className="text-white/70 leading-relaxed">{step}</span>
+                                    <span className="text-white/70 leading-relaxed min-w-0 break-words">{step}</span>
                                   </li>
                                 ))}
                               </ol>
@@ -714,7 +714,7 @@ export default function DietPlan() {
                 );
               })}
             </div>
-          </ScrollArea>
+          </div>
         </SheetContent>
       </Sheet>
     </div>
