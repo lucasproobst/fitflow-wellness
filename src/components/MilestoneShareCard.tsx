@@ -75,7 +75,7 @@ export function MilestoneShareCard({ data, open, onClose }: Props) {
   if (!open) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4" onClick={onClose}>
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4 modal-safe-bottom" onClick={onClose}>
       <div className="w-full max-w-sm" onClick={e => e.stopPropagation()}>
         <div
           ref={cardRef}
