@@ -645,6 +645,106 @@ export default function WorkoutPlan() {
         )}
       </AnimatePresence>
 
+      {/* Days Picker Modal */}
+      <AnimatePresence>
+        {daysPickerOpen && (
+          <>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setDaysPickerOpen(false)}
+              className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50"
+            />
+            <motion.div
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 30 }}
+              transition={{ type: "spring", damping: 26, stiffness: 280 }}
+              className="fixed left-1/2 -translate-x-1/2 bottom-0 w-full max-w-[480px] bg-[#141414] border-t border-white/[0.08] rounded-t-3xl p-5 z-50 safe-bottom"
+            >
+              <div className="flex items-center justify-between mb-1">
+                <div>
+                  <p className="text-[10px] font-bold uppercase tracking-[0.15em] text-white/30">Personalize</p>
+                  <h3 className="text-base font-extrabold text-white mt-0.5">Em quais dias você quer treinar?</h3>
+                </div>
+                <button
+                  onClick={() => setDaysPickerOpen(false)}
+                  className="w-8 h-8 rounded-full bg-white/[0.06] flex items-center justify-center"
+                  aria-label="Fechar"
+                >
+                  <X size={14} className="text-white/60" />
+                </button>
+              </div>
+              <p className="text-[11px] text-white/40 mb-5">
+                Os dias não escolhidos viram <span className="text-[#22c55e] font-bold">descanso</span>.
+              </p>
+
+              <div className="grid grid-cols-7 gap-2 mb-5">
+                {fullDays.map((d, i) => {
+                  const picked = pickedDays.has(i);
+                  return (
+                    <button
+                      key={i}
+                      onClick={() => {
+                        setPickedDays((prev) => {
+                          const next = new Set(prev);
+                          next.has(i) ? next.delete(i) : next.add(i);
+                          return next;
+                        });
+                      }}
+                      className="flex flex-col items-center gap-1.5 active:scale-95 transition-all"
+                    >
+                      <span className={`text-[10px] font-bold uppercase tracking-wider ${picked ? "text-white" : "text-white/30"}`}>
+                        {d}
+                      </span>
+                      <div
+                        className={`w-10 h-10 rounded-full flex items-center justify-center text-xs font-extrabold transition-all ${
+                          picked
+                            ? "bg-[#22c55e] text-white shadow-[0_0_0_4px_rgba(34,197,94,0.15)]"
+                            : "bg-[#0a0a0a] border border-white/[0.07] text-white/40"
+                        }`}
+                      >
+                        {picked ? <Check size={14} /> : i + 1}
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+
+              <div className="flex items-center justify-between mb-4 px-1">
+                <span className="text-[11px] text-white/40">
+                  {pickedDays.size} {pickedDays.size === 1 ? "dia selecionado" : "dias selecionados"}
+                </span>
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => setPickedDays(new Set([0, 2, 4]))}
+                    className="text-[11px] font-bold text-white/50 hover:text-white/80"
+                  >
+                    Seg/Qua/Sex
+                  </button>
+                  <span className="text-white/20">·</span>
+                  <button
+                    onClick={() => setPickedDays(new Set([0, 1, 2, 3, 4]))}
+                    className="text-[11px] font-bold text-white/50 hover:text-white/80"
+                  >
+                    Seg–Sex
+                  </button>
+                </div>
+              </div>
+
+              <button
+                onClick={confirmGenerate}
+                disabled={pickedDays.size === 0 || generate.isPending}
+                className="w-full h-12 rounded-xl bg-[#22c55e] text-white text-sm font-bold active:scale-[0.98] transition-all disabled:opacity-40"
+              >
+                {generate.isPending ? "Gerando..." : "Gerar plano"}
+              </button>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
+
       {/* Video Modal */}
       <AnimatePresence>
         {videoExercise && (
