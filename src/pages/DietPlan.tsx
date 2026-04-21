@@ -98,6 +98,8 @@ export default function DietPlan() {
   const [recipes, setRecipes] = useState<Recipe[]>([]);
   const [loadingRecipes, setLoadingRecipes] = useState(false);
   const [expandedRecipe, setExpandedRecipe] = useState<number | null>(null);
+  const [showBackToTop, setShowBackToTop] = useState(false);
+  const recipesScrollRef = useRef<HTMLDivElement>(null);
   const recipesCache = useRef<Record<number, Recipe[]>>({});
   const { user } = useAuth();
   const qc = useQueryClient();
@@ -583,7 +585,11 @@ export default function DietPlan() {
             </div>
           </SheetHeader>
 
-          <div className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden overscroll-contain">
+          <div
+            ref={recipesScrollRef}
+            onScroll={(e) => setShowBackToTop((e.target as HTMLDivElement).scrollTop > 400)}
+            className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden overscroll-contain relative"
+          >
             <div className="p-5 space-y-4">
               {loadingRecipes && (
                 <div className="py-16 flex flex-col items-center gap-3">
