@@ -60,7 +60,7 @@ Deno.test("preferred indices out of range are filtered", () => {
 
 Deno.test("preferred with non-numeric entries falls back to all 7 if nothing valid remains", () => {
   const result = resolveSelectedDays(undefined, ["0", "2", null]);
-  assertEquals(result, ALL_DAYS);
+  assertEquals(result, [...ALL_DAYS]);
 });
 
 Deno.test("preferred preserves the order given by the user", () => {
