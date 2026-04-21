@@ -1,7 +1,7 @@
 import { useState, useMemo, useEffect, useCallback, useRef } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useSearchParams, useNavigate } from "react-router-dom";
-import { RefreshCw, Shuffle, Heart, ChevronRight, X, Clock, ChefHat, Lightbulb, ArrowLeft, SlidersHorizontal, Coffee, UtensilsCrossed, Moon, Apple } from "lucide-react";
+import { RefreshCw, Shuffle, Heart, ChevronRight, X, Clock, ChefHat, Lightbulb, ArrowLeft, ArrowUp, SlidersHorizontal, Coffee, UtensilsCrossed, Moon, Apple } from "lucide-react";
 import { RecipeShareCard } from "@/components/RecipeShareCard";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth-context";
@@ -98,6 +98,8 @@ export default function DietPlan() {
   const [recipes, setRecipes] = useState<Recipe[]>([]);
   const [loadingRecipes, setLoadingRecipes] = useState(false);
   const [expandedRecipe, setExpandedRecipe] = useState<number | null>(null);
+  const [showBackToTop, setShowBackToTop] = useState(false);
+  const recipesScrollRef = useRef<HTMLDivElement>(null);
   const recipesCache = useRef<Record<number, Recipe[]>>({});
   const { user } = useAuth();
   const qc = useQueryClient();
@@ -583,7 +585,11 @@ export default function DietPlan() {
             </div>
           </SheetHeader>
 
-          <div className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden overscroll-contain">
+          <div
+            ref={recipesScrollRef}
+            onScroll={(e) => setShowBackToTop((e.target as HTMLDivElement).scrollTop > 400)}
+            className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden overscroll-contain relative"
+          >
             <div className="p-5 space-y-4">
               {loadingRecipes && (
                 <div className="py-16 flex flex-col items-center gap-3">
@@ -715,6 +721,22 @@ export default function DietPlan() {
               })}
             </div>
           </div>
+
+          <AnimatePresence>
+            {showBackToTop && (
+              <motion.button
+                initial={{ opacity: 0, scale: 0.8, y: 10 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.8, y: 10 }}
+                transition={{ duration: 0.2 }}
+                onClick={() => recipesScrollRef.current?.scrollTo({ top: 0, behavior: "smooth" })}
+                aria-label="Voltar ao topo"
+                className="absolute bottom-5 right-5 w-11 h-11 rounded-full bg-[#22c55e] text-white shadow-lg shadow-[#22c55e]/30 flex items-center justify-center active:scale-95 transition-transform z-10"
+              >
+                <ArrowUp size={18} strokeWidth={2.5} />
+              </motion.button>
+            )}
+          </AnimatePresence>
         </SheetContent>
       </Sheet>
     </div>
