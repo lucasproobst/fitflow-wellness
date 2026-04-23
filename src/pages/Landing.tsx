@@ -463,7 +463,12 @@ function PricingCard({ highlighted, badge, name, originalPrice, price, period, s
 
       <div className="mt-4">
         {name && <p className="text-white font-semibold text-lg mb-1">{name}</p>}
-        {originalPrice && <p className="text-[#6b7280] line-through text-sm mb-1">{originalPrice}</p>}
+        {originalPrice && (
+          <div className="flex items-center gap-2 mb-1">
+            <p className="text-[#6b7280] line-through text-sm">{originalPrice}</p>
+            <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-primary/15 text-primary">-76%</span>
+          </div>
+        )}
         <div className="flex items-baseline gap-1">
           <CountUp target={price} />
           {period && <span className="text-[#6b7280] text-sm">{period}</span>}
