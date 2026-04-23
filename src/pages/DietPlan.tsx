@@ -321,14 +321,14 @@ export default function DietPlan() {
           <ArrowLeft size={20} />
         </button>
         <h1 className="text-[18px] font-bold text-white">Diet Plan</h1>
-        <button
-          onClick={() => { if (requirePro("Gerar plano alimentar")) generate.mutate(); }}
-          disabled={generate.isPending}
-          className="w-9 h-9 -mr-2 rounded-full flex items-center justify-center text-[#6b7280] active:scale-90 transition-transform disabled:opacity-40"
-          aria-label={isPro ? "Atualizar" : "Atualizar (Pro)"}
-        >
-          <RefreshCw size={18} className={generate.isPending ? "animate-spin" : ""} />
-        </button>
+        <ProGenButton
+          variant="icon"
+          onClick={() => generate.mutate()}
+          loading={generate.isPending}
+          requireProLabel="Gerar plano alimentar"
+          ariaLabel="Atualizar plano"
+          className="-mr-2"
+        />
       </div>
 
       {/* Filter pills */}
