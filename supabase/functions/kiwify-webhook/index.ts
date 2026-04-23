@@ -189,7 +189,55 @@ Deno.serve(async (req) => {
 
     logEvent("info", "user_id_detected", { userId, source: userIdSource, orderId });
 
-    // ── 6. Ativa is_pro com service role (bypass RLS) ─────────────────────────
+    // ── 6. Resolve data de expiração (se houver) ──────────────────────────────
+    // A Kiwify pode mandar a validade da assinatura/curso em vários campos.
+    // Aceitamos ISO date string OU número de dias de acesso.
+    const expirationSources: Array<{ source: string; value: unknown }> = [
+      { source: "subscription.next_payment",     value: payload?.subscription?.next_payment },
+      { source: "subscription.expires_at",       value: payload?.subscription?.expires_at },
+      { source: "Subscription.next_payment",     value: payload?.Subscription?.next_payment },
+      { source: "Subscription.expires_at",       value: payload?.Subscription?.expires_at },
+      { source: "access.expires_at",             value: payload?.access?.expires_at },
+      { source: "access_expires_at",             value: payload?.access_expires_at },
+      { source: "expires_at",                    value: payload?.expires_at },
+      { source: "valid_until",                   value: payload?.valid_until },
+      { source: "end_date",                      value: payload?.end_date },
+    ];
+    const accessDaysSources: Array<{ source: string; value: unknown }> = [
+      { source: "access_days",                   value: payload?.access_days },
+      { source: "Product.access_days",           value: payload?.Product?.access_days },
+      { source: "product.access_days",           value: payload?.product?.access_days },
+      { source: "subscription.access_days",      value: payload?.subscription?.access_days },
+    ];
+
+    let proExpiresAt: string | null = null;
+    let expirationSource: string | null = null;
+    for (const { source, value } of expirationSources) {
+      if (typeof value === "string" && value.trim()) {
+        const d = new Date(value.trim());
+        if (!isNaN(d.getTime())) {
+          proExpiresAt = d.toISOString();
+          expirationSource = source;
+          break;
+        }
+      } else if (typeof value === "number" && value > 0) {
+        proExpiresAt = new Date(value).toISOString();
+        expirationSource = source;
+        break;
+      }
+    }
+    if (!proExpiresAt) {
+      for (const { source, value } of accessDaysSources) {
+        const days = typeof value === "number" ? value : Number(value);
+        if (Number.isFinite(days) && days > 0) {
+          proExpiresAt = new Date(Date.now() + days * 86400000).toISOString();
+          expirationSource = source;
+          break;
+        }
+      }
+    }
+
+    // ── 7. Atualiza is_pro / pro_expires_at com service role (bypass RLS) ─────
     const supabaseUrl = Deno.env.get("SUPABASE_URL");
     const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
     if (!supabaseUrl || !serviceKey) {
@@ -199,11 +247,15 @@ Deno.serve(async (req) => {
 
     const supabase = createClient(supabaseUrl, serviceKey);
 
+    const updates: Record<string, unknown> = isDeactivating
+      ? { is_pro: false, pro_expires_at: null }
+      : { is_pro: true, pro_expires_at: proExpiresAt }; // null se vitalício
+
     const { data: updated, error } = await supabase
       .from("user_profile")
-      .update({ is_pro: true })
+      .update(updates)
       .eq("user_id", userId)
-      .select("user_id, is_pro");
+      .select("user_id, is_pro, pro_expires_at");
 
     if (error) {
       logEvent("error", "supabase_update_failed", {
@@ -223,14 +275,19 @@ Deno.serve(async (req) => {
       });
     }
 
-    logEvent("info", "is_pro_activated", {
-      userId, source: userIdSource, orderId, productId, status: rawStatus, event: rawEvent,
+    logEvent("info", isDeactivating ? "is_pro_deactivated" : "is_pro_activated", {
+      userId, source: userIdSource, orderId, productId,
+      status: rawStatus, event: rawEvent,
+      pro_expires_at: proExpiresAt, expiration_source: expirationSource,
     });
     return json(200, {
       ok: true,
-      activated: true,
+      activated: !isDeactivating,
+      deactivated: isDeactivating,
       detected_user_id: userId,
       detected_source: userIdSource,
+      pro_expires_at: isDeactivating ? null : proExpiresAt,
+      expiration_source: isDeactivating ? null : expirationSource,
       order_id: orderId,
     });
   } catch (err) {
