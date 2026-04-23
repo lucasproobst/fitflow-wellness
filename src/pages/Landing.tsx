@@ -136,6 +136,7 @@ function CountUp({ target, suffix = "" }: { target: string; suffix?: string }) {
 
 export default function Landing() {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [scrolled, setScrolled] = useState(false);
 
   useEffect(() => {
@@ -145,6 +146,28 @@ export default function Landing() {
   }, []);
 
   const go = () => navigate("/auth");
+
+  // Abre checkout da Kiwify para o FitFlow+ (R$ 47,00) com user_id anexado
+  const goPlus = () => {
+    if (!user) {
+      sessionStorage.setItem("postAuthRedirect", "checkout-plus");
+      navigate("/auth");
+      return;
+    }
+
+    const baseUrl =
+      (import.meta.env.VITE_KIWIFY_CHECKOUT_URL_PLUS as string | undefined) ||
+      KIWIFY_PLUS_URL_FALLBACK;
+
+    const successUrl = `${window.location.origin}/checkout/sucesso`;
+    const url = new URL(baseUrl);
+    // user_id viaja em utm_content → o webhook lê de tracking.utm_content
+    url.searchParams.set("utm_content", user.id);
+    if (user.email) url.searchParams.set("email", user.email);
+    url.searchParams.set("redirect_url", successUrl);
+
+    window.location.href = url.toString();
+  };
 
   return (
     <div className="min-h-screen bg-[#0f1117] text-white font-sans overflow-x-hidden relative">
