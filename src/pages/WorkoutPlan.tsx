@@ -9,6 +9,7 @@ import { usePro } from "@/lib/use-pro";
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
 import { GenerationProgress } from "@/components/GenerationProgress";
+import { ProGenButton } from "@/components/ProGenButton";
 
 // Smart suggestion: maps activity level → suggested workout days (indices: 0=Mon … 6=Sun)
 const activitySuggestions: Record<string, { days: number[]; label: string; reason: string }> = {
