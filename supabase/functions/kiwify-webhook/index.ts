@@ -112,21 +112,17 @@ Deno.serve(async (req) => {
     const productId =
       payload.product_id ?? payload.Product?.product_id ?? payload.product?.id ?? null;
 
-    // ── 4. WHITELIST: somente compras aprovadas seguem ────────────────────────
+    // ── 4. Classifica o evento: aprovação, desativação ou neutro ──────────────
     const isApproved =
       APPROVED_STATUSES.has(rawStatus) || APPROVED_EVENTS.has(rawEvent);
+    const isDeactivating = DEACTIVATING_EVENTS.has(rawEvent) || ["refunded", "chargeback"].includes(rawStatus);
 
-    if (!isApproved) {
-      const isKnownNegative = KNOWN_NEGATIVE_EVENTS.has(rawEvent);
-      logEvent(isKnownNegative ? "info" : "warn", "event_ignored_not_approved", {
-        status: rawStatus,
-        event: rawEvent,
-        orderId,
-        productId,
-        knownNegative: isKnownNegative,
+    if (!isApproved && !isDeactivating) {
+      const isKnownNeutral = KNOWN_NEUTRAL_EVENTS.has(rawEvent);
+      logEvent(isKnownNeutral ? "info" : "warn", "event_ignored_not_actionable", {
+        status: rawStatus, event: rawEvent, orderId, productId, knownNeutral: isKnownNeutral,
       });
-      // 200 para a Kiwify não reentregar — recebemos com sucesso, só não ativamos.
-      return json(200, { ok: true, ignored: true, reason: "not_approved" });
+      return json(200, { ok: true, ignored: true, reason: "not_actionable" });
     }
 
     // ── 5. Extrai user_id de qualquer formato conhecido da Kiwify ─────────────
