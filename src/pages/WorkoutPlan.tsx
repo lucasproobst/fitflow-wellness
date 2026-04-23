@@ -5,6 +5,7 @@ import { ArrowLeft, PlayCircle, Check, RefreshCw, X, Lock, CheckCircle2, Repeat,
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth-context";
 import { useProfile } from "@/lib/use-profile";
+import { usePro } from "@/lib/use-pro";
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
 import { GenerationProgress } from "@/components/GenerationProgress";
