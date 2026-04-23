@@ -345,6 +345,7 @@ export type Database = {
           preferred_workout_days: Json | null
           pro_expires_at: string | null
           target_weight_kg: number | null
+          trial_ends_at: string | null
           updated_at: string
           user_id: string
           weight_kg: number | null
@@ -364,6 +365,7 @@ export type Database = {
           preferred_workout_days?: Json | null
           pro_expires_at?: string | null
           target_weight_kg?: number | null
+          trial_ends_at?: string | null
           updated_at?: string
           user_id: string
           weight_kg?: number | null
@@ -383,6 +385,7 @@ export type Database = {
           preferred_workout_days?: Json | null
           pro_expires_at?: string | null
           target_weight_kg?: number | null
+          trial_ends_at?: string | null
           updated_at?: string
           user_id?: string
           weight_kg?: number | null
