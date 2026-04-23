@@ -347,14 +347,13 @@ export default function WorkoutPlan() {
             {currentDay ? currentDay.focus : "Plano semanal"}
           </h1>
         </div>
-        <button
+        <ProGenButton
+          variant="icon"
           onClick={openDaysPicker}
-          disabled={generate.isPending}
-          className="w-10 h-10 rounded-full bg-[#22c55e] flex items-center justify-center active:scale-95 transition-all disabled:opacity-50"
-          aria-label="Regenerar plano"
-        >
-          <RefreshCw size={15} className={`text-white ${generate.isPending ? "animate-spin" : ""}`} />
-        </button>
+          loading={generate.isPending}
+          requireProLabel="Gerar plano de treino"
+          ariaLabel="Regenerar plano"
+        />
       </div>
 
       {/* Week progress */}
