@@ -302,7 +302,7 @@ export default function DietPlan() {
   // Auto-trigger generation from FAB ?generate=1
   useEffect(() => {
     if (searchParams.get("generate") === "1" && !generate.isPending) {
-      generate.mutate();
+      if (requirePro("Gerar plano alimentar")) generate.mutate();
       searchParams.delete("generate");
       setSearchParams(searchParams, { replace: true });
     }
@@ -322,10 +322,10 @@ export default function DietPlan() {
         </button>
         <h1 className="text-[18px] font-bold text-white">Diet Plan</h1>
         <button
-          onClick={() => generate.mutate()}
+          onClick={() => { if (requirePro("Gerar plano alimentar")) generate.mutate(); }}
           disabled={generate.isPending}
           className="w-9 h-9 -mr-2 rounded-full flex items-center justify-center text-[#6b7280] active:scale-90 transition-transform disabled:opacity-40"
-          aria-label="Atualizar"
+          aria-label={isPro ? "Atualizar" : "Atualizar (Pro)"}
         >
           <RefreshCw size={18} className={generate.isPending ? "animate-spin" : ""} />
         </button>
@@ -451,7 +451,7 @@ export default function DietPlan() {
           </div>
           <p className="text-[#6b7280] text-sm mb-5">Nenhum plano alimentar ainda</p>
           <button
-            onClick={() => generate.mutate()}
+            onClick={() => { if (requirePro("Gerar plano alimentar")) generate.mutate(); }}
             className="px-8 py-3 rounded-xl bg-[#22c55e] text-white text-sm font-bold active:scale-95 transition-all"
           >
             Gerar Seu Plano
@@ -537,7 +537,7 @@ export default function DietPlan() {
                           <Heart size={14} className={isFav ? "text-[#22c55e] fill-[#22c55e]" : "text-[#6b7280]"} />
                         </button>
                         <button
-                          onClick={() => swapMeal.mutate({ day: dayNames[selectedDay], mealType: type })}
+                          onClick={() => { if (requirePro("Trocar refeição")) swapMeal.mutate({ day: dayNames[selectedDay], mealType: type }); }}
                           disabled={isSwapping || swapMeal.isPending}
                           className="flex items-center gap-1.5 px-3.5 py-2 rounded-lg bg-white/[0.06] border border-white/[0.1] text-[11px] uppercase tracking-wider font-bold text-white active:scale-95 transition-all disabled:opacity-40"
                         >
