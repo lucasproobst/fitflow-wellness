@@ -72,7 +72,8 @@ export default function AppLayout({ children }: { children: ReactNode }) {
     .join("")
     .toUpperCase();
 
-  const isPro = !!profile?.is_pro;
+  const { trialActive } = useTrial();
+  const isPro = !!profile?.is_pro || trialActive;
   const lockOrGo = (to: string, label: string) => {
     if (isPro) { navigate(to); return; }
     navigate("/upgrade");
@@ -106,6 +107,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
 
   return (
     <SidebarProvider defaultOpen={true}>
+      <TrialDialog />
       <div className="min-h-screen w-full flex bg-[#0a0a0a]">
         {/* Desktop sidebar */}
         <div className="hidden lg:block">
