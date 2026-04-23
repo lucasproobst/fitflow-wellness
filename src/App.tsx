@@ -26,6 +26,8 @@ import Leaderboard from "@/pages/Leaderboard";
 import Landing from "@/pages/Landing";
 import ResetPassword from "@/pages/ResetPassword";
 import CheckoutSuccess from "@/pages/CheckoutSuccess";
+import Upgrade from "@/pages/Upgrade";
+import { ProRoute } from "@/components/ProRoute";
 
 const queryClient = new QueryClient();
 
@@ -58,8 +60,9 @@ function ProtectedRoutes() {
         <Route path="/" element={<Dashboard />} />
         <Route path="/diet" element={<DietPlan />} />
         <Route path="/workout" element={<WorkoutPlan />} />
-        <Route path="/scanner" element={<Scanner />} />
-        <Route path="/progress" element={<Progress />} />
+        <Route path="/scanner" element={<ProRoute><Scanner /></ProRoute>} />
+        <Route path="/progress" element={<ProRoute><Progress /></ProRoute>} />
+        <Route path="/upgrade" element={<Upgrade />} />
         <Route path="/diary" element={<FoodDiary />} />
         <Route path="/sleep" element={<SleepTracker />} />
         <Route path="/achievements" element={<Achievements />} />
