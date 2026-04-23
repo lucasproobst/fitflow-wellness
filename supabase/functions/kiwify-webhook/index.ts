@@ -1,6 +1,7 @@
 // Kiwify webhook → ativa is_pro=true no user_profile somente quando a compra é aprovada.
-// Qualquer outro evento (reembolso, chargeback, recusa, teste manual, payload inválido)
-// é ignorado/recusado com log estruturado para auditoria.
+// Suporta plano com expiração (subscription/curso por X dias): se o payload trouxer
+// uma data de validade, ela é gravada em pro_expires_at.
+// Eventos negativos (refund, chargeback, subscription_canceled) desativam is_pro.
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 
 const corsHeaders = {
@@ -17,13 +18,18 @@ const APPROVED_EVENTS = new Set([
   "purchase_approved",
 ]);
 
-// Eventos que sabemos que NÃO devem liberar (apenas para log mais claro)
-const KNOWN_NEGATIVE_EVENTS = new Set([
-  "order_refunded", "compra_reembolsada", "refund",
+// Eventos que desativam o plano (revogação imediata)
+const DEACTIVATING_EVENTS = new Set([
+  "order_refunded", "compra_reembolsada", "refund", "refunded",
   "chargeback", "order_chargeback",
+  "subscription_canceled", "subscription_cancelled",
+]);
+
+// Eventos que sabemos que NÃO devem liberar nem revogar (apenas log neutro)
+const KNOWN_NEUTRAL_EVENTS = new Set([
   "order_rejected", "compra_recusada", "rejected",
   "pix_created", "billet_created", "boleto_created", "waiting_payment",
-  "subscription_canceled", "subscription_renewed",
+  "subscription_renewed",
 ]);
 
 // Validação de UUID v4 (Supabase user_id)
@@ -106,21 +112,17 @@ Deno.serve(async (req) => {
     const productId =
       payload.product_id ?? payload.Product?.product_id ?? payload.product?.id ?? null;
 
-    // ── 4. WHITELIST: somente compras aprovadas seguem ────────────────────────
+    // ── 4. Classifica o evento: aprovação, desativação ou neutro ──────────────
     const isApproved =
       APPROVED_STATUSES.has(rawStatus) || APPROVED_EVENTS.has(rawEvent);
+    const isDeactivating = DEACTIVATING_EVENTS.has(rawEvent) || ["refunded", "chargeback"].includes(rawStatus);
 
-    if (!isApproved) {
-      const isKnownNegative = KNOWN_NEGATIVE_EVENTS.has(rawEvent);
-      logEvent(isKnownNegative ? "info" : "warn", "event_ignored_not_approved", {
-        status: rawStatus,
-        event: rawEvent,
-        orderId,
-        productId,
-        knownNegative: isKnownNegative,
+    if (!isApproved && !isDeactivating) {
+      const isKnownNeutral = KNOWN_NEUTRAL_EVENTS.has(rawEvent);
+      logEvent(isKnownNeutral ? "info" : "warn", "event_ignored_not_actionable", {
+        status: rawStatus, event: rawEvent, orderId, productId, knownNeutral: isKnownNeutral,
       });
-      // 200 para a Kiwify não reentregar — recebemos com sucesso, só não ativamos.
-      return json(200, { ok: true, ignored: true, reason: "not_approved" });
+      return json(200, { ok: true, ignored: true, reason: "not_actionable" });
     }
 
     // ── 5. Extrai user_id de qualquer formato conhecido da Kiwify ─────────────
@@ -187,7 +189,55 @@ Deno.serve(async (req) => {
 
     logEvent("info", "user_id_detected", { userId, source: userIdSource, orderId });
 
-    // ── 6. Ativa is_pro com service role (bypass RLS) ─────────────────────────
+    // ── 6. Resolve data de expiração (se houver) ──────────────────────────────
+    // A Kiwify pode mandar a validade da assinatura/curso em vários campos.
+    // Aceitamos ISO date string OU número de dias de acesso.
+    const expirationSources: Array<{ source: string; value: unknown }> = [
+      { source: "subscription.next_payment",     value: payload?.subscription?.next_payment },
+      { source: "subscription.expires_at",       value: payload?.subscription?.expires_at },
+      { source: "Subscription.next_payment",     value: payload?.Subscription?.next_payment },
+      { source: "Subscription.expires_at",       value: payload?.Subscription?.expires_at },
+      { source: "access.expires_at",             value: payload?.access?.expires_at },
+      { source: "access_expires_at",             value: payload?.access_expires_at },
+      { source: "expires_at",                    value: payload?.expires_at },
+      { source: "valid_until",                   value: payload?.valid_until },
+      { source: "end_date",                      value: payload?.end_date },
+    ];
+    const accessDaysSources: Array<{ source: string; value: unknown }> = [
+      { source: "access_days",                   value: payload?.access_days },
+      { source: "Product.access_days",           value: payload?.Product?.access_days },
+      { source: "product.access_days",           value: payload?.product?.access_days },
+      { source: "subscription.access_days",      value: payload?.subscription?.access_days },
+    ];
+
+    let proExpiresAt: string | null = null;
+    let expirationSource: string | null = null;
+    for (const { source, value } of expirationSources) {
+      if (typeof value === "string" && value.trim()) {
+        const d = new Date(value.trim());
+        if (!isNaN(d.getTime())) {
+          proExpiresAt = d.toISOString();
+          expirationSource = source;
+          break;
+        }
+      } else if (typeof value === "number" && value > 0) {
+        proExpiresAt = new Date(value).toISOString();
+        expirationSource = source;
+        break;
+      }
+    }
+    if (!proExpiresAt) {
+      for (const { source, value } of accessDaysSources) {
+        const days = typeof value === "number" ? value : Number(value);
+        if (Number.isFinite(days) && days > 0) {
+          proExpiresAt = new Date(Date.now() + days * 86400000).toISOString();
+          expirationSource = source;
+          break;
+        }
+      }
+    }
+
+    // ── 7. Atualiza is_pro / pro_expires_at com service role (bypass RLS) ─────
     const supabaseUrl = Deno.env.get("SUPABASE_URL");
     const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
     if (!supabaseUrl || !serviceKey) {
@@ -197,11 +247,15 @@ Deno.serve(async (req) => {
 
     const supabase = createClient(supabaseUrl, serviceKey);
 
+    const updates: Record<string, unknown> = isDeactivating
+      ? { is_pro: false, pro_expires_at: null }
+      : { is_pro: true, pro_expires_at: proExpiresAt }; // null se vitalício
+
     const { data: updated, error } = await supabase
       .from("user_profile")
-      .update({ is_pro: true })
+      .update(updates)
       .eq("user_id", userId)
-      .select("user_id, is_pro");
+      .select("user_id, is_pro, pro_expires_at");
 
     if (error) {
       logEvent("error", "supabase_update_failed", {
@@ -221,14 +275,19 @@ Deno.serve(async (req) => {
       });
     }
 
-    logEvent("info", "is_pro_activated", {
-      userId, source: userIdSource, orderId, productId, status: rawStatus, event: rawEvent,
+    logEvent("info", isDeactivating ? "is_pro_deactivated" : "is_pro_activated", {
+      userId, source: userIdSource, orderId, productId,
+      status: rawStatus, event: rawEvent,
+      pro_expires_at: proExpiresAt, expiration_source: expirationSource,
     });
     return json(200, {
       ok: true,
-      activated: true,
+      activated: !isDeactivating,
+      deactivated: isDeactivating,
       detected_user_id: userId,
       detected_source: userIdSource,
+      pro_expires_at: isDeactivating ? null : proExpiresAt,
+      expiration_source: isDeactivating ? null : expirationSource,
       order_id: orderId,
     });
   } catch (err) {

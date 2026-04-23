@@ -13,6 +13,7 @@ import { Flame, Dumbbell, ChevronRight, TrendingDown, TrendingUp, Utensils, BarC
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { ProBanner } from "@/components/ProBanner";
+import { usePro } from "@/lib/use-pro";
 
 interface BeforeInstallPromptEvent extends Event {
   prompt(): Promise<void>;
@@ -48,6 +49,7 @@ function AnimCard({
 export default function Dashboard() {
   const { user } = useAuth();
   const { data: profile } = useProfile();
+  const { isPro, expiresAt } = usePro();
   useTheme();
   const { data: dailyLog } = useDailyLog();
   const addWater = useAddWater();
@@ -266,7 +268,7 @@ export default function Dashboard() {
         </AnimCard>
       )}
 
-      {profile?.is_pro && <ProBanner variant="hero" className="mb-4" />}
+      {isPro && <ProBanner variant="hero" expiresAt={expiresAt} className="mb-4" />}
 
       {/* Responsive grid */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 lg:gap-6">
