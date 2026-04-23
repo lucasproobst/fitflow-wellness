@@ -126,23 +126,31 @@ export function AppSidebar({ onNewClick }: { onNewClick: () => void }) {
           )}
           <SidebarGroupContent>
             <SidebarMenu>
-              {moreItems.map((item) => (
-                <SidebarMenuItem key={item.to}>
-                  <SidebarMenuButton asChild tooltip={item.label}>
-                    <NavLink
-                      to={item.to}
-                      className={`flex items-center gap-3 rounded-lg transition-colors ${
-                        isActive(item.to)
-                          ? "bg-[#22c55e]/15 text-[#22c55e] hover:bg-[#22c55e]/20"
-                          : "text-white/60 hover:bg-white/[0.04] hover:text-white"
-                      }`}
-                    >
-                      <item.icon size={18} className="shrink-0" />
-                      {!collapsed && <span className="text-[13px] font-semibold">{item.label}</span>}
-                    </NavLink>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
+              {moreItems.map((item) => {
+                const locked = item.pro && !isPro;
+                return (
+                  <SidebarMenuItem key={item.to}>
+                    <SidebarMenuButton asChild tooltip={locked ? `${item.label} • Pro` : item.label}>
+                      <NavLink
+                        to={locked ? "/upgrade" : item.to}
+                        className={`flex items-center gap-3 rounded-lg transition-colors ${
+                          isActive(item.to) && !locked
+                            ? "bg-[#22c55e]/15 text-[#22c55e] hover:bg-[#22c55e]/20"
+                            : "text-white/60 hover:bg-white/[0.04] hover:text-white"
+                        }`}
+                      >
+                        <item.icon size={18} className="shrink-0" />
+                        {!collapsed && (
+                          <span className="text-[13px] font-semibold flex-1 flex items-center gap-1.5">
+                            {item.label}
+                            {locked && <Lock size={11} className="text-white/30" />}
+                          </span>
+                        )}
+                      </NavLink>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                );
+              })}
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
