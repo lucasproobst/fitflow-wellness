@@ -131,6 +131,7 @@ export default function WorkoutPlan() {
 
   const { user } = useAuth();
   const { data: profile } = useProfile();
+  const { requirePro } = usePro();
   const qc = useQueryClient();
   const [searchParams, setSearchParams] = useSearchParams();
   const weekDates = useMemo(() => getWeekDates(), []);
@@ -222,6 +223,7 @@ export default function WorkoutPlan() {
   }, [user]);
 
   const openDaysPicker = () => {
+    if (!requirePro("Gerar plano de treino")) return;
     // Pre-fill with currently active days from existing plan, if any
     if (planData?.days) {
       const current = new Set<number>();
