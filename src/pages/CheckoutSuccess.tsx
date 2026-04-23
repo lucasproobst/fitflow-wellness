@@ -92,6 +92,20 @@ export default function CheckoutSuccess() {
                 poucos segundos. Não feche esta página.
               </p>
 
+              {user && (
+                <div className="mt-5 rounded-2xl border border-white/[0.07] bg-white/[0.03] p-4 text-left">
+                  <p className="text-[11px] uppercase tracking-widest text-muted-foreground/80 font-semibold">
+                    Conta a ser liberada
+                  </p>
+                  <p className="mt-1 text-sm font-semibold text-foreground truncate">
+                    {user.email ?? "(sem e-mail)"}
+                  </p>
+                  <p className="mt-0.5 text-[11px] text-muted-foreground font-mono truncate">
+                    ID: {user.id}
+                  </p>
+                </div>
+              )}
+
               {elapsed >= 30 && (
                 <p className="mt-6 text-xs text-muted-foreground/80 leading-relaxed">
                   Está demorando mais que o normal? Você pode fechar e abrir o
