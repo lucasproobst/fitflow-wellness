@@ -8,6 +8,7 @@ import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/AppSidebar";
 import { NotificationsPopover } from "@/components/NotificationsPopover";
 import { ProBadge } from "@/components/ProBadge";
+import { useProActivationToast } from "@/lib/use-pro-activation-toast";
 
 interface BeforeInstallPromptEvent extends Event {
   prompt(): Promise<void>;
@@ -29,6 +30,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
   const location = useLocation();
   const navigate = useNavigate();
   const [fabOpen, setFabOpen] = useState(false);
+  useProActivationToast();
 
   const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
   const [isInstalled, setIsInstalled] = useState(false);
