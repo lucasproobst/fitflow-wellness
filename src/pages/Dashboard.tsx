@@ -13,6 +13,7 @@ import { Flame, Dumbbell, ChevronRight, TrendingDown, TrendingUp, Utensils, BarC
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { ProBanner } from "@/components/ProBanner";
+import { usePro } from "@/lib/use-pro";
 
 interface BeforeInstallPromptEvent extends Event {
   prompt(): Promise<void>;
