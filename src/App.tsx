@@ -25,6 +25,7 @@ import Achievements from "@/pages/Achievements";
 import Leaderboard from "@/pages/Leaderboard";
 import Landing from "@/pages/Landing";
 import ResetPassword from "@/pages/ResetPassword";
+import CheckoutSuccess from "@/pages/CheckoutSuccess";
 
 const queryClient = new QueryClient();
 
@@ -86,6 +87,7 @@ function AppRoutes() {
       <Route path="/landing" element={user ? <Navigate to="/" replace /> : <Landing />} />
       <Route path="/auth" element={user ? <Navigate to="/" replace /> : <Auth />} />
       <Route path="/reset-password" element={<ResetPassword />} />
+      <Route path="/checkout/sucesso" element={<CheckoutSuccess />} />
       <Route path="/install" element={<Install />} />
       <Route path="/onboarding" element={user ? <Onboarding /> : <Navigate to="/auth" replace />} />
       <Route path="/*" element={<BiometricGate><ProtectedRoutes /></BiometricGate>} />
