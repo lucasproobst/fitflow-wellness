@@ -315,7 +315,7 @@ export default function Landing() {
               ]} cta="Assinar FitFlow →" ctaVariant="primary" onCta={go} />
             </StaggerCard>
             <StaggerCard className="h-full">
-              <PricingCard badge="VITALÍCIO" name="FitFlow+" originalPrice="R$ 197,00" price="R$ 47,90" period="" subtitle="Pagamento único — para sempre" subtitleGreen features={[
+              <PricingCard badge="VITALÍCIO" name="FitFlow+" originalPrice="R$ 197,00" price="R$ 47,00" period="" subtitle="Pagamento único — para sempre" subtitleGreen features={[
                 { ok: true, t: "Tudo do plano FitFlow" },
                 { ok: true, t: "Gerações ILIMITADAS de treino" },
                 { ok: true, t: "Gerações ILIMITADAS de dieta" },
