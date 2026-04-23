@@ -14,6 +14,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { ProBadge } from "@/components/ProBadge";
 import { ProBanner } from "@/components/ProBanner";
+import { usePro } from "@/lib/use-pro";
 
 export default function Profile() {
   const navigate = useNavigate();
