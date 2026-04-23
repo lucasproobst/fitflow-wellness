@@ -11,6 +11,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { GenerationProgress } from "@/components/GenerationProgress";
+import { ProGenButton } from "@/components/ProGenButton";
 
 const dayNames = ["Segunda", "Terça", "Quarta", "Quinta", "Sexta", "Sábado", "Domingo"];
 const shortDays = ["SEG", "TER", "QUA", "QUI", "SEX", "SÁB", "DOM"];
