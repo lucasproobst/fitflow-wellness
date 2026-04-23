@@ -5,6 +5,7 @@ import { RefreshCw, Shuffle, Heart, ChevronRight, X, Clock, ChefHat, Lightbulb, 
 import { RecipeShareCard } from "@/components/RecipeShareCard";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth-context";
+import { usePro } from "@/lib/use-pro";
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
