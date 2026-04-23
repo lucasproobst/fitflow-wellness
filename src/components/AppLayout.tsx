@@ -197,26 +197,34 @@ export default function AppLayout({ children }: { children: ReactNode }) {
                 style={{ bottom: `calc(100px + env(safe-area-inset-bottom, 0px))` }}
               >
                 <div className="space-y-2.5 pointer-events-auto">
-                  {fabActions.map((a, i) => (
-                    <motion.button
-                      key={a.title}
-                      initial={{ opacity: 0, y: 20 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: 10 }}
-                      transition={{ duration: 0.25, delay: (fabActions.length - 1 - i) * 0.05, ease: "easeOut" }}
-                      onClick={() => { a.onClick(); setFabOpen(false); }}
-                      className="w-full flex items-center gap-3 p-3.5 rounded-2xl bg-[#1a1a1a] border border-white/[0.08] active:scale-[0.98] transition-transform"
-                    >
-                      <div className="w-9 h-9 rounded-full bg-[#22c55e]/15 flex items-center justify-center shrink-0">
-                        <a.icon size={18} className="text-[#22c55e]" />
-                      </div>
-                      <div className="flex-1 text-left min-w-0">
-                        <p className="text-[15px] font-bold text-white leading-tight">{a.title}</p>
-                        <p className="text-[12px] text-[#6b7280] mt-0.5 truncate">{a.subtitle}</p>
-                      </div>
-                      <span className="text-[#6b7280] text-lg">→</span>
-                    </motion.button>
-                  ))}
+                  {fabActions.map((a, i) => {
+                    const locked = a.pro && !isPro;
+                    return (
+                      <motion.button
+                        key={a.title}
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: 10 }}
+                        transition={{ duration: 0.25, delay: (fabActions.length - 1 - i) * 0.05, ease: "easeOut" }}
+                        onClick={() => { a.onClick(); setFabOpen(false); }}
+                        className="w-full flex items-center gap-3 p-3.5 rounded-2xl bg-[#1a1a1a] border border-white/[0.08] active:scale-[0.98] transition-transform"
+                      >
+                        <div className="w-9 h-9 rounded-full bg-[#22c55e]/15 flex items-center justify-center shrink-0">
+                          <a.icon size={18} className="text-[#22c55e]" />
+                        </div>
+                        <div className="flex-1 text-left min-w-0">
+                          <p className="text-[15px] font-bold text-white leading-tight flex items-center gap-1.5">
+                            {a.title}
+                            {locked && <Lock size={11} className="text-white/40" />}
+                          </p>
+                          <p className="text-[12px] text-[#6b7280] mt-0.5 truncate">
+                            {locked ? "Exclusivo FitFlow+" : a.subtitle}
+                          </p>
+                        </div>
+                        <span className="text-[#6b7280] text-lg">→</span>
+                      </motion.button>
+                    );
+                  })}
                 </div>
               </div>
             </>
@@ -228,7 +236,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
           className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[480px] bg-[#0a0a0a] border-t border-white/[0.06] z-50 safe-bottom lg:hidden"
         >
           <div className="relative h-[72px] grid grid-cols-5 items-center px-2">
-            {tabs.slice(0, 2).map(t => <BottomTab key={t.to} {...t} />)}
+            {tabs.slice(0, 2).map(t => <BottomTab key={t.to} {...t} locked={t.pro && !isPro} />)}
 
             {/* Center FAB */}
             <div className="flex items-center justify-center">
@@ -247,7 +255,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
               </button>
             </div>
 
-            {tabs.slice(2).map(t => <BottomTab key={t.to} {...t} />)}
+            {tabs.slice(2).map(t => <BottomTab key={t.to} {...t} locked={t.pro && !isPro} />)}
           </div>
         </nav>
       </div>
@@ -255,26 +263,34 @@ export default function AppLayout({ children }: { children: ReactNode }) {
   );
 }
 
-function BottomTab({ to, icon: Icon, label }: { to: string; icon: any; label: string }) {
+function BottomTab({ to, icon: Icon, label, locked }: { to: string; icon: any; label: string; locked?: boolean }) {
   return (
     <NavLink
-      to={to}
+      to={locked ? "/upgrade" : to}
       end={to === "/"}
-      className="flex flex-col items-center justify-center gap-1 min-h-[44px]"
+      className="flex flex-col items-center justify-center gap-1 min-h-[44px] relative"
     >
-      {({ isActive }) => (
-        <>
-          <Icon
-            size={22}
-            className={isActive ? "text-[#22c55e]" : "text-[#6b7280]"}
-            strokeWidth={isActive ? 2.5 : 2}
-            fill={isActive ? "rgba(34,197,94,0.15)" : "none"}
-          />
-          <span className={`text-[10px] font-medium ${isActive ? "text-[#22c55e]" : "text-[#6b7280]"}`}>
-            {label}
-          </span>
-        </>
-      )}
+      {({ isActive }) => {
+        const active = isActive && !locked;
+        return (
+          <>
+            <Icon
+              size={22}
+              className={active ? "text-[#22c55e]" : "text-[#6b7280]"}
+              strokeWidth={active ? 2.5 : 2}
+              fill={active ? "rgba(34,197,94,0.15)" : "none"}
+            />
+            <span className={`text-[10px] font-medium ${active ? "text-[#22c55e]" : "text-[#6b7280]"}`}>
+              {label}
+            </span>
+            {locked && (
+              <span className="absolute top-0 right-1/2 translate-x-[14px] w-3.5 h-3.5 rounded-full bg-[#0a0a0a] border border-white/10 flex items-center justify-center">
+                <Lock size={8} className="text-white/50" />
+              </span>
+            )}
+          </>
+        );
+      }}
     </NavLink>
   );
 }
