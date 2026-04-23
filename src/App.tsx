@@ -62,7 +62,6 @@ function ProtectedRoutes() {
         <Route path="/workout" element={<WorkoutPlan />} />
         <Route path="/scanner" element={<ProRoute><Scanner /></ProRoute>} />
         <Route path="/progress" element={<ProRoute><Progress /></ProRoute>} />
-        <Route path="/upgrade" element={<Upgrade />} />
         <Route path="/diary" element={<FoodDiary />} />
         <Route path="/sleep" element={<SleepTracker />} />
         <Route path="/achievements" element={<Achievements />} />
@@ -91,6 +90,7 @@ function AppRoutes() {
       <Route path="/auth" element={user ? <Navigate to="/" replace /> : <Auth />} />
       <Route path="/reset-password" element={<ResetPassword />} />
       <Route path="/checkout/sucesso" element={<CheckoutSuccess />} />
+      <Route path="/upgrade" element={<Upgrade />} />
       <Route path="/install" element={<Install />} />
       <Route path="/onboarding" element={user ? <Onboarding /> : <Navigate to="/auth" replace />} />
       <Route path="/*" element={<BiometricGate><ProtectedRoutes /></BiometricGate>} />
