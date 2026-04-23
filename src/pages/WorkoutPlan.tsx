@@ -9,6 +9,7 @@ import { usePro } from "@/lib/use-pro";
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
 import { GenerationProgress } from "@/components/GenerationProgress";
+import { ProGenButton } from "@/components/ProGenButton";
 
 // Smart suggestion: maps activity level → suggested workout days (indices: 0=Mon … 6=Sun)
 const activitySuggestions: Record<string, { days: number[]; label: string; reason: string }> = {
@@ -347,14 +348,13 @@ export default function WorkoutPlan() {
             {currentDay ? currentDay.focus : "Plano semanal"}
           </h1>
         </div>
-        <button
+        <ProGenButton
+          variant="icon"
           onClick={openDaysPicker}
-          disabled={generate.isPending}
-          className="w-10 h-10 rounded-full bg-[#22c55e] flex items-center justify-center active:scale-95 transition-all disabled:opacity-50"
-          aria-label="Regenerar plano"
-        >
-          <RefreshCw size={15} className={`text-white ${generate.isPending ? "animate-spin" : ""}`} />
-        </button>
+          loading={generate.isPending}
+          requireProLabel="Gerar plano de treino"
+          ariaLabel="Regenerar plano"
+        />
       </div>
 
       {/* Week progress */}
@@ -459,12 +459,13 @@ export default function WorkoutPlan() {
       {!isLoading && !generate.isPending && !planData && (
         <div className="rounded-2xl bg-[#141414] border border-white/[0.07] py-16 text-center">
           <p className="text-white/30 text-sm mb-5">Nenhum plano de treino ainda</p>
-          <button
+          <ProGenButton
+            variant="primary"
             onClick={openDaysPicker}
-            className="px-6 py-3 rounded-xl bg-[#22c55e] text-white text-sm font-bold active:scale-95 transition-all"
-          >
-            Gerar seu plano
-          </button>
+            requireProLabel="Gerar plano de treino"
+            label="Gerar seu plano"
+            proLabel="Gerar seu plano • FitFlow+"
+          />
         </div>
       )}
 
