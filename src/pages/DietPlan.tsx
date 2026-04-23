@@ -451,12 +451,14 @@ export default function DietPlan() {
             <RefreshCw size={24} className="text-[#6b7280]" />
           </div>
           <p className="text-[#6b7280] text-sm mb-5">Nenhum plano alimentar ainda</p>
-          <button
-            onClick={() => { if (requirePro("Gerar plano alimentar")) generate.mutate(); }}
-            className="px-8 py-3 rounded-xl bg-[#22c55e] text-white text-sm font-bold active:scale-95 transition-all"
-          >
-            Gerar Seu Plano
-          </button>
+          <ProGenButton
+            variant="primary"
+            onClick={() => generate.mutate()}
+            loading={generate.isPending}
+            requireProLabel="Gerar plano alimentar"
+            label="Gerar Seu Plano"
+            proLabel="Gerar Seu Plano • FitFlow+"
+          />
         </div>
       )}
 
