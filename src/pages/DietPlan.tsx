@@ -539,14 +539,16 @@ export default function DietPlan() {
                         >
                           <Heart size={14} className={isFav ? "text-[#22c55e] fill-[#22c55e]" : "text-[#6b7280]"} />
                         </button>
-                        <button
-                          onClick={() => { if (requirePro("Trocar refeição")) swapMeal.mutate({ day: dayNames[selectedDay], mealType: type }); }}
-                          disabled={isSwapping || swapMeal.isPending}
-                          className="flex items-center gap-1.5 px-3.5 py-2 rounded-lg bg-white/[0.06] border border-white/[0.1] text-[11px] uppercase tracking-wider font-bold text-white active:scale-95 transition-all disabled:opacity-40"
+                        <ProGenButton
+                          variant="ghost"
+                          onClick={() => swapMeal.mutate({ day: dayNames[selectedDay], mealType: type })}
+                          loading={isSwapping}
+                          disabled={swapMeal.isPending}
+                          requireProLabel="Trocar refeição"
                         >
                           <Shuffle size={10} className={isSwapping ? "animate-spin" : ""} />
                           Swap meal
-                        </button>
+                        </ProGenButton>
                       </div>
                     </div>
                   </div>
