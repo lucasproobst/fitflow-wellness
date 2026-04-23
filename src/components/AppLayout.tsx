@@ -9,6 +9,8 @@ import { AppSidebar } from "@/components/AppSidebar";
 import { NotificationsPopover } from "@/components/NotificationsPopover";
 import { ProBadge } from "@/components/ProBadge";
 import { useProActivationToast } from "@/lib/use-pro-activation-toast";
+import { TrialDialog } from "@/components/TrialDialog";
+import { useTrial } from "@/lib/use-trial";
 
 interface BeforeInstallPromptEvent extends Event {
   prompt(): Promise<void>;
