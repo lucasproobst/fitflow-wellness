@@ -5,6 +5,10 @@ import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence, useInView } from "framer-motion";
 import { useRef } from "react";
 import scannerMockup from "@/assets/scanner-screen.jpg";
+import { useAuth } from "@/lib/auth-context";
+
+// Fallback caso a env não esteja configurada — substitua pela URL real do produto na Kiwify
+const KIWIFY_PLUS_URL_FALLBACK = "https://pay.kiwify.com.br/SUA_URL_AQUI";
 
 /* ─── Reusable scroll-triggered wrapper ─── */
 function Reveal({ children, className = "", delay = 0, id }: { children: React.ReactNode; className?: string; delay?: number; id?: string }) {
@@ -323,7 +327,7 @@ export default function Landing() {
                 { ok: true, t: "Acesso a todas as novidades" },
                 { ok: true, t: "Suporte prioritário" },
                 { ok: true, t: "Nunca paga de novo" },
-              ]} cta="Garantir FitFlow+ →" ctaVariant="white" footnote="🔒 Acesso vitalício garantido" footnoteGreen onCta={go} />
+              ]} cta="Garantir FitFlow+ →" ctaVariant="white" footnote="🔒 Acesso vitalício garantido" footnoteGreen onCta={goPlus} />
             </StaggerCard>
           </StaggerCards>
         </div>
