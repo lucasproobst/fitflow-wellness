@@ -104,6 +104,7 @@ export default function DietPlan() {
   const recipesScrollRef = useRef<HTMLDivElement>(null);
   const recipesCache = useRef<Record<number, Recipe[]>>({});
   const { user } = useAuth();
+  const { isPro, requirePro } = usePro();
   const qc = useQueryClient();
   const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
