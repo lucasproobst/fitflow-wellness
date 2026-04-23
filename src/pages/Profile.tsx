@@ -20,6 +20,7 @@ export default function Profile() {
   const navigate = useNavigate();
   const { user, signOut } = useAuth();
   const { data: profile } = useProfile();
+  const { isPro, expiresAt } = usePro();
   const uploadAvatar = useUploadAvatar();
   const bio = useBiometricLock(user?.id);
   const [editInfoOpen, setEditInfoOpen] = useState(false);
@@ -138,9 +139,9 @@ export default function Profile() {
           <p className="text-[14px] text-[#6b7280] mt-0.5 truncate max-w-full">
             {user?.email}
           </p>
-          {profile?.is_pro ? (
+          {isPro ? (
             <div className="mt-3 w-full max-w-[320px]">
-              <ProBanner variant="hero" />
+              <ProBanner variant="hero" expiresAt={expiresAt} />
             </div>
           ) : (
             <span className="mt-2 px-3 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider bg-[#22c55e]/15 text-[#22c55e]">
