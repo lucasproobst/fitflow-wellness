@@ -5,6 +5,7 @@ import { ArrowLeft, PlayCircle, Check, RefreshCw, X, Lock, CheckCircle2, Repeat,
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth-context";
 import { useProfile } from "@/lib/use-profile";
+import { usePro } from "@/lib/use-pro";
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
 import { GenerationProgress } from "@/components/GenerationProgress";
@@ -130,6 +131,7 @@ export default function WorkoutPlan() {
 
   const { user } = useAuth();
   const { data: profile } = useProfile();
+  const { requirePro } = usePro();
   const qc = useQueryClient();
   const [searchParams, setSearchParams] = useSearchParams();
   const weekDates = useMemo(() => getWeekDates(), []);
@@ -221,6 +223,7 @@ export default function WorkoutPlan() {
   }, [user]);
 
   const openDaysPicker = () => {
+    if (!requirePro("Gerar plano de treino")) return;
     // Pre-fill with currently active days from existing plan, if any
     if (planData?.days) {
       const current = new Set<number>();

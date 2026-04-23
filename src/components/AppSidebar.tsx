@@ -1,4 +1,4 @@
-import { Home, Utensils, Dumbbell, BarChart3, Trophy, Award, Camera, User, Plus, Salad } from "lucide-react";
+import { Home, Utensils, Dumbbell, BarChart3, Trophy, Award, Camera, User, Plus, Salad, Lock } from "lucide-react";
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import {
   Sidebar,
@@ -18,16 +18,16 @@ import { useProfile } from "@/lib/use-profile";
 import { ProBadge } from "@/components/ProBadge";
 
 const mainItems = [
-  { to: "/", icon: Home, label: "Início" },
-  { to: "/diet", icon: Utensils, label: "Dieta" },
-  { to: "/workout", icon: Dumbbell, label: "Treino" },
-  { to: "/progress", icon: BarChart3, label: "Stats" },
+  { to: "/", icon: Home, label: "Início", pro: false },
+  { to: "/diet", icon: Utensils, label: "Dieta", pro: false },
+  { to: "/workout", icon: Dumbbell, label: "Treino", pro: false },
+  { to: "/progress", icon: BarChart3, label: "Stats", pro: true },
 ];
 
 const moreItems = [
-  { to: "/scanner", icon: Camera, label: "Scanner" },
-  { to: "/achievements", icon: Award, label: "Conquistas" },
-  { to: "/leaderboard", icon: Trophy, label: "Ranking" },
+  { to: "/scanner", icon: Camera, label: "Scanner", pro: true },
+  { to: "/achievements", icon: Award, label: "Conquistas", pro: false },
+  { to: "/leaderboard", icon: Trophy, label: "Ranking", pro: false },
 ];
 
 export function AppSidebar({ onNewClick }: { onNewClick: () => void }) {
@@ -37,6 +37,7 @@ export function AppSidebar({ onNewClick }: { onNewClick: () => void }) {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { data: profile } = useProfile();
+  const isPro = !!profile?.is_pro;
 
   const isActive = (path: string) =>
     path === "/" ? location.pathname === "/" : location.pathname.startsWith(path);
@@ -87,24 +88,32 @@ export function AppSidebar({ onNewClick }: { onNewClick: () => void }) {
           )}
           <SidebarGroupContent>
             <SidebarMenu>
-              {mainItems.map((item) => (
-                <SidebarMenuItem key={item.to}>
-                  <SidebarMenuButton asChild tooltip={item.label}>
-                    <NavLink
-                      to={item.to}
-                      end={item.to === "/"}
-                      className={`flex items-center gap-3 rounded-lg transition-colors ${
-                        isActive(item.to)
-                          ? "bg-[#22c55e]/15 text-[#22c55e] hover:bg-[#22c55e]/20"
-                          : "text-white/60 hover:bg-white/[0.04] hover:text-white"
-                      }`}
-                    >
-                      <item.icon size={18} className="shrink-0" />
-                      {!collapsed && <span className="text-[13px] font-semibold">{item.label}</span>}
-                    </NavLink>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
+              {mainItems.map((item) => {
+                const locked = item.pro && !isPro;
+                return (
+                  <SidebarMenuItem key={item.to}>
+                    <SidebarMenuButton asChild tooltip={locked ? `${item.label} • Pro` : item.label}>
+                      <NavLink
+                        to={locked ? "/upgrade" : item.to}
+                        end={item.to === "/"}
+                        className={`flex items-center gap-3 rounded-lg transition-colors ${
+                          isActive(item.to) && !locked
+                            ? "bg-[#22c55e]/15 text-[#22c55e] hover:bg-[#22c55e]/20"
+                            : "text-white/60 hover:bg-white/[0.04] hover:text-white"
+                        }`}
+                      >
+                        <item.icon size={18} className="shrink-0" />
+                        {!collapsed && (
+                          <span className="text-[13px] font-semibold flex-1 flex items-center gap-1.5">
+                            {item.label}
+                            {locked && <Lock size={11} className="text-white/30" />}
+                          </span>
+                        )}
+                      </NavLink>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                );
+              })}
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
@@ -117,23 +126,31 @@ export function AppSidebar({ onNewClick }: { onNewClick: () => void }) {
           )}
           <SidebarGroupContent>
             <SidebarMenu>
-              {moreItems.map((item) => (
-                <SidebarMenuItem key={item.to}>
-                  <SidebarMenuButton asChild tooltip={item.label}>
-                    <NavLink
-                      to={item.to}
-                      className={`flex items-center gap-3 rounded-lg transition-colors ${
-                        isActive(item.to)
-                          ? "bg-[#22c55e]/15 text-[#22c55e] hover:bg-[#22c55e]/20"
-                          : "text-white/60 hover:bg-white/[0.04] hover:text-white"
-                      }`}
-                    >
-                      <item.icon size={18} className="shrink-0" />
-                      {!collapsed && <span className="text-[13px] font-semibold">{item.label}</span>}
-                    </NavLink>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
+              {moreItems.map((item) => {
+                const locked = item.pro && !isPro;
+                return (
+                  <SidebarMenuItem key={item.to}>
+                    <SidebarMenuButton asChild tooltip={locked ? `${item.label} • Pro` : item.label}>
+                      <NavLink
+                        to={locked ? "/upgrade" : item.to}
+                        className={`flex items-center gap-3 rounded-lg transition-colors ${
+                          isActive(item.to) && !locked
+                            ? "bg-[#22c55e]/15 text-[#22c55e] hover:bg-[#22c55e]/20"
+                            : "text-white/60 hover:bg-white/[0.04] hover:text-white"
+                        }`}
+                      >
+                        <item.icon size={18} className="shrink-0" />
+                        {!collapsed && (
+                          <span className="text-[13px] font-semibold flex-1 flex items-center gap-1.5">
+                            {item.label}
+                            {locked && <Lock size={11} className="text-white/30" />}
+                          </span>
+                        )}
+                      </NavLink>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                );
+              })}
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
