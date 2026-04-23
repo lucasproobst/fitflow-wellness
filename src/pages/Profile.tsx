@@ -13,6 +13,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { ProBadge } from "@/components/ProBadge";
+import { ProBanner } from "@/components/ProBanner";
 
 export default function Profile() {
   const navigate = useNavigate();
@@ -136,11 +137,15 @@ export default function Profile() {
           <p className="text-[14px] text-[#6b7280] mt-0.5 truncate max-w-full">
             {user?.email}
           </p>
-          <span className={`mt-2 px-3 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider ${
-            profile?.is_pro ? "bg-[#22c55e] text-black" : "bg-[#22c55e]/15 text-[#22c55e]"
-          }`}>
-            {profile?.is_pro ? "FitFlow Pro ⚡" : "FitFlow Grátis"}
-          </span>
+          {profile?.is_pro ? (
+            <div className="mt-3 w-full max-w-[320px]">
+              <ProBanner variant="hero" />
+            </div>
+          ) : (
+            <span className="mt-2 px-3 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider bg-[#22c55e]/15 text-[#22c55e]">
+              FitFlow Grátis
+            </span>
+          )}
         </div>
 
         {/* Stats */}

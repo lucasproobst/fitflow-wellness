@@ -12,6 +12,7 @@ import { useNotificationReminders } from "@/lib/use-notifications";
 import { Flame, Dumbbell, ChevronRight, TrendingDown, TrendingUp, Utensils, BarChart3, X, Download, Smartphone, Droplets } from "lucide-react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
+import { ProBanner } from "@/components/ProBanner";
 
 interface BeforeInstallPromptEvent extends Event {
   prompt(): Promise<void>;
@@ -264,6 +265,8 @@ export default function Dashboard() {
           )}
         </AnimCard>
       )}
+
+      {profile?.is_pro && <ProBanner variant="hero" className="mb-4" />}
 
       {/* Responsive grid */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 lg:gap-6">
