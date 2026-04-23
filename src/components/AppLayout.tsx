@@ -1,6 +1,6 @@
 import { ReactNode, useState, useEffect } from "react";
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
-import { Home, Utensils, Dumbbell, BarChart3, Plus, X, Camera, Salad, Download, Trophy } from "lucide-react";
+import { Home, Utensils, Dumbbell, BarChart3, Plus, X, Camera, Salad, Download, Trophy, Lock } from "lucide-react";
 import { useAuth } from "@/lib/auth-context";
 import { useProfile } from "@/lib/use-profile";
 import { motion, AnimatePresence } from "framer-motion";
@@ -15,10 +15,10 @@ interface BeforeInstallPromptEvent extends Event {
 }
 
 const tabs = [
-  { to: "/", icon: Home, label: "Início" },
-  { to: "/diet", icon: Utensils, label: "Dieta" },
-  { to: "/workout", icon: Dumbbell, label: "Treino" },
-  { to: "/progress", icon: BarChart3, label: "Stats" },
+  { to: "/", icon: Home, label: "Início", pro: false },
+  { to: "/diet", icon: Utensils, label: "Dieta", pro: false },
+  { to: "/workout", icon: Dumbbell, label: "Treino", pro: false },
+  { to: "/progress", icon: BarChart3, label: "Stats", pro: true },
 ] as const;
 
 const HIDE_CHROME_ROUTES = ["/onboarding", "/auth", "/landing"];
@@ -68,11 +68,17 @@ export default function AppLayout({ children }: { children: ReactNode }) {
     .join("")
     .toUpperCase();
 
+  const isPro = !!profile?.is_pro;
+  const lockOrGo = (to: string, label: string) => {
+    if (isPro) { navigate(to); return; }
+    navigate("/upgrade");
+  };
+
   const fabActions = [
-    { icon: Camera, title: "Escanear Alimento", subtitle: "Aponte a câmera para qualquer comida", onClick: () => navigate("/scanner") },
-    { icon: Salad, title: "Gerar Dieta", subtitle: "Nova dieta personalizada", onClick: () => navigate("/diet?generate=1") },
-    { icon: Dumbbell, title: "Gerar Treino", subtitle: "Novo treino na medida", onClick: () => navigate("/workout?generate=1") },
-    { icon: Trophy, title: "Ranking", subtitle: "Veja sua posição entre os atletas", onClick: () => navigate("/leaderboard") },
+    { icon: Camera, title: "Escanear Alimento", subtitle: "Aponte a câmera para qualquer comida", onClick: () => lockOrGo("/scanner", "Scanner"), pro: true },
+    { icon: Salad, title: "Gerar Dieta", subtitle: "Nova dieta personalizada", onClick: () => lockOrGo("/diet?generate=1", "Gerar Dieta"), pro: true },
+    { icon: Dumbbell, title: "Gerar Treino", subtitle: "Novo treino na medida", onClick: () => lockOrGo("/workout?generate=1", "Gerar Treino"), pro: true },
+    { icon: Trophy, title: "Ranking", subtitle: "Veja sua posição entre os atletas", onClick: () => navigate("/leaderboard"), pro: false },
   ];
 
   // No-chrome routes (auth/onboarding/landing): render bare
