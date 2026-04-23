@@ -1,4 +1,4 @@
-import { Home, Utensils, Dumbbell, BarChart3, Trophy, Award, Camera, User, Plus, Salad } from "lucide-react";
+import { Home, Utensils, Dumbbell, BarChart3, Trophy, Award, Camera, User, Plus, Salad, Lock } from "lucide-react";
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import {
   Sidebar,
@@ -18,16 +18,16 @@ import { useProfile } from "@/lib/use-profile";
 import { ProBadge } from "@/components/ProBadge";
 
 const mainItems = [
-  { to: "/", icon: Home, label: "Início" },
-  { to: "/diet", icon: Utensils, label: "Dieta" },
-  { to: "/workout", icon: Dumbbell, label: "Treino" },
-  { to: "/progress", icon: BarChart3, label: "Stats" },
+  { to: "/", icon: Home, label: "Início", pro: false },
+  { to: "/diet", icon: Utensils, label: "Dieta", pro: false },
+  { to: "/workout", icon: Dumbbell, label: "Treino", pro: false },
+  { to: "/progress", icon: BarChart3, label: "Stats", pro: true },
 ];
 
 const moreItems = [
-  { to: "/scanner", icon: Camera, label: "Scanner" },
-  { to: "/achievements", icon: Award, label: "Conquistas" },
-  { to: "/leaderboard", icon: Trophy, label: "Ranking" },
+  { to: "/scanner", icon: Camera, label: "Scanner", pro: true },
+  { to: "/achievements", icon: Award, label: "Conquistas", pro: false },
+  { to: "/leaderboard", icon: Trophy, label: "Ranking", pro: false },
 ];
 
 export function AppSidebar({ onNewClick }: { onNewClick: () => void }) {
