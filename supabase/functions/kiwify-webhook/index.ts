@@ -123,30 +123,69 @@ Deno.serve(async (req) => {
       return json(200, { ok: true, ignored: true, reason: "not_approved" });
     }
 
-    // ── 5. Extrai e valida user_id (vindo do checkout via utm_content) ────────
-    const rawUserId: unknown =
-      payload?.tracking?.utm_content ??
-      payload?.TrackingParameters?.utm_content ??
-      payload?.custom_fields?.user_id ??
-      payload?.s1 ??
-      payload?.tracking?.s1;
+    // ── 5. Extrai user_id de qualquer formato conhecido da Kiwify ─────────────
+    // A Kiwify entrega o parâmetro extra do checkout em campos diferentes
+    // dependendo do tipo de evento, layout do checkout e versão da API.
+    // Verificamos uma whitelist de fontes em ordem de prioridade.
+    const sources: Array<{ source: string; value: unknown }> = [
+      // Tracking parameters (camelCase e snake_case)
+      { source: "tracking.utm_content",          value: payload?.tracking?.utm_content },
+      { source: "TrackingParameters.utm_content",value: payload?.TrackingParameters?.utm_content },
+      { source: "tracking_parameters.utm_content", value: payload?.tracking_parameters?.utm_content },
+      { source: "tracking.s1",                   value: payload?.tracking?.s1 },
+      { source: "TrackingParameters.s1",         value: payload?.TrackingParameters?.s1 },
+      { source: "tracking.s2",                   value: payload?.tracking?.s2 },
+      { source: "tracking.sck",                  value: payload?.tracking?.sck },
+      // Custom fields enviados pelo checkout
+      { source: "custom_fields.user_id",         value: payload?.custom_fields?.user_id },
+      { source: "CustomFields.user_id",          value: payload?.CustomFields?.user_id },
+      { source: "custom_fields.userId",          value: payload?.custom_fields?.userId },
+      { source: "metadata.user_id",              value: payload?.metadata?.user_id },
+      { source: "Customer.metadata.user_id",     value: payload?.Customer?.metadata?.user_id },
+      // Body fallback — root level
+      { source: "user_id",                       value: payload?.user_id },
+      { source: "userId",                        value: payload?.userId },
+      { source: "s1",                            value: payload?.s1 },
+      { source: "external_id",                   value: payload?.external_id },
+      { source: "external_reference",            value: payload?.external_reference },
+    ];
 
-    const userId = typeof rawUserId === "string" ? rawUserId.trim() : "";
+    let userId = "";
+    let userIdSource: string | null = null;
+    for (const { source, value } of sources) {
+      if (typeof value === "string" && value.trim()) {
+        userId = value.trim();
+        userIdSource = source;
+        break;
+      }
+    }
 
     if (!userId) {
       logEvent("error", "approved_purchase_without_user_id", {
-        orderId,
-        productId,
-        status: rawStatus,
-        event: rawEvent,
+        orderId, productId, status: rawStatus, event: rawEvent,
+        availableKeys: Object.keys(payload),
       });
-      return json(400, { error: "user_id ausente no payload" });
+      return json(400, {
+        error: "user_id ausente no payload",
+        detected_user_id: null,
+        detected_source: null,
+        order_id: orderId,
+      });
     }
 
     if (!UUID_RE.test(userId)) {
-      logEvent("error", "invalid_user_id_format", { userId, orderId });
-      return json(400, { error: "user_id inválido" });
+      logEvent("error", "invalid_user_id_format", {
+        userId, source: userIdSource, orderId,
+      });
+      return json(400, {
+        error: "user_id em formato inválido (esperado UUID)",
+        detected_user_id: userId,
+        detected_source: userIdSource,
+        order_id: orderId,
+      });
     }
+
+    logEvent("info", "user_id_detected", { userId, source: userIdSource, orderId });
 
     // ── 6. Ativa is_pro com service role (bypass RLS) ─────────────────────────
     const supabaseUrl = Deno.env.get("SUPABASE_URL");
