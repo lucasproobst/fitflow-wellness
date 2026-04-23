@@ -1,6 +1,7 @@
 // Kiwify webhook → ativa is_pro=true no user_profile somente quando a compra é aprovada.
-// Qualquer outro evento (reembolso, chargeback, recusa, teste manual, payload inválido)
-// é ignorado/recusado com log estruturado para auditoria.
+// Suporta plano com expiração (subscription/curso por X dias): se o payload trouxer
+// uma data de validade, ela é gravada em pro_expires_at.
+// Eventos negativos (refund, chargeback, subscription_canceled) desativam is_pro.
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 
 const corsHeaders = {
@@ -17,13 +18,18 @@ const APPROVED_EVENTS = new Set([
   "purchase_approved",
 ]);
 
-// Eventos que sabemos que NÃO devem liberar (apenas para log mais claro)
-const KNOWN_NEGATIVE_EVENTS = new Set([
-  "order_refunded", "compra_reembolsada", "refund",
+// Eventos que desativam o plano (revogação imediata)
+const DEACTIVATING_EVENTS = new Set([
+  "order_refunded", "compra_reembolsada", "refund", "refunded",
   "chargeback", "order_chargeback",
+  "subscription_canceled", "subscription_cancelled",
+]);
+
+// Eventos que sabemos que NÃO devem liberar nem revogar (apenas log neutro)
+const KNOWN_NEUTRAL_EVENTS = new Set([
   "order_rejected", "compra_recusada", "rejected",
   "pix_created", "billet_created", "boleto_created", "waiting_payment",
-  "subscription_canceled", "subscription_renewed",
+  "subscription_renewed",
 ]);
 
 // Validação de UUID v4 (Supabase user_id)
