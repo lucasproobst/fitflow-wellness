@@ -4,6 +4,7 @@ import { motion } from "framer-motion";
 interface ProBannerProps {
   variant?: "compact" | "hero";
   className?: string;
+  expiresAt?: Date | null;
 }
 
 /**
@@ -11,7 +12,7 @@ interface ProBannerProps {
  * - `compact`: faixa pequena para listas/headers
  * - `hero`: card grande para destaque (Profile/Dashboard)
  */
-export function ProBanner({ variant = "compact", className = "" }: ProBannerProps) {
+export function ProBanner({ variant = "compact", className = "", expiresAt = null }: ProBannerProps) {
   if (variant === "compact") {
     return (
       <motion.div
@@ -67,7 +68,9 @@ export function ProBanner({ variant = "compact", className = "" }: ProBannerProp
             <Sparkles size={12} className="text-[#22c55e]" />
           </div>
           <p className="text-[12px] text-white/60 mt-0.5">
-            Sua assinatura está ativa. Aproveite tudo sem limites.
+            {expiresAt
+              ? `Válido até ${expiresAt.toLocaleDateString("pt-BR", { day: "2-digit", month: "short", year: "numeric" })}`
+              : "Sua assinatura está ativa. Aproveite tudo sem limites."}
           </p>
         </div>
       </div>
