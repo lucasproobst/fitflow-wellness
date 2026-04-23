@@ -38,24 +38,6 @@ export default function Auth() {
     }
   };
 
-  const handlePostAuthRedirect = async () => {
-    const intent = sessionStorage.getItem("postAuthRedirect");
-    if (intent !== "checkout-plus") return false;
-    sessionStorage.removeItem("postAuthRedirect");
-    const { data: { user: u } } = await supabase.auth.getUser();
-    if (!u) return false;
-    const baseUrl =
-      (import.meta.env.VITE_KIWIFY_CHECKOUT_URL_PLUS as string | undefined) ||
-      "https://pay.kiwify.com.br/SUA_URL_AQUI";
-    const successUrl = `${window.location.origin}/checkout/sucesso`;
-    const url = new URL(baseUrl);
-    url.searchParams.set("utm_content", u.id);
-    if (u.email) url.searchParams.set("email", u.email);
-    url.searchParams.set("redirect_url", successUrl);
-    window.location.href = url.toString();
-    return true;
-  };
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -64,7 +46,7 @@ export default function Auth() {
       if (isLogin) {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
-        await handlePostAuthRedirect();
+        // o redirect pós-login é tratado centralmente no AuthProvider via onAuthStateChange
       } else {
         const { error } = await supabase.auth.signUp({ email, password, options: { emailRedirectTo: window.location.origin } });
         if (error) throw error;
