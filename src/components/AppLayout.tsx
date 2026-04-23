@@ -9,6 +9,8 @@ import { AppSidebar } from "@/components/AppSidebar";
 import { NotificationsPopover } from "@/components/NotificationsPopover";
 import { ProBadge } from "@/components/ProBadge";
 import { useProActivationToast } from "@/lib/use-pro-activation-toast";
+import { TrialDialog } from "@/components/TrialDialog";
+import { useTrial } from "@/lib/use-trial";
 
 interface BeforeInstallPromptEvent extends Event {
   prompt(): Promise<void>;
@@ -70,7 +72,8 @@ export default function AppLayout({ children }: { children: ReactNode }) {
     .join("")
     .toUpperCase();
 
-  const isPro = !!profile?.is_pro;
+  const { trialActive } = useTrial();
+  const isPro = !!profile?.is_pro || trialActive;
   const lockOrGo = (to: string, label: string) => {
     if (isPro) { navigate(to); return; }
     navigate("/upgrade");
@@ -104,6 +107,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
 
   return (
     <SidebarProvider defaultOpen={true}>
+      <TrialDialog />
       <div className="min-h-screen w-full flex bg-[#0a0a0a]">
         {/* Desktop sidebar */}
         <div className="hidden lg:block">

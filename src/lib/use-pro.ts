@@ -1,32 +1,34 @@
 import { useNavigate } from "react-router-dom";
 import { useProfile } from "@/lib/use-profile";
+import { useTrial } from "@/lib/use-trial";
 import { toast } from "sonner";
 
 /**
  * Helper para checagens premium no client.
- * Considera `is_pro` E `pro_expires_at` (se a assinatura já expirou,
- * trata o usuário como free mesmo que `is_pro` ainda esteja true,
- * defesa em profundidade enquanto o webhook não atualiza).
+ * Considera `is_pro` + `pro_expires_at` + `trial_ends_at`.
+ * Durante o trial de 3 dias o usuário é tratado como pro para Scanner/Stats.
  */
 export function usePro() {
   const { data: profile, isLoading } = useProfile();
+  const { trialActive } = useTrial();
   const navigate = useNavigate();
 
   const expiresAt = profile?.pro_expires_at ? new Date(profile.pro_expires_at) : null;
   const expired = !!expiresAt && expiresAt.getTime() < Date.now();
-  const isPro = !!profile?.is_pro && !expired;
+  const isPaid = !!profile?.is_pro && !expired;
+  const isPro = isPaid || trialActive;
 
   const requirePro = (label = "Este recurso") => {
     if (isPro) return true;
     toast.info(`${label} é exclusivo do FitFlow+`, {
       description: expired
         ? "Sua assinatura expirou. Renove para continuar."
-        : "Faça upgrade para desbloquear.",
+        : "Seu período de testes acabou. Faça upgrade para continuar.",
       action: { label: "Ver planos", onClick: () => navigate("/upgrade") },
     });
     navigate("/upgrade");
     return false;
   };
 
-  return { isPro, isLoading, expiresAt, expired, requirePro };
+  return { isPro, isPaid, trialActive, isLoading, expiresAt, expired, requirePro };
 }

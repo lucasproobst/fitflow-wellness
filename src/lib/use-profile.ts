@@ -17,6 +17,7 @@ export interface UserProfile {
   avatar_url: string | null;
   is_pro: boolean;
   pro_expires_at: string | null;
+  trial_ends_at: string | null;
   preferred_workout_days: number[] | null;
 }
 
