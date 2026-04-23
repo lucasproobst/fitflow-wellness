@@ -122,6 +122,36 @@ export type Database = {
         }
         Relationships: []
       }
+      kiwify_processed_orders: {
+        Row: {
+          created_at: string
+          event: string | null
+          id: string
+          is_pro_after: boolean | null
+          order_id: string
+          payload: Json | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          event?: string | null
+          id?: string
+          is_pro_after?: boolean | null
+          order_id: string
+          payload?: Json | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          event?: string | null
+          id?: string
+          is_pro_after?: boolean | null
+          order_id?: string
+          payload?: Json | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       meal_favorites: {
         Row: {
           created_at: string
