@@ -247,6 +247,47 @@ Deno.serve(async (req) => {
 
     const supabase = createClient(supabaseUrl, serviceKey);
 
+    // ── 7a. Idempotência: ignora se (order_id, event) já foi processado ───────
+    // Usa a constraint UNIQUE (order_id, event) em kiwify_processed_orders.
+    // Inserimos ANTES do update — se já existir, pulamos a ativação.
+    const idempotencyKey = String(orderId ?? "");
+    if (idempotencyKey) {
+      const { error: insErr } = await supabase
+        .from("kiwify_processed_orders")
+        .insert({
+          order_id: idempotencyKey,
+          event: rawEvent || rawStatus || "unknown",
+          user_id: userId,
+          is_pro_after: !isDeactivating,
+          payload,
+        });
+
+      if (insErr) {
+        // Código 23505 = unique_violation → já processado, retornamos sucesso idempotente
+        const isDuplicate =
+          (insErr as any).code === "23505" ||
+          /duplicate key|unique constraint/i.test(insErr.message);
+        if (isDuplicate) {
+          logEvent("info", "duplicate_webhook_ignored", {
+            orderId: idempotencyKey, event: rawEvent, userId,
+          });
+          return json(200, {
+            ok: true,
+            ignored: true,
+            reason: "duplicate_order_event",
+            order_id: idempotencyKey,
+            detected_user_id: userId,
+          });
+        }
+        // Erro inesperado ao registrar — loga mas segue (não trava ativação)
+        logEvent("warn", "idempotency_insert_failed_continuing", {
+          orderId: idempotencyKey, dbError: insErr.message,
+        });
+      }
+    } else {
+      logEvent("warn", "no_order_id_skipping_idempotency", { event: rawEvent });
+    }
+
     const updates: Record<string, unknown> = isDeactivating
       ? { is_pro: false, pro_expires_at: null }
       : { is_pro: true, pro_expires_at: proExpiresAt }; // null se vitalício
