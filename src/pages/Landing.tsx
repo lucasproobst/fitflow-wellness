@@ -364,7 +364,7 @@ export default function Landing() {
             <FaqItem q="Preciso de cartão de crédito para testar grátis?" a="Não. O período de 7 dias é 100% gratuito e sem necessidade de cadastrar cartão. Você só paga se quiser continuar." />
             <FaqItem q="Posso cancelar quando quiser?" a="Sim. No plano mensal você cancela a qualquer momento diretamente pelo app, sem burocracia." />
             <FaqItem q="O que acontece depois dos 7 dias grátis?" a="Seu acesso continua mas as gerações ficam pausadas. Você escolhe se quer assinar ou não — sem cobranças automáticas." />
-            <FaqItem q="O FitFlow+ realmente é pagamento único?" a="Sim. Você paga R$ 47,90 uma única vez e tem acesso vitalício a tudo, incluindo atualizações futuras." />
+            <FaqItem q="O FitFlow+ realmente é pagamento único?" a="Sim. Você paga R$ 47,00 uma única vez e tem acesso vitalício a tudo, incluindo atualizações futuras." />
             <FaqItem q="Como funciona o scanner de alimentos?" a="Você aponta a câmera para o alimento ou prato e a IA identifica automaticamente as calorias, proteínas, carboidratos e gorduras em segundos." />
           </div>
         </div>
