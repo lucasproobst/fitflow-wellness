@@ -3,8 +3,10 @@ import { ArrowLeft, Check, Sparkles, Zap } from "lucide-react";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/lib/auth-context";
-
-const KIWIFY_PLUS_URL_FALLBACK = "https://pay.kiwify.com.br/SUA_URL_AQUI";
+import {
+  setPostAuthRedirect,
+  buildKiwifyCheckoutUrl,
+} from "@/lib/post-auth-redirect";
 
 const FEATURES = [
   "Scanner de alimentos por câmera",
@@ -31,19 +33,14 @@ export default function Upgrade() {
 
   const goCheckout = () => {
     if (!user) {
-      sessionStorage.setItem("postAuthRedirect", "checkout-plus");
-      navigate("/auth");
+      setPostAuthRedirect("checkout-plus");
+      navigate("/auth?redirect=checkout-plus");
       return;
     }
-    const baseUrl =
-      (import.meta.env.VITE_KIWIFY_CHECKOUT_URL_PLUS as string | undefined) ||
-      KIWIFY_PLUS_URL_FALLBACK;
-    const successUrl = `${window.location.origin}/checkout/sucesso`;
-    const url = new URL(baseUrl);
-    url.searchParams.set("utm_content", user.id);
-    if (user.email) url.searchParams.set("email", user.email);
-    url.searchParams.set("redirect_url", successUrl);
-    window.location.href = url.toString();
+    window.location.href = buildKiwifyCheckoutUrl({
+      id: user.id,
+      email: user.email,
+    });
   };
 
   return (
