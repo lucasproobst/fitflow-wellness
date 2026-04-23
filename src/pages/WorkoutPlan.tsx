@@ -459,12 +459,13 @@ export default function WorkoutPlan() {
       {!isLoading && !generate.isPending && !planData && (
         <div className="rounded-2xl bg-[#141414] border border-white/[0.07] py-16 text-center">
           <p className="text-white/30 text-sm mb-5">Nenhum plano de treino ainda</p>
-          <button
+          <ProGenButton
+            variant="primary"
             onClick={openDaysPicker}
-            className="px-6 py-3 rounded-xl bg-[#22c55e] text-white text-sm font-bold active:scale-95 transition-all"
-          >
-            Gerar seu plano
-          </button>
+            requireProLabel="Gerar plano de treino"
+            label="Gerar seu plano"
+            proLabel="Gerar seu plano • FitFlow+"
+          />
         </div>
       )}
 
