@@ -212,12 +212,25 @@ Deno.serve(async (req) => {
 
     if (!updated || updated.length === 0) {
       logEvent("warn", "user_profile_not_found", { userId, orderId, productId });
-      // 200 para evitar reentrega; mas registramos para o suporte ativar manualmente.
-      return json(200, { ok: false, reason: "user_profile_not_found", userId });
+      return json(200, {
+        ok: false,
+        reason: "user_profile_not_found",
+        detected_user_id: userId,
+        detected_source: userIdSource,
+        order_id: orderId,
+      });
     }
 
-    logEvent("info", "is_pro_activated", { userId, orderId, productId, status: rawStatus, event: rawEvent });
-    return json(200, { ok: true, user_id: userId, activated: true });
+    logEvent("info", "is_pro_activated", {
+      userId, source: userIdSource, orderId, productId, status: rawStatus, event: rawEvent,
+    });
+    return json(200, {
+      ok: true,
+      activated: true,
+      detected_user_id: userId,
+      detected_source: userIdSource,
+      order_id: orderId,
+    });
   } catch (err) {
     logEvent("error", "unhandled_exception", {
       error: err instanceof Error ? err.message : String(err),
